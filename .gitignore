@@ -1,0 +1,42 @@
+# Secrets
+.env
+*.keystore
+*.jks
+key.properties
+
+# AI models (downloaded at runtime, never committed)
+*.gguf
+*.bin
+models/
+
+# Flutter / Dart
+app/.dart_tool/
+app/build/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/.packages
+*.g.dart
+*.freezed.dart
+*.iml
+.idea/
+
+# Python
+service/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Supabase local
+supabase/.temp/
+supabase/.branches/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/settings.json
+
+# Never commit real participant data
+fixtures/real/
+*.participant.*
