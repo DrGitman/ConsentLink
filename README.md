@@ -168,10 +168,10 @@ We use **trunk-based development**: `main` is the only long-lived branch. Each m
 
 | Role | Member | GitHub |
 |---|---|---|
-| P1 · UI & accessibility | _name_ | @_handle_ |
+| P1 · UI & accessibility | Orilio Naobeb| @DrGitman |
 | P2 · Data, sync & export | _name_ | @_handle_ |
 | P3 · On-device AI & speech | _name_ | @_handle_ |
-| P4 · Python service & HCI | _name_ | @_handle_ |
+| P4 · Python service & HCI |Kristofina Shipalanga | @_handle_ |
 
 Lecturer: Mr Naftali N. Indongo, HCA820S, NUST.
 
