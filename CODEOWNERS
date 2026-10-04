@@ -1,5 +1,5 @@
-# Replace @p1..@p4 with your teammates' GitHub usernames.
-# GitHub auto-requests these people as reviewers.
+# @p1..@p4 will be replaced with our GitHub usernames.
+# GitHub auto-requests the people assigned as reviewers.
 
 /app/lib/core/            @p1
 /app/lib/features/        @p1
