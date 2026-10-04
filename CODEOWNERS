@@ -1,0 +1,19 @@
+# Replace @p1..@p4 with your teammates' GitHub usernames.
+# GitHub auto-requests these people as reviewers.
+
+/app/lib/core/            @p1
+/app/lib/features/        @p1
+/app/l10n/                @p1
+
+/app/lib/data/            @p2
+/supabase/                @p2
+/.github/                 @p2
+
+/app/lib/ai/              @p3
+
+/service/                 @p4
+/notebooks/               @p4
+
+# Shared: every consumer must approve
+/app/lib/contracts/       @p1 @p2 @p3
+/schemas/                 @p2 @p3 @p4
