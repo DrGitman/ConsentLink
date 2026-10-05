@@ -1,19 +1,19 @@
 # @p1..@p4 will be replaced with our GitHub usernames.
 # GitHub auto-requests the people assigned as reviewers.
 
-/app/lib/core/            @p1
-/app/lib/features/        @p1
-/app/l10n/                @p1
+/app/lib/core/            @DrGitman
+/app/lib/features/        @DrGitman
+/app/l10n/                @DrGitman
 
-/app/lib/data/            @p2
-/supabase/                @p2
-/.github/                 @p2
+/app/lib/data/            @erastusshingenge-maker
+/supabase/                @erastusshingenge-maker
+/.github/                 @erastusshingenge-maker
 
-/app/lib/ai/              @p3
+/app/lib/ai/              @p1Cansa
 
-/service/                 @p4
-/notebooks/               @p4
+/service/                 @Tuilika
+/notebooks/               @Tuilika
 
 # Shared: every consumer must approve
-/app/lib/contracts/       @p1 @p2 @p3
-/schemas/                 @p2 @p3 @p4
+/app/lib/contracts/       @DrGitman @erastusshingenge-maker @1Cansa
+/schemas/                 @erastusshingenge-maker @1Cansa @Tuilika
