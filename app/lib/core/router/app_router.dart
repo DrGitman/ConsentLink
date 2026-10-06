@@ -1,0 +1,59 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../features/shell/app_shell.dart';
+import '../../features/shell/shell_page.dart';
+import '../l10n/app_localizations.dart';
+
+final appRouterProvider = Provider<GoRouter>((ref) {
+  final router = GoRouter(
+    initialLocation: '/home',
+    routes: [
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return AppShell(navigationShell: navigationShell);
+        },
+        branches: [
+          for (final destination in ShellDestination.values)
+            StatefulShellBranch(
+              routes: [
+                GoRoute(
+                  path: '/${destination.name}',
+                  builder: (context, state) {
+                    return ShellPage(destination: destination);
+                  },
+                ),
+              ],
+            ),
+        ],
+      ),
+    ],
+    errorBuilder: (context, state) {
+      final strings = AppLocalizations.of(context);
+
+      return Scaffold(
+        appBar: AppBar(title: Text(strings.routeErrorTitle)),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(strings.routeErrorDescription),
+                const SizedBox(height: 24),
+                FilledButton(
+                  onPressed: () => context.go('/home'),
+                  child: Text(strings.returnHome),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+
+  ref.onDispose(router.dispose);
+  return router;
+});

@@ -1,0 +1,7 @@
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icons/consentlink-icon.png"
+  adaptive_icon_background: "#1FAF84"
+  adaptive_icon_foreground: "assets/icons/consentlink-foreground.png"
+  adaptive_icon_foreground_inset: 0
