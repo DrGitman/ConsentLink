@@ -1,13 +1,11 @@
-import 'package:consentlink/app.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'helpers/pump_consentlink_app.dart';
 
 void main() {
   testWidgets('the ConsentLink app opens on Home', (tester) async {
-    await tester.pumpWidget(const ProviderScope(child: ConsentLinkApp()));
-
-    await tester.pumpAndSettle();
+    await pumpConsentLinkApp(tester);
 
     final titleFinder = find.byKey(const ValueKey('shell-title-0'));
 
@@ -25,8 +23,7 @@ void main() {
 
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
 
-    await tester.pumpWidget(const ProviderScope(child: ConsentLinkApp()));
-    await tester.pumpAndSettle();
+    await pumpConsentLinkApp(tester);
 
     var app = tester.widget<MaterialApp>(find.byType(MaterialApp));
 

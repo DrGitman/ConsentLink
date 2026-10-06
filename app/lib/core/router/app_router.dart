@@ -4,12 +4,17 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/shell/app_shell.dart';
 import '../../features/shell/shell_page.dart';
+import '../../features/splash/splash_screen.dart';
 import '../l10n/app_localizations.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
-    initialLocation: '/home',
+    initialLocation: '/splash',
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return AppShell(navigationShell: navigationShell);

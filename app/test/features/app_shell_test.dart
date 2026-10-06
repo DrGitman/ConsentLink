@@ -1,8 +1,8 @@
-import 'package:consentlink/app.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'dart:ui' show SemanticsAction;
+
+import '../helpers/pump_consentlink_app.dart';
 
 void main() {
   testWidgets('all five phone destinations can be opened', (tester) async {
@@ -12,8 +12,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(const ProviderScope(child: ConsentLinkApp()));
-    await tester.pumpAndSettle();
+    await pumpConsentLinkApp(tester);
 
     const destinations = ['home', 'projects', 'capture', 'insights', 'me'];
 
@@ -38,8 +37,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
-    await tester.pumpWidget(const ProviderScope(child: ConsentLinkApp()));
-    await tester.pumpAndSettle();
+    await pumpConsentLinkApp(tester);
 
     for (var index = 0; index < 5; index++) {
       await tester.tap(find.byKey(ValueKey('nav-$index')));
@@ -56,8 +54,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(const ProviderScope(child: ConsentLinkApp()));
-    await tester.pumpAndSettle();
+    await pumpConsentLinkApp(tester);
 
     expect(find.byType(NavigationRail), findsOneWidget);
 
@@ -74,8 +71,7 @@ void main() {
     final semanticsHandle = tester.ensureSemantics();
 
     try {
-      await tester.pumpWidget(const ProviderScope(child: ConsentLinkApp()));
-      await tester.pumpAndSettle();
+      await pumpConsentLinkApp(tester);
 
       for (var index = 0; index < 5; index++) {
         final node = tester.getSemantics(
