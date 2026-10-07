@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('primary colours support white text at AA contrast', () {
+  test('high-contrast primary colours support white text at AA contrast', () {
     const seeds = [
       AppColors.brand,
       Color(0xFF202D5B),
@@ -13,7 +13,7 @@ void main() {
     ];
 
     for (final seed in seeds) {
-      final theme = AppTheme.light(seed: seed);
+      final theme = AppTheme.light(seed: seed, highContrast: true);
 
       expect(
         AppTheme.contrastRatio(
@@ -23,6 +23,20 @@ void main() {
         greaterThanOrEqualTo(4.5),
       );
     }
+  });
+
+  test('normal theme preserves the exact ConsentLink green', () {
+    final theme = AppTheme.light();
+
+    expect(theme.colorScheme.primary, const Color(0xFF1FAF84));
+  });
+
+  test('normal theme separates white surfaces from the canvas', () {
+    final theme = AppTheme.light();
+
+    expect(theme.colorScheme.surface, Colors.white);
+    expect(theme.scaffoldBackgroundColor, const Color(0xFFF2F3F1));
+    expect(theme.colorScheme.onSurfaceVariant, const Color(0xFF8A938F));
   });
 
   test('an institution seed changes the primary theme colour', () {

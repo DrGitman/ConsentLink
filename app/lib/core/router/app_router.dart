@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/onboarding/onboarding_screen.dart';
+import '../../features/preferences/language_accessibility_screen.dart';
 import '../../features/shell/app_shell.dart';
 import '../../features/shell/shell_page.dart';
 import '../../features/splash/splash_screen.dart';
@@ -15,9 +16,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ),
     routes: [
       GoRoute(
+        path: '/preferences',
+        builder: (context, state) => const LanguageAccessibilityScreen(),
+      ),
+      GoRoute(
         path: '/onboarding',
         builder: (context, state) {
-          return OnboardingScreen(onComplete: () => context.go('/home'));
+          return OnboardingScreen(onComplete: () => context.go('/preferences'));
         },
       ),
       GoRoute(

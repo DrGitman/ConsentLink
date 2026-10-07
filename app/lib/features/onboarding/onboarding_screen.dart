@@ -204,7 +204,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     return PopScope(
       canPop: _page == 0,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop && !_busy) _changePage(_page - 1);
+        if (!didPop && !_busy && _page > 0) _changePage(_page - 1);
       },
       child: Scaffold(
         backgroundColor: AppColors.canvas,
