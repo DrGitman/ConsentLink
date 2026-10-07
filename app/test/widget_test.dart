@@ -27,7 +27,7 @@ void main() {
 
     var app = tester.widget<MaterialApp>(find.byType(MaterialApp));
 
-    expect(app.themeAnimationDuration, const Duration(milliseconds: 400));
+    expect(app.themeAnimationDuration, const Duration(milliseconds: 120));
 
     tester.platformDispatcher.accessibilityFeaturesTestValue =
         const FakeAccessibilityFeatures(disableAnimations: true);
@@ -36,8 +36,8 @@ void main() {
 
     app = tester.widget<MaterialApp>(find.byType(MaterialApp));
 
-    expect(app.themeAnimationDuration, const Duration(milliseconds: 200));
-    expect(app.themeAnimationCurve, Curves.linear);
+    expect(app.themeAnimationDuration, Duration.zero);
+    expect(app.themeAnimationCurve, Curves.easeOut);
     expect(tester.takeException(), isNull);
   });
 }

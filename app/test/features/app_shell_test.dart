@@ -17,8 +17,27 @@ void main() {
     const destinations = ['home', 'projects', 'capture', 'insights', 'me'];
 
     for (var index = 0; index < destinations.length; index++) {
-      await tester.tap(find.byKey(ValueKey('nav-$index')));
+      final destination = find.byKey(ValueKey('nav-$index'));
+      await tester.ensureVisible(destination);
+      await tester.tap(destination);
       await tester.pumpAndSettle();
+
+      final pillRect = tester.getRect(
+        find.byKey(const ValueKey('nav-active-pill')),
+      );
+      final targetRect = tester.getRect(find.byKey(ValueKey('nav-$index')));
+
+      expect(
+        pillRect.center.dx,
+        closeTo(targetRect.center.dx, 1),
+        reason: 'The selected pill must align with its tab.',
+      );
+
+      expect(
+        pillRect.bottom,
+        greaterThan(700),
+        reason: 'The navigation must remain near the bottom of the screen.',
+      );
 
       expect(
         find.byKey(ValueKey('page-title-${destinations[index]}')),
@@ -39,10 +58,18 @@ void main() {
 
     await pumpConsentLinkApp(tester);
 
-    for (var index = 0; index < 5; index++) {
-      await tester.tap(find.byKey(ValueKey('nav-$index')));
+    const destinations = ['home', 'projects', 'capture', 'insights', 'me'];
+
+    for (var index = 0; index < destinations.length; index++) {
+      final destination = find.byKey(ValueKey('nav-$index'));
+      await tester.ensureVisible(destination);
+      await tester.tap(destination);
       await tester.pumpAndSettle();
 
+      expect(
+        find.byKey(ValueKey('page-title-${destinations[index]}')),
+        findsOneWidget,
+      );
       expect(tester.takeException(), isNull);
     }
   });

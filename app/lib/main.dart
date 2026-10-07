@@ -1,5 +1,5 @@
 import 'main_dev.dart' as development;
 
-void main() {
-  development.main();
+Future<void> main() async {
+  await development.main();
 }
