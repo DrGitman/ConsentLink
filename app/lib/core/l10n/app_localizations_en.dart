@@ -84,4 +84,51 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get returnHome => 'Return to Home';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingBack => 'Back';
+
+  @override
+  String get onboardingGetStarted => 'Get started';
+
+  @override
+  String get onboardingLanguagesTitle =>
+      'Consent in the language people live in';
+
+  @override
+  String get onboardingLanguagesBody =>
+      'Choose a language familiar to the people you are researching.';
+
+  @override
+  String get onboardingOfflineTitle => 'Works where the signal doesn’t';
+
+  @override
+  String get onboardingOfflineBody =>
+      'Collect consent offline. Sync when you reconnect.';
+
+  @override
+  String get onboardingAiTitle => 'AI drafts. You decide.';
+
+  @override
+  String get onboardingAiBody =>
+      'Review, edit and approve every AI-drafted sections.';
+
+  @override
+  String get onboardingInstitutionTitle =>
+      'Your institution’s look, automatically';
+
+  @override
+  String get onboardingInstitutionBody =>
+      'JApply your institution’s templates, logo and colours.';
+
+  @override
+  String onboardingPageAnnouncement(int current, int total) {
+    return 'Introduction, page $current of $total';
+  }
 }

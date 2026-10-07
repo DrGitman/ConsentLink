@@ -69,6 +69,7 @@ flutter:
   assets:
     - assets/icons/navigation/
     - assets/animations/
+    - assets/illustrations/onboarding/
 
   fonts:
     - family: Inter
