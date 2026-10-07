@@ -231,6 +231,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Return to Home'**
   String get returnHome;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get onboardingBack;
+
+  /// No description provided for @onboardingGetStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get started'**
+  String get onboardingGetStarted;
+
+  /// No description provided for @onboardingLanguagesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Consent in the language people live in'**
+  String get onboardingLanguagesTitle;
+
+  /// No description provided for @onboardingLanguagesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a language familiar to the people you are researching.'**
+  String get onboardingLanguagesBody;
+
+  /// No description provided for @onboardingOfflineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Works where the signal doesn’t'**
+  String get onboardingOfflineTitle;
+
+  /// No description provided for @onboardingOfflineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Collect consent offline. Sync when you reconnect.'**
+  String get onboardingOfflineBody;
+
+  /// No description provided for @onboardingAiTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI drafts. You decide.'**
+  String get onboardingAiTitle;
+
+  /// No description provided for @onboardingAiBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Review, edit and approve every AI-drafted sections.'**
+  String get onboardingAiBody;
+
+  /// No description provided for @onboardingInstitutionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your institution’s look, automatically'**
+  String get onboardingInstitutionTitle;
+
+  /// No description provided for @onboardingInstitutionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'JApply your institution’s templates, logo and colours.'**
+  String get onboardingInstitutionBody;
+
+  /// Screen-reader announcement for the current onboarding card.
+  ///
+  /// In en, this message translates to:
+  /// **'Introduction, page {current} of {total}'**
+  String onboardingPageAnnouncement(int current, int total);
 }
 
 class _AppLocalizationsDelegate

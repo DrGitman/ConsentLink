@@ -22,5 +22,35 @@
   "foundationDescription": "Navigation and theme styling are ready to test. Research services are not connected yet.",
   "routeErrorTitle": "Page unavailable",
   "routeErrorDescription": "This page could not be opened. Return to Home to continue.",
-  "returnHome": "Return to Home"
+    "returnHome": "Return to Home",
+
+  "onboardingSkip": "Skip",
+  "onboardingNext": "Next",
+  "onboardingBack": "Back",
+  "onboardingGetStarted": "Get started",
+
+  "onboardingLanguagesTitle": "Consent in the language people live in",
+  "onboardingLanguagesBody": "Choose a language familiar to the people you are researching.",
+
+  "onboardingOfflineTitle": "Works where the signal doesn’t",
+  "onboardingOfflineBody": "Collect consent offline. Sync when you reconnect.",
+
+  "onboardingAiTitle": "AI drafts. You decide.",
+  "onboardingAiBody": "Review, edit and approve every AI-drafted sections.",
+
+  "onboardingInstitutionTitle": "Your institution’s look, automatically",
+  "onboardingInstitutionBody": "JApply your institution’s templates, logo and colours.",
+
+  "onboardingPageAnnouncement": "Introduction, page {current} of {total}",
+  "@onboardingPageAnnouncement": {
+    "description": "Screen-reader announcement for the current onboarding card.",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  }
 }
