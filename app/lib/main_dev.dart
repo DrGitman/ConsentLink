@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'core/theme/theme_provider.dart';
+import 'features/institution/institution.dart';
+import 'features/institution/institution_preferences.dart';
 import 'features/preferences/accessibility_preferences.dart';
 import 'features/preferences/preference_persistence.dart';
 
@@ -27,6 +29,15 @@ Future<void> main() async {
   }
 
   final saved = PreferencePersistence.decode(savedValue);
+  final savedInstitution = saved['institution'] == null
+      ? null
+      : Institution.values.byName(saved['institution'] as String);
+
+  final savedRole = saved['researchRole'] == null
+      ? null
+      : ResearchRole.values.byName(saved['researchRole'] as String);
+
+  final restoredTheme = savedInstitution ?? Institution.independent;
   final persistence = PreferencePersistence(
     write: (value) {
       return storage.setString(PreferencePersistence.storageKey, value);
@@ -37,6 +48,10 @@ Future<void> main() async {
     ProviderScope(
       observers: [persistence],
       overrides: [
+        selectedInstitutionProvider.overrideWith((ref) => savedInstitution),
+        selectedResearchRoleProvider.overrideWith((ref) => savedRole),
+        institutionSeedProvider.overrideWith((ref) => restoredTheme.primary),
+        institutionAccentProvider.overrideWith((ref) => restoredTheme.accent),
         selectedAppLanguageProvider.overrideWith(
           (ref) => saved['language'] as String,
         ),

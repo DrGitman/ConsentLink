@@ -67,7 +67,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     bool password = false,
   }) {
     final colors = Theme.of(context).colorScheme;
-    final target = largerTargets ? 64.0 : 46.0;
+    final target = largerTargets ? 72.0 : 46.0;
 
     OutlineInputBorder border(Color color, double width) {
       return OutlineInputBorder(
@@ -244,7 +244,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   style: TextButton.styleFrom(
-                    minimumSize: Size(48, largerTargets ? 64 : 46),
+                    minimumSize: Size(48, largerTargets ? 72 : 46),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 4,
                       vertical: 12,
@@ -281,7 +281,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 10),
               TextButton(
                 style: TextButton.styleFrom(
-                  minimumSize: Size(48, largerTargets ? 64 : 48),
+                  minimumSize: Size(48, largerTargets ? 72 : 48),
                   foregroundColor: colors.onSurface,
                   textStyle: const TextStyle(
                     fontFamily: 'Inter',

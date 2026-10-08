@@ -150,7 +150,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
     bool password = false,
   }) {
     final colors = Theme.of(context).colorScheme;
-    final target = largerTargets ? 64.0 : 46.0;
+    final target = largerTargets ? 72.0 : 46.0;
 
     OutlineInputBorder border(Color color, double width) {
       return OutlineInputBorder(
@@ -353,8 +353,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     SizedBox(
-                                      width: largerTargets ? 64 : 48,
-                                      height: largerTargets ? 64 : 48,
+                                      width: largerTargets ? 72 : 48,
+                                      height: largerTargets ? 72 : 48,
                                       child: Checkbox(
                                         value: _acceptedTerms,
                                         semanticLabel:
@@ -432,7 +432,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                                         overlayColor: Colors.transparent,
                                         minimumSize: Size(
                                           48,
-                                          largerTargets ? 64 : 48,
+                                          largerTargets ? 72 : 48,
                                         ),
                                         textStyle: const TextStyle(
                                           fontFamily: 'Inter',

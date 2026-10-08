@@ -43,6 +43,7 @@ dependencies:
   lottie: 3.3.1
   shared_preferences: ^2.5.3
   zxcvbn: 1.0.0
+  speech_to_text: ^7.4.0
 
 dev_dependencies:
   flutter_test:
@@ -69,9 +70,11 @@ flutter:
   generate: true
 
   assets:
+    - assets/icons/offline/
     - assets/icons/navigation/
     - assets/icons/accessibility/
     - assets/icons/auth/
+    - assets/icons/researcher/
     - assets/animations/
     - assets/illustrations/onboarding/
 

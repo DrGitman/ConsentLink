@@ -181,7 +181,7 @@ class _LanguageAccessibilityScreenState
                                     ),
                                     Expanded(
                                       child: SizedBox(
-                                        height: largerTargets ? 72 : 64,
+                                        height: largerTargets ? 80 : 64,
                                         child: _SliderGestureArea(
                                           child: SliderTheme(
                                             data: SliderTheme.of(context).copyWith(
@@ -397,7 +397,6 @@ class _LanguageAccessibilityScreenState
                       // Temporary destination until the account screen is ready.
                       onPressed: () => context.go('/home'),
                       style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(60),
                         shape: const StadiumBorder(),
                         animationDuration: duration,
                       ),
@@ -452,7 +451,7 @@ class _LanguageChip extends StatelessWidget {
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 minWidth: 48,
-                minHeight: largerTargets ? 56 : 48,
+                minHeight: largerTargets ? 72 : 48,
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5),
@@ -527,15 +526,15 @@ class _PreferenceRow extends StatelessWidget {
             onTap: () => onChanged(!value),
             borderRadius: BorderRadius.circular(12),
             child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: largerTargets ? 76 : 64),
+              constraints: BoxConstraints(minHeight: largerTargets ? 88 : 64),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Container(
-                      width: 44,
-                      height: 44,
+                      width: largerTargets ? 52 : 44,
+                      height: largerTargets ? 52 : 44,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: const Color(0xFFE7F6F0),
@@ -581,12 +580,14 @@ class _PreferenceRow extends StatelessWidget {
                     AnimatedContainer(
                       duration: duration,
                       curve: Curves.easeOut,
-                      width: 50,
-                      height: 30,
+                      width: largerTargets ? 64 : 50,
+                      height: largerTargets ? 38 : 30,
                       padding: const EdgeInsets.all(3),
                       decoration: BoxDecoration(
                         color: value ? primary : const Color(0xFFD5DAD8),
-                        borderRadius: BorderRadius.circular(15),
+                        borderRadius: BorderRadius.circular(
+                          largerTargets ? 19 : 15,
+                        ),
                       ),
                       child: AnimatedAlign(
                         duration: duration,
@@ -594,9 +595,9 @@ class _PreferenceRow extends StatelessWidget {
                         alignment: value
                             ? Alignment.centerRight
                             : Alignment.centerLeft,
-                        child: const SizedBox.square(
-                          dimension: 24,
-                          child: DecoratedBox(
+                        child: SizedBox.square(
+                          dimension: largerTargets ? 32 : 24,
+                          child: const DecoratedBox(
                             decoration: BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,

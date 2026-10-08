@@ -11,8 +11,12 @@ import '../../features/auth/login_screen.dart';
 import '../../features/auth/sign_up_screen.dart';
 import '../../features/auth/confirm_email_preview_screen.dart';
 import '../../features/auth/password_recovery_preview_screen.dart';
+import '../../features/institution/institution_screen.dart';
+import '../../features/institution/researcher_details_screen.dart';
+import '../../features/offline/offline_pack_screen.dart';
 import '../../features/legal/legal_content.dart';
 import '../../features/legal/legal_screen.dart';
+import '../widgets/dictation_sheet.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
@@ -21,6 +25,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       defaultValue: '/splash',
     ),
     routes: [
+      GoRoute(
+        path: '/offline-pack',
+        builder: (context, state) => const OfflinePackScreen(),
+      ),
+      GoRoute(
+        path: '/institution',
+        builder: (context, state) => const InstitutionScreen(),
+      ),
+      GoRoute(
+        path: '/researcher-details',
+        builder: (context, state) => const ResearcherDetailsScreen(),
+      ),
       for (final document in LegalDocument.values)
         GoRoute(
           path: document.route,
@@ -207,6 +223,41 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   },
             );
           },
+        ),
+      if (const bool.fromEnvironment('AUTH_PREVIEW'))
+        GoRoute(
+          path: '/dictation-check',
+          builder: (context, state) => Scaffold(
+            appBar: AppBar(title: const Text('Voice input check')),
+            body: Center(
+              child: FilledButton.icon(
+                icon: const Icon(Icons.mic_none),
+                label: const Text('Test voice input'),
+                onPressed: () async {
+                  final text = await showDictationSheet(
+                    context,
+                    fieldLabel: 'Title & name',
+                  );
+
+                  if (!context.mounted || text == null) return;
+
+                  await showDialog<void>(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      title: const Text('Text received'),
+                      content: Text(text),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          child: const Text('Done'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
         ),
       GoRoute(
         path: '/preferences',
