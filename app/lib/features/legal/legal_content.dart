@@ -144,6 +144,12 @@ extension LegalDocumentContent on LegalDocument {
         title: '6. Permissions and protection',
         body:
             'Selecting a voice preference does not itself start recording. '
+            'Dictation begins when you tap Start speaking and allow '
+            'microphone access. Your phone’s speech service may send audio '
+            'to its provider for recognition. Its processing and retention '
+            'depend on that provider. ConsentLink does not save an audio '
+            'recording through this feature. Review recognised text before '
+            'inserting it. You can stop dictation or type instead.\n\n'
             'The fingerprint button is currently a preview and does not '
             'collect a fingerprint.\n\n'
             'Keep your phone locked and avoid sharing screenshots that '

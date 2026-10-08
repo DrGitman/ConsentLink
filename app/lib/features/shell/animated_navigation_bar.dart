@@ -1,11 +1,13 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_icon.dart';
+import '../preferences/accessibility_preferences.dart';
 
-class AnimatedNavigationBar extends StatefulWidget {
+class AnimatedNavigationBar extends ConsumerStatefulWidget {
   const AnimatedNavigationBar({
     required this.destinations,
     required this.selectedIndex,
@@ -18,10 +20,11 @@ class AnimatedNavigationBar extends StatefulWidget {
   final ValueChanged<int> onSelected;
 
   @override
-  State<AnimatedNavigationBar> createState() => _AnimatedNavigationBarState();
+  ConsumerState<AnimatedNavigationBar> createState() =>
+      _AnimatedNavigationBarState();
 }
 
-class _AnimatedNavigationBarState extends State<AnimatedNavigationBar>
+class _AnimatedNavigationBarState extends ConsumerState<AnimatedNavigationBar>
     with SingleTickerProviderStateMixin {
   static const _duration = Duration(milliseconds: 340);
 
@@ -174,6 +177,8 @@ class _AnimatedNavigationBarState extends State<AnimatedNavigationBar>
   @override
   Widget build(BuildContext context) {
     final count = widget.destinations.length;
+    final largerTargets = ref.watch(largerTouchTargetsProvider);
+    final minimumTarget = largerTargets ? 72.0 : 48.0;
     assert(count >= 2);
 
     final direction = Directionality.of(context);
@@ -205,7 +210,9 @@ class _AnimatedNavigationBarState extends State<AnimatedNavigationBar>
             final iconLabelGap = math
                 .max(4.0, (14 - 8 * textGrowth) * scale)
                 .toDouble();
-            final iconSize = 30 * scale;
+            final iconSize = largerTargets
+                ? math.max(28.0, 30 * scale).toDouble()
+                : 30 * scale;
             final capsuleWidth = constraints.maxWidth - outerInset * 2;
             final labelStyle = TextStyle(
               inherit: false,
@@ -231,7 +238,7 @@ class _AnimatedNavigationBarState extends State<AnimatedNavigationBar>
               naturalActiveWidths.add(
                 math
                     .max(
-                      48.0,
+                      minimumTarget,
                       painter.width.ceilToDouble() +
                           pillPadding * 2 +
                           iconSize +
@@ -244,11 +251,7 @@ class _AnimatedNavigationBarState extends State<AnimatedNavigationBar>
 
             final inactiveIcons = [
               for (final destination in widget.destinations)
-                AppIcon(
-                  destination.$2,
-                  size: 30 * scale,
-                  color: Colors.white60,
-                ),
+                AppIcon(destination.$2, size: iconSize, color: Colors.white60),
             ];
             final activeWidths = naturalActiveWidths;
 
@@ -259,7 +262,7 @@ class _AnimatedNavigationBarState extends State<AnimatedNavigationBar>
             final visibleWidth = capsuleWidth - barPadding * 2;
 
             final width = math
-                .max(visibleWidth, widestPill + (count - 1) * 48.0)
+                .max(visibleWidth, widestPill + (count - 1) * minimumTarget)
                 .toDouble();
 
             _keepSelectedPillVisible(
@@ -268,7 +271,7 @@ class _AnimatedNavigationBarState extends State<AnimatedNavigationBar>
               selectedWidth: activeWidths[widget.selectedIndex],
             );
 
-            var contentHeight = math.max(48.0, 74 * scale).toDouble();
+            var contentHeight = math.max(minimumTarget, 74 * scale).toDouble();
 
             for (var index = 0; index < count; index++) {
               final painter = TextPainter(

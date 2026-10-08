@@ -55,7 +55,9 @@ abstract final class AppTheme {
 
   static ThemeData light({
     Color seed = AppColors.brand,
+    Color accent = AppColors.brandDark,
     bool highContrast = false,
+    bool largerTouchTargets = false,
   }) {
     final isDefaultBrand = seed == AppColors.brand;
 
@@ -65,9 +67,18 @@ abstract final class AppTheme {
       contrastLevel: highContrast ? 1.0 : 0.0,
     );
 
+    final opaqueAccent = accent.withAlpha(255);
+    final accentForeground =
+        contrastRatio(opaqueAccent, Colors.black) >=
+            contrastRatio(opaqueAccent, Colors.white)
+        ? Colors.black
+        : Colors.white;
+
     final scheme = generatedScheme.copyWith(
       primary: highContrast ? accessiblePrimary(seed) : seed.withAlpha(255),
       onPrimary: Colors.white,
+      secondary: opaqueAccent,
+      onSecondary: accentForeground,
       primaryContainer: isDefaultBrand
           ? AppColors.brand50
           : generatedScheme.primaryContainer,
@@ -97,6 +108,30 @@ abstract final class AppTheme {
 
       return Colors.transparent;
     });
+
+    final actionButtonStyle = ButtonStyle(
+      minimumSize: WidgetStatePropertyAll(
+        Size(48, largerTouchTargets ? 72 : 60),
+      ),
+      padding: const WidgetStatePropertyAll(
+        EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      ),
+      textStyle: const WidgetStatePropertyAll(
+        TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 16,
+          height: 1.2,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      shape: const WidgetStatePropertyAll(StadiumBorder()),
+      tapTargetSize: MaterialTapTargetSize.padded,
+      splashFactory: NoSplash.splashFactory,
+      overlayColor: interactionOverlay,
+      elevation: const WidgetStatePropertyAll(0),
+      shadowColor: const WidgetStatePropertyAll(Colors.transparent),
+      surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+    );
 
     return ThemeData(
       useMaterial3: true,
@@ -162,26 +197,12 @@ abstract final class AppTheme {
           color: AppColors.muted,
         ),
       ),
-      filledButtonTheme: FilledButtonThemeData(
-        style:
-            FilledButton.styleFrom(
-              minimumSize: const Size(48, 56),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              shape: const StadiumBorder(),
-            ).copyWith(
-              splashFactory: NoSplash.splashFactory,
-              overlayColor: interactionOverlay,
-              elevation: const WidgetStatePropertyAll<double>(0),
-              shadowColor: const WidgetStatePropertyAll<Color>(
-                Colors.transparent,
-              ),
-              surfaceTintColor: const WidgetStatePropertyAll<Color>(
-                Colors.transparent,
-              ),
-            ),
-      ),
+      filledButtonTheme: FilledButtonThemeData(style: actionButtonStyle),
       textButtonTheme: TextButtonThemeData(
         style: ButtonStyle(
+          minimumSize: largerTouchTargets
+              ? const WidgetStatePropertyAll(Size(72, 72))
+              : null,
           splashFactory: NoSplash.splashFactory,
           overlayColor: interactionOverlay,
           elevation: const WidgetStatePropertyAll<double>(0),
@@ -191,19 +212,12 @@ abstract final class AppTheme {
           ),
         ),
       ),
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: ButtonStyle(
-          splashFactory: NoSplash.splashFactory,
-          overlayColor: interactionOverlay,
-          elevation: const WidgetStatePropertyAll<double>(0),
-          shadowColor: const WidgetStatePropertyAll<Color>(Colors.transparent),
-          surfaceTintColor: const WidgetStatePropertyAll<Color>(
-            Colors.transparent,
-          ),
-        ),
-      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(style: actionButtonStyle),
       iconButtonTheme: IconButtonThemeData(
         style: ButtonStyle(
+          minimumSize: largerTouchTargets
+              ? const WidgetStatePropertyAll(Size(72, 72))
+              : null,
           splashFactory: NoSplash.splashFactory,
           overlayColor: interactionOverlay,
           elevation: const WidgetStatePropertyAll<double>(0),

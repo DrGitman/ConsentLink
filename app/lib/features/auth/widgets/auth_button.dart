@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../preferences/accessibility_preferences.dart';
-
 class AuthButton extends ConsumerStatefulWidget {
   const AuthButton({
     super.key,
@@ -45,7 +43,6 @@ class _AuthButtonState extends ConsumerState<AuthButton> {
 
   @override
   Widget build(BuildContext context) {
-    final largerTargets = ref.watch(largerTouchTargetsProvider);
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final enabled = widget.onPressed != null && !widget.busy;
     final pressed = enabled && _states.value.contains(WidgetState.pressed);
@@ -67,18 +64,7 @@ class _AuthButtonState extends ConsumerState<AuthButton> {
               BorderSide(color: colors.outline, width: 1.2),
             )
           : null,
-      minimumSize: WidgetStatePropertyAll(Size(0, largerTargets ? 72 : 48)),
-      padding: const WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      ),
       shape: const WidgetStatePropertyAll(StadiumBorder()),
-      textStyle: const WidgetStatePropertyAll(
-        TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
       elevation: const WidgetStatePropertyAll(0),
       shadowColor: const WidgetStatePropertyAll(Colors.transparent),
       surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),

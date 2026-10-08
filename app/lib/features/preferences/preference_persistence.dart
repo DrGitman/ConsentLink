@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/theme_provider.dart';
+import '../institution/institution.dart';
+import '../institution/institution_preferences.dart';
 import 'accessibility_preferences.dart';
 
 class PreferencePersistence extends ProviderObserver {
@@ -24,6 +26,8 @@ class PreferencePersistence extends ProviderObserver {
       'readAloud': false,
       'voiceAnswers': false,
       'largerTargets': false,
+      'institution': null,
+      'researchRole': null,
     };
 
     if (source == null) return result;
@@ -69,6 +73,21 @@ class PreferencePersistence extends ProviderObserver {
       }
     }
 
+    final institutionName = decoded['institution'];
+    final roleName = decoded['researchRole'];
+
+    final validInstitution = Institution.values.any(
+      (value) => value.name == institutionName,
+    );
+    final validRole = ResearchRole.values.any(
+      (value) => value.name == roleName,
+    );
+
+    if (validInstitution && validRole) {
+      result['institution'] = institutionName;
+      result['researchRole'] = roleName;
+    }
+
     return result;
   }
 
@@ -85,7 +104,9 @@ class PreferencePersistence extends ProviderObserver {
         provider == highContrastProvider ||
         provider == readScreensAloudProvider ||
         provider == voiceAnswersProvider ||
-        provider == largerTouchTargetsProvider;
+        provider == largerTouchTargetsProvider ||
+        provider == selectedInstitutionProvider ||
+        provider == selectedResearchRoleProvider;
 
     if (!isPreference) return;
 
@@ -96,6 +117,8 @@ class PreferencePersistence extends ProviderObserver {
       'readAloud': container.read(readScreensAloudProvider),
       'voiceAnswers': container.read(voiceAnswersProvider),
       'largerTargets': container.read(largerTouchTargetsProvider),
+      'institution': container.read(selectedInstitutionProvider)?.name,
+      'researchRole': container.read(selectedResearchRoleProvider)?.name,
     });
 
     _writes = _writes.then((_) async {

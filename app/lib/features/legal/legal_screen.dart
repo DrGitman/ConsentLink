@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/widgets/app_back_button.dart';
 import 'legal_content.dart';
 
 class LegalScreen extends StatelessWidget {
@@ -32,7 +32,7 @@ class LegalScreen extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
                   child: Row(
                     children: [
-                      _LegalBackButton(onPressed: goBack),
+                      AppBackButton(onPressed: goBack),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -132,69 +132,6 @@ class LegalScreen extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LegalBackButton extends ConsumerStatefulWidget {
-  const _LegalBackButton({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  ConsumerState<_LegalBackButton> createState() => _LegalBackButtonState();
-}
-
-class _LegalBackButtonState extends ConsumerState<_LegalBackButton> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final reduceMotion = MediaQuery.disableAnimationsOf(context);
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-
-    return Tooltip(
-      message: 'Back',
-      child: Semantics(
-        button: true,
-        label: 'Back',
-        child: SizedBox.square(
-          dimension: 48,
-          child: Material(
-            color: colors.surface,
-            shape: const CircleBorder(),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              splashFactory: NoSplash.splashFactory,
-              highlightColor: Colors.transparent,
-              focusColor: colors.primary.withValues(alpha: 0.12),
-              hoverColor: colors.primary.withValues(alpha: 0.08),
-              onTap: widget.onPressed,
-              onHighlightChanged: (pressed) {
-                setState(() => _pressed = pressed);
-              },
-              child: Center(
-                child: AnimatedScale(
-                  scale: _pressed && !reduceMotion ? 0.9 : 1,
-                  duration: reduceMotion
-                      ? Duration.zero
-                      : Duration(milliseconds: _pressed ? 80 : 120),
-                  curve: Curves.easeOut,
-                  child: Icon(
-                    rtl
-                        ? Icons.chevron_right_rounded
-                        : Icons.chevron_left_rounded,
-                    size: 28,
-                    color: colors.onSurface,
-                  ),
-                ),
-              ),
             ),
           ),
         ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/widgets/app_back_button.dart';
 import '../preferences/accessibility_preferences.dart';
 import 'widgets/auth_button.dart';
 import 'widgets/password_visibility_icon.dart';
@@ -27,7 +28,6 @@ class _PasswordRecoveryPreviewScreenState
   _RecoveryStep _step = _RecoveryStep.email;
   bool _hidePassword = true;
   bool _hideConfirmation = true;
-  bool _backPressed = false;
 
   String? _emailError;
   String? _passwordError;
@@ -140,7 +140,7 @@ class _PasswordRecoveryPreviewScreenState
             ),
             prefixIconConstraints: BoxConstraints(
               minWidth: 48,
-              minHeight: largerTargets ? 64 : 46,
+              minHeight: largerTargets ? 72 : 46,
             ),
             prefixIcon: SizedBox(
               width: 48,
@@ -162,8 +162,8 @@ class _PasswordRecoveryPreviewScreenState
                     tooltip: hidden ? 'Show password' : 'Hide password',
                     onPressed: toggle,
                     constraints: BoxConstraints(
-                      minWidth: largerTargets ? 64 : 48,
-                      minHeight: largerTargets ? 64 : 48,
+                      minWidth: largerTargets ? 72 : 48,
+                      minHeight: largerTargets ? 72 : 48,
                     ),
                     icon: PasswordVisibilityIcon(
                       obscured: hidden,
@@ -216,42 +216,9 @@ class _PasswordRecoveryPreviewScreenState
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
                   child: Row(
                     children: [
-                      Tooltip(
-                        message: 'Back to login',
-                        child: Material(
-                          color: colors.surface,
-                          shape: const CircleBorder(),
-                          clipBehavior: Clip.antiAlias,
-                          child: InkWell(
-                            customBorder: const CircleBorder(),
-                            splashFactory: NoSplash.splashFactory,
-                            highlightColor: Colors.transparent,
-                            onTap: _leave,
-                            onHighlightChanged: (pressed) {
-                              setState(() => _backPressed = pressed);
-                            },
-                            child: SizedBox.square(
-                              dimension: 48,
-                              child: Semantics(
-                                button: true,
-                                label: 'Back to login',
-                                child: AnimatedScale(
-                                  scale: _backPressed && !reduceMotion
-                                      ? 0.9
-                                      : 1,
-                                  duration: reduceMotion
-                                      ? Duration.zero
-                                      : const Duration(milliseconds: 100),
-                                  child: Icon(
-                                    Icons.chevron_left_rounded,
-                                    size: 28,
-                                    color: colors.onSurface,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                      AppBackButton(
+                        tooltip: 'Back to login',
+                        onPressed: _leave,
                       ),
                       const Spacer(),
                       Text(

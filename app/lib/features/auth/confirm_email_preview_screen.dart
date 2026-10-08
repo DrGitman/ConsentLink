@@ -3,22 +3,26 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/widgets/app_back_button.dart';
+import '../preferences/accessibility_preferences.dart';
 import 'widgets/auth_button.dart';
 
-class ConfirmEmailPreviewScreen extends StatefulWidget {
+class ConfirmEmailPreviewScreen extends ConsumerStatefulWidget {
   const ConfirmEmailPreviewScreen({super.key, required this.email});
 
   final String email;
 
   @override
-  State<ConfirmEmailPreviewScreen> createState() =>
+  ConsumerState<ConfirmEmailPreviewScreen> createState() =>
       _ConfirmEmailPreviewScreenState();
 }
 
-class _ConfirmEmailPreviewScreenState extends State<ConfirmEmailPreviewScreen>
+class _ConfirmEmailPreviewScreenState
+    extends ConsumerState<ConfirmEmailPreviewScreen>
     with SingleTickerProviderStateMixin {
   static const _previewCode = '123456';
 
@@ -33,7 +37,6 @@ class _ConfirmEmailPreviewScreenState extends State<ConfirmEmailPreviewScreen>
   int _remaining = 60;
   int _tries = 3;
   bool _complete = false;
-  bool _backPressed = false;
   String? _error;
 
   @override
@@ -184,8 +187,15 @@ class _ConfirmEmailPreviewScreenState extends State<ConfirmEmailPreviewScreen>
 
   Widget _codeFields(ColorScheme colors) {
     final textScale = MediaQuery.textScalerOf(context);
-    final fieldWidth = math.max(46.0, textScale.scale(24) + 20);
-    final fieldHeight = math.max(62.0, textScale.scale(24) + 24);
+    final largerTargets = ref.watch(largerTouchTargetsProvider);
+    final fieldWidth = math.max(
+      largerTargets ? 72.0 : 46.0,
+      textScale.scale(24) + 20,
+    );
+    final fieldHeight = math.max(
+      largerTargets ? 72.0 : 62.0,
+      textScale.scale(24) + 24,
+    );
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
     return AnimatedBuilder(
@@ -323,43 +333,7 @@ class _ConfirmEmailPreviewScreenState extends State<ConfirmEmailPreviewScreen>
                       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                       child: Row(
                         children: [
-                          Tooltip(
-                            message: 'Back',
-                            child: Material(
-                              color: colors.surface,
-                              shape: const CircleBorder(),
-                              clipBehavior: Clip.antiAlias,
-                              child: InkWell(
-                                customBorder: const CircleBorder(),
-                                splashFactory: NoSplash.splashFactory,
-                                highlightColor: Colors.transparent,
-                                onTap: _back,
-                                onHighlightChanged: (value) {
-                                  setState(() => _backPressed = value);
-                                },
-                                child: SizedBox.square(
-                                  dimension: 48,
-                                  child: Semantics(
-                                    label: 'Back',
-                                    button: true,
-                                    child: AnimatedScale(
-                                      scale: _backPressed && !reduceMotion
-                                          ? 0.9
-                                          : 1,
-                                      duration: reduceMotion
-                                          ? Duration.zero
-                                          : const Duration(milliseconds: 100),
-                                      child: Icon(
-                                        Icons.chevron_left_rounded,
-                                        size: 28,
-                                        color: colors.onSurface,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                          AppBackButton(onPressed: _back),
                           const Spacer(),
                           TextButton(
                             onPressed: showPreviewInfo,

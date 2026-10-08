@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_back_button.dart';
 import 'onboarding_artwork.dart';
 import 'onboarding_motion.dart';
 
@@ -220,9 +221,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         if (_page > 0)
-                          _AnimatedBackChevron(
+                          AppBackButton(
                             tooltip: strings.onboardingBack,
-                            reduceMotion: _reduceMotion,
                             onPressed: _busy
                                 ? null
                                 : () => _changePage(_page - 1),
@@ -297,11 +297,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       width: double.infinity,
                       child: FilledButton(
                         style: FilledButton.styleFrom(
-                          minimumSize: const Size.fromHeight(60),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 18,
-                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -325,72 +320,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     ),
                   ),
                 ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AnimatedBackChevron extends StatefulWidget {
-  const _AnimatedBackChevron({
-    required this.tooltip,
-    required this.reduceMotion,
-    required this.onPressed,
-  });
-
-  final String tooltip;
-  final bool reduceMotion;
-  final VoidCallback? onPressed;
-
-  @override
-  State<_AnimatedBackChevron> createState() => _AnimatedBackChevronState();
-}
-
-class _AnimatedBackChevronState extends State<_AnimatedBackChevron> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final enabled = widget.onPressed != null;
-
-    return Tooltip(
-      message: widget.tooltip,
-      child: SizedBox.square(
-        dimension: 48,
-        child: Material(
-          color: Colors.white,
-          shape: const CircleBorder(),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: widget.onPressed,
-            onHighlightChanged: (pressed) {
-              if (_pressed != pressed) {
-                setState(() => _pressed = pressed);
-              }
-            },
-            child: Semantics(
-              button: true,
-              enabled: enabled,
-              label: widget.tooltip,
-              child: Center(
-                child: AnimatedScale(
-                  scale: _pressed && enabled && !widget.reduceMotion ? 0.88 : 1,
-                  duration: widget.reduceMotion
-                      ? Duration.zero
-                      : const Duration(milliseconds: 100),
-                  curve: Curves.easeOut,
-                  child: Icon(
-                    Directionality.of(context) == TextDirection.rtl
-                        ? Icons.chevron_right_rounded
-                        : Icons.chevron_left_rounded,
-                    size: 28,
-                    color: enabled ? AppColors.ink : AppColors.muted,
-                  ),
-                ),
               ),
             ),
           ),
