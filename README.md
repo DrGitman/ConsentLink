@@ -31,7 +31,7 @@ ConsentLink helps researchers turn a research proposal into a clear, approved co
 - Admins upload a template; the app reads its fonts, spacing and margins and clips the logo from a PDF
 - Dynamic theming per institution (UNAM, NUST, IUM, Welwitchia and more), with ConsentLink green as the default
 
-**Languages:** English, Afrikaans, Deutsch, Otjiherero, Khoekhoegowab, Rukwangali and Silozi.
+**Languages:** English, Afrikaans, Deutsch, Otjiherero, Khoekhoegowab, Rukwangali, Silozi and Oshiwambo.
 AI translations into local languages are always checked by a fluent human reviewer before use.
 
 **Uploads:** executables, scripts and macro-enabled documents are blocked.
