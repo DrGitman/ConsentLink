@@ -43,25 +43,28 @@ class AppShell extends StatelessWidget {
         final useSideRail = constraints.maxWidth >= 900;
 
         return Scaffold(
-          appBar: AppBar(
-            title: AnimatedSwitcher(
-              duration: reduceMotion ? AppMotion.reduced : AppMotion.base,
-              layoutBuilder: (currentChild, previousChildren) {
-                return Stack(
-                  alignment: AlignmentDirectional.centerStart,
-                  children: [
-                    for (final child in previousChildren)
-                      ExcludeSemantics(child: child),
-                    if (currentChild != null) currentChild,
-                  ],
-                );
-              },
-              child: Text(
-                destinations[selectedIndex].$1,
-                key: ValueKey('shell-title-$selectedIndex'),
-              ),
-            ),
-          ),
+          // Home and Projects draw their own Figma headers.
+          appBar: selectedIndex <= 1
+              ? null
+              : AppBar(
+                  title: AnimatedSwitcher(
+                    duration: reduceMotion ? AppMotion.reduced : AppMotion.base,
+                    layoutBuilder: (currentChild, previousChildren) {
+                      return Stack(
+                        alignment: AlignmentDirectional.centerStart,
+                        children: [
+                          for (final child in previousChildren)
+                            ExcludeSemantics(child: child),
+                          if (currentChild != null) currentChild,
+                        ],
+                      );
+                    },
+                    child: Text(
+                      destinations[selectedIndex].$1,
+                      key: ValueKey('shell-title-$selectedIndex'),
+                    ),
+                  ),
+                ),
           body: SafeArea(
             child: Row(
               children: [
