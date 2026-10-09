@@ -287,6 +287,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                       : Colors.white,
                                   onPressed: () => action.$1 == 'mic'
                                       ? context.go('/capture')
+                                      : action.$1 == 'sparkle'
+                                      ? context.push('/new-consent')
                                       : _notice(
                                           action.$2,
                                           '${action.$2} will be connected in its feature task.',

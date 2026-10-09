@@ -57,11 +57,8 @@ class ProjectsScreen extends ConsumerWidget {
                     ProjectCircleButton(
                       icon: 'projects/plus',
                       label: 'New project',
-                      onPressed: () => showProjectNotice(
-                        context,
-                        'New project',
-                        'Creating projects will be connected in the New consent (AI drafting) task.',
-                      ),
+                      // A new project starts from its consent form (04.1).
+                      onPressed: () => context.push('/new-consent'),
                     ),
                   ],
                 ),

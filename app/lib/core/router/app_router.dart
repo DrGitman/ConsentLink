@@ -5,6 +5,9 @@ import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/preferences/language_accessibility_screen.dart';
 import '../../features/shell/app_shell.dart';
 import '../../features/dashboard/dashboard_screen.dart';
+import '../../features/new_consent/drafting_screen.dart';
+import '../../features/new_consent/review_draft_screen.dart';
+import '../../features/new_consent/upload_proposal_screen.dart';
 import '../../features/projects/project_detail_screen.dart';
 import '../../features/projects/project_transition.dart';
 import '../../features/projects/projects_screen.dart';
@@ -276,6 +279,30 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
+      ),
+      // New consent (Figma 04.1–04.4): full screen, outside the tab shell.
+      GoRoute(
+        path: '/new-consent',
+        pageBuilder: (context, state) => projectPushPage(
+          key: state.pageKey,
+          child: const UploadProposalScreen(),
+        ),
+        routes: [
+          GoRoute(
+            path: 'drafting',
+            pageBuilder: (context, state) => projectPushPage(
+              key: state.pageKey,
+              child: const DraftingScreen(),
+            ),
+          ),
+          GoRoute(
+            path: 'review',
+            pageBuilder: (context, state) => projectPushPage(
+              key: state.pageKey,
+              child: const ReviewDraftScreen(),
+            ),
+          ),
+        ],
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
