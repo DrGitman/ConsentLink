@@ -7,10 +7,9 @@ void main() {
   testWidgets('the ConsentLink app opens on Home', (tester) async {
     await pumpConsentLinkApp(tester);
 
-    final titleFinder = find.byKey(const ValueKey('shell-title-0'));
-
-    expect(titleFinder, findsOneWidget);
-    expect(tester.widget<Text>(titleFinder).data, 'Home');
+    expect(find.byKey(const ValueKey('shell-title-0')), findsNothing);
+    expect(find.text('Consents collected'), findsOneWidget);
+    expect(find.text('No projects yet'), findsOneWidget);
     expect(find.byKey(const ValueKey('page-title-home')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

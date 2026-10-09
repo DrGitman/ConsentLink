@@ -70,6 +70,8 @@ flutter:
   generate: true
 
   assets:
+    - assets/icons/dashboard/
+    - assets/icons/projects/
     - assets/icons/offline/
     - assets/icons/navigation/
     - assets/icons/accessibility/

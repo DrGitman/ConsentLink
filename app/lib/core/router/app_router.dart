@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/preferences/language_accessibility_screen.dart';
 import '../../features/shell/app_shell.dart';
+import '../../features/dashboard/dashboard_screen.dart';
+import '../../features/projects/project_detail_screen.dart';
+import '../../features/projects/project_transition.dart';
+import '../../features/projects/projects_screen.dart';
 import '../../features/shell/shell_page.dart';
 import '../../features/splash/splash_screen.dart';
 import '../l10n/app_localizations.dart';
@@ -281,12 +285,35 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           for (final destination in ShellDestination.values)
             StatefulShellBranch(
               routes: [
-                GoRoute(
-                  path: '/${destination.name}',
-                  builder: (context, state) {
-                    return ShellPage(destination: destination);
-                  },
-                ),
+                if (destination == ShellDestination.projects)
+                  GoRoute(
+                    path: '/projects',
+                    pageBuilder: (context, state) => projectPushPage(
+                      key: state.pageKey,
+                      child: const ProjectsScreen(),
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: ':id',
+                        pageBuilder: (context, state) => projectPushPage(
+                          key: state.pageKey,
+                          child: ProjectDetailScreen(
+                            projectId: state.pathParameters['id']!,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  GoRoute(
+                    path: '/${destination.name}',
+                    builder: (context, state) {
+                      if (destination == ShellDestination.home) {
+                        return const DashboardScreen();
+                      }
+                      return ShellPage(destination: destination);
+                    },
+                  ),
               ],
             ),
         ],
