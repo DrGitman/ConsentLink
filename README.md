@@ -132,10 +132,13 @@ Any service can be switched back to its fake by setting its flag to `false`.
 ### 4. Run the Python service
 ```bash
 cd service
-python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
-uvicorn app.main:app --reload      # http://localhost:8000/docs
+py -m venv .venv
+.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.venv\Scripts\python.exe -m uvicorn app.main:app --reload
+```
+Open http://localhost:8000/health to check the service or http://localhost:8000/docs for the API documentation. Run the service tests from `service/` with:
+```bash
+.venv\Scripts\python.exe -m pytest
 ```
 
 ### 5. Local Supabase (optional)
