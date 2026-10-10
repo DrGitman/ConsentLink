@@ -130,13 +130,15 @@ flutter run -t lib/main_demo.dart \
 Any service can be switched back to its fake by setting its flag to `false`.
 
 ### 4. Run the Python service
-```bash
+```powershell
 cd service
 py -m venv .venv
 .venv\Scripts\python.exe -m pip install -e ".[dev]"
+$env:SUPABASE_JWT_SECRET = "<local signing secret provided by P2>"
+$env:SUPABASE_URL = "<your Supabase project URL>"
 .venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
-Open http://localhost:8000/health to check the service or http://localhost:8000/docs for the API documentation. Run the service tests from `service/` with:
+The upload scanner is `POST /v1/files/scan` and accepts one multipart `file` up to 25 MB. It checks PDF, DOCX, ODT, TXT and PNG/JPEG/TIFF scan signatures, rejecting unsupported types, executables, scripts and macro-enabled documents. Requests require a Supabase JWT bearer token; the service does not persist uploaded files. Open http://localhost:8000/health to check the service or http://localhost:8000/docs for the API documentation. Run the service tests from `service/` with:
 ```bash
 .venv\Scripts\python.exe -m pytest
 ```
