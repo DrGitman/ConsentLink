@@ -136,9 +136,16 @@ py -m venv .venv
 .venv\Scripts\python.exe -m pip install -e ".[dev]"
 $env:SUPABASE_JWT_SECRET = "<local signing secret provided by P2>"
 $env:SUPABASE_URL = "<your Supabase project URL>"
+$env:SUPABASE_ANON_KEY = "<your Supabase anon key>"
 .venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
-The upload scanner is `POST /v1/files/scan` and accepts one multipart `file` up to 25 MB. It checks PDF, DOCX, ODT, TXT and PNG/JPEG/TIFF scan signatures, rejecting unsupported types, executables, scripts and macro-enabled documents. Requests require a Supabase JWT bearer token; the service does not persist uploaded files. Open http://localhost:8000/health to check the service or http://localhost:8000/docs for the API documentation. Run the service tests from `service/` with:
+The service uses `SUPABASE_JWT_SECRET` to verify bearer tokens and `SUPABASE_URL` plus `SUPABASE_ANON_KEY` to access private Supabase Storage with the caller's JWT. Never use a service-role key in client requests.
+
+`POST /v1/files/scan` accepts one multipart `file` up to 25 MB. It checks PDF, DOCX, ODT, TXT and PNG/JPEG/TIFF signatures, rejecting unsupported types, executables, scripts and macro-enabled documents. Files are checked in memory and not saved.
+
+`POST /v1/templates/analyse` accepts JSON with `storage_path` in `bucket/object/path` format and returns extracted style properties, confidence values and PDF logo candidates. `POST /v1/logos/extract` accepts `storage_path`, a 1-based PDF `page`, and an optional `crop` array of four page coordinates. The extracted PNG is written to the same bucket under `logos/`; both endpoints use the caller's JWT for Storage access.
+
+PDF and DOCX style extraction is supported. Logo candidate detection and extraction currently require PDF input. PDF templates are limited to 60 pages, and Supabase Storage operations have a 20-second timeout. Open http://localhost:8000/health to check the service or http://localhost:8000/docs for API documentation. Run the service tests from `service/` with:
 ```bash
 .venv\Scripts\python.exe -m pytest
 ```
@@ -225,6 +232,8 @@ Refer to screens by their number in issues and pull requests.
 ## Acknowledgements
 
 Builds on *ConsentLink: A Multilingual Digital Informed Consent Application for Research Data Collection in Namibia* (Ndamonako & Indongo, 2026, NUST).
+
+AI assistance was used to help resolve conflicts in the repository.
 
 ## License
 

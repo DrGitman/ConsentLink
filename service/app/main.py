@@ -1,14 +1,17 @@
 import os
 from typing import Annotated
+from uuid import uuid4
 
 import jwt
-from fastapi.exceptions import RequestValidationError
 from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+from app import storage
 from app.file_safety import MAX_FILE_SIZE, scan_file
+from app.template_analysis import analyse_template, extract_logo
 
 app = FastAPI(title="ConsentLink Service")
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -22,11 +25,56 @@ class FileScanResponse(BaseModel):
     reasons: list[str]
 
 
+class TemplateAnalyseRequest(BaseModel):
+    storage_path: str
+
+
+class LogoExtractRequest(BaseModel):
+    storage_path: str
+    page: int = Field(ge=1, le=60)
+    crop: list[float] | None = Field(default=None, min_length=4, max_length=4)
+
+
+class HeadingStyle(BaseModel):
+    font: str | None
+    size_pt: float | None
+    bold: bool
+
+
+class StyleSpec(BaseModel):
+    font: str | None
+    size_pt: float | None
+    heading: HeadingStyle
+    line_spacing: float | None
+    margins_cm: list[float]
+    header: str | None
+    footer: str | None
+    logo_path: str | None
+    columns: list[str]
+
+
+class LogoCandidateResponse(BaseModel):
+    page: int
+    bbox: list[float]
+    confidence: float
+
+
+class TemplateAnalyseResponse(StyleSpec):
+    confidence: dict[str, float]
+    logo_candidates: list[LogoCandidateResponse]
+
+
+class LogoExtractResponse(BaseModel):
+    png_path: str
+    bbox: list[float]
+    confidence: float
+
+
 def require_supabase_user(
     credentials: Annotated[
         HTTPAuthorizationCredentials | None, Depends(bearer_scheme)
     ],
-) -> None:
+) -> HTTPAuthorizationCredentials:
     if credentials is None:
         raise HTTPException(
             status_code=401,
@@ -67,6 +115,7 @@ def require_supabase_user(
             status_code=403,
             detail={"code": "forbidden", "message": "An authenticated user is required."},
         )
+    return credentials
 
 
 @app.get("/health")
@@ -102,6 +151,51 @@ async def scan_uploaded_file(file: Annotated[UploadFile, File()]) -> FileScanRes
         detected_type=result.detected_type,
         size_mb=round(len(content) / (1024 * 1024), 3),
         reasons=result.reasons,
+    )
+
+
+@app.post("/v1/templates/analyse", response_model=TemplateAnalyseResponse)
+async def analyse_template_endpoint(
+    request: TemplateAnalyseRequest,
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(require_supabase_user)],
+) -> TemplateAnalyseResponse:
+    stored_object, content = await storage.download_storage_object(
+        request.storage_path, credentials.credentials
+    )
+    analysis = analyse_template(stored_object.name, content)
+    return TemplateAnalyseResponse(
+        **analysis.style_spec,
+        confidence=analysis.confidence,
+        logo_candidates=[
+            LogoCandidateResponse(
+                page=candidate.page,
+                bbox=candidate.bbox,
+                confidence=candidate.confidence,
+            )
+            for candidate in analysis.logo_candidates
+        ],
+    )
+
+
+@app.post("/v1/logos/extract", response_model=LogoExtractResponse)
+async def extract_logo_endpoint(
+    request: LogoExtractRequest,
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(require_supabase_user)],
+) -> LogoExtractResponse:
+    stored_object, content = await storage.download_storage_object(
+        request.storage_path, credentials.credentials
+    )
+    logo = extract_logo(stored_object.name, content, request.page, request.crop)
+    logo_path = await storage.upload_storage_object(
+        stored_object,
+        f"logos/{uuid4().hex}.png",
+        logo.png,
+        credentials.credentials,
+    )
+    return LogoExtractResponse(
+        png_path=logo_path,
+        bbox=logo.bbox,
+        confidence=logo.confidence,
     )
 
 
