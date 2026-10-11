@@ -73,6 +73,7 @@ def configure_test_auth(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("SUPABASE_URL", raising=False)
     monkeypatch.setenv("SUPABASE_URL", SUPABASE_URL)
     monkeypatch.setenv("SUPABASE_ANON_KEY", SUPABASE_ANON_KEY)
+    monkeypatch.setenv("SUPABASE_TEMPLATE_BUCKET", "templates")
 
 
 def mock_storage_api(
@@ -194,6 +195,149 @@ def test_analyse_endpoint_uses_caller_jwt_for_storage(
     assert response.json()["logo_candidates"]
 
 
+@pytest.mark.parametrize(
+    ("filename", "contents", "detected_type"),
+    [
+        ("sample.pdf", make_pdf(), "application/pdf"),
+        (
+            "sample.docx",
+            make_docx(),
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ),
+    ],
+    ids=["pdf", "docx"],
+)
+def test_upload_endpoint_scans_analyses_and_stores_with_caller_jwt(
+    monkeypatch: pytest.MonkeyPatch,
+    filename: str,
+    contents: bytes,
+    detected_type: str,
+) -> None:
+    headers = auth_headers()
+    expected_token = headers["Authorization"]
+    uploaded: dict[str, Any] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.method == "POST"
+        assert request.headers["authorization"] == expected_token
+        assert request.headers["apikey"] == SUPABASE_ANON_KEY
+        assert request.headers["content-type"] == detected_type
+        uploaded.update(path=request.url.path, content=request.content)
+        return httpx.Response(200, json={"Key": request.url.path}, request=request)
+
+    mock_storage_api(monkeypatch, handler)
+    response = client.post(
+        "/v1/templates/upload",
+        files={"file": (filename, contents)},
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    result = response.json()
+    assert result["detected_type"] == detected_type
+    assert result["storage_path"].startswith("templates/uploads/")
+    assert result["font"]
+    assert "confidence" in result
+    assert uploaded["path"].startswith("/storage/v1/object/templates/uploads/")
+    assert uploaded["content"] == contents
+
+
+def test_upload_endpoint_rejects_unsafe_file_without_storage_write(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail_if_storage_called(*args: Any, **kwargs: Any) -> str:
+        pytest.fail("Unsafe uploads must not be sent to Storage.")
+
+    monkeypatch.setattr(storage, "upload_storage_object", fail_if_storage_called)
+    response = client.post(
+        "/v1/templates/upload",
+        files={"file": ("unsafe.exe", b"MZ\x90\x00")},
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "unsafe_template"
+    assert "executable" in response.json()["reasons"]
+
+
+def test_upload_endpoint_rejects_non_template_without_storage_write(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail_if_storage_called(*args: Any, **kwargs: Any) -> str:
+        pytest.fail("Unsupported templates must not be sent to Storage.")
+
+    monkeypatch.setattr(storage, "upload_storage_object", fail_if_storage_called)
+    response = client.post(
+        "/v1/templates/upload",
+        files={"file": ("scan.png", b"\x89PNG\r\n\x1a\nimage bytes")},
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "unsupported_template"
+
+
+def test_upload_endpoint_rejects_oversized_file_without_storage_write(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail_if_storage_called(*args: Any, **kwargs: Any) -> str:
+        pytest.fail("Oversized templates must not be sent to Storage.")
+
+    monkeypatch.setattr(storage, "upload_storage_object", fail_if_storage_called)
+    response = client.post(
+        "/v1/templates/upload",
+        files={"file": ("sample.pdf", b"%PDF-" + b"x" * (25 * 1024 * 1024))},
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 413
+    assert response.json()["code"] == "file_too_large"
+
+
+def test_upload_endpoint_requires_authentication() -> None:
+    response = client.post(
+        "/v1/templates/upload",
+        files={"file": ("sample.pdf", make_pdf())},
+    )
+
+    assert response.status_code == 401
+    assert response.json()["code"] == "unauthorized"
+
+
+def test_upload_endpoint_requires_template_bucket_configuration(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("SUPABASE_TEMPLATE_BUCKET")
+    response = client.post(
+        "/v1/templates/upload",
+        files={"file": ("sample.pdf", make_pdf())},
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 503
+    assert response.json()["code"] == "template_storage_not_configured"
+
+
+def test_upload_endpoint_reports_storage_permission_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(403, request=request)
+
+    mock_storage_api(monkeypatch, handler)
+    response = client.post(
+        "/v1/templates/upload",
+        files={"file": ("sample.pdf", make_pdf())},
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {
+        "code": "storage_forbidden",
+        "message": "The caller cannot access this storage object.",
+    }
+
+
 def test_analyse_endpoint_requires_authentication() -> None:
     response = client.post(
         "/v1/templates/analyse",
@@ -238,6 +382,52 @@ def test_extract_endpoint_writes_png_and_returns_storage_path(
     assert response.json()["bbox"] == [48.0, 40.0, 150.0, 96.0]
     assert uploaded["path"].startswith("/storage/v1/object/templates/logos/")
     assert uploaded["content"].startswith(b"\x89PNG\r\n\x1a\n")
+
+
+def test_uploaded_template_path_can_be_used_for_logo_extraction(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    headers = auth_headers()
+    expected_token = headers["Authorization"]
+    stored_objects: dict[str, bytes] = {}
+    upload_calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal upload_calls
+        assert request.headers["authorization"] == expected_token
+        assert request.headers["apikey"] == SUPABASE_ANON_KEY
+        if request.method == "GET":
+            object_path = request.url.path.removeprefix(
+                "/storage/v1/object/authenticated/"
+            )
+            if object_path not in stored_objects:
+                return httpx.Response(404, request=request)
+            return httpx.Response(200, content=stored_objects[object_path], request=request)
+        object_path = request.url.path.removeprefix("/storage/v1/object/")
+        stored_objects[object_path] = request.content
+        upload_calls += 1
+        return httpx.Response(200, json={"Key": object_path}, request=request)
+
+    mock_storage_api(monkeypatch, handler)
+    upload_response = client.post(
+        "/v1/templates/upload",
+        files={"file": ("sample.pdf", make_pdf())},
+        headers=headers,
+    )
+    assert upload_response.status_code == 200
+    source_path = upload_response.json()["storage_path"]
+
+    logo_response = client.post(
+        "/v1/logos/extract",
+        json={"storage_path": source_path, "page": 1, "crop": [48, 40, 150, 96]},
+        headers=headers,
+    )
+
+    assert logo_response.status_code == 200
+    logo_path = logo_response.json()["png_path"]
+    assert logo_path.startswith("templates/logos/")
+    assert stored_objects[logo_path].startswith(b"\x89PNG\r\n\x1a\n")
+    assert upload_calls == 2
 
 
 def test_analyse_endpoint_rejects_missing_storage_path() -> None:

@@ -137,15 +137,16 @@ py -m venv .venv
 $env:SUPABASE_JWT_SECRET = "<local signing secret provided by P2>"
 $env:SUPABASE_URL = "<your Supabase project URL>"
 $env:SUPABASE_ANON_KEY = "<your Supabase anon key>"
+$env:SUPABASE_TEMPLATE_BUCKET = "<private template bucket with caller upload permission>"
 .venv\Scripts\python.exe -m uvicorn app.main:app --reload
 ```
-The service uses `SUPABASE_JWT_SECRET` to verify bearer tokens and `SUPABASE_URL` plus `SUPABASE_ANON_KEY` to access private Supabase Storage with the caller's JWT. Never use a service-role key in client requests.
+The service uses `SUPABASE_JWT_SECRET` to verify bearer tokens and `SUPABASE_URL` plus `SUPABASE_ANON_KEY` to access private Supabase Storage with the caller's JWT. `SUPABASE_TEMPLATE_BUCKET` must name a private bucket whose Storage policies allow the signed-in caller to upload. Never use a service-role key in client requests.
 
 `POST /v1/files/scan` accepts one multipart `file` up to 25 MB. It checks PDF, DOCX, ODT, TXT and PNG/JPEG/TIFF signatures, rejecting unsupported types, executables, scripts and macro-enabled documents. Files are checked in memory and not saved.
 
 This endpoint is for templates (they are uploaded to Storage anyway). Research proposals are never uploaded: the app only checks their type and size on the phone before on-device drafting.
 
-`POST /v1/templates/analyse` accepts JSON with `storage_path` in `bucket/object/path` format and returns extracted style properties, confidence values and PDF logo candidates. `POST /v1/logos/extract` accepts `storage_path`, a 1-based PDF `page`, and an optional `crop` array of four page coordinates. The extracted PNG is written to the same bucket under `logos/`; both endpoints use the caller's JWT for Storage access.
+`POST /v1/templates/upload` accepts one multipart PDF or DOCX file up to 25 MB. It scans and analyzes the file before uploading it to the configured bucket with the caller's JWT, then returns its `storage_path`, detected style properties, confidence values, and PDF logo candidates. Unsafe, unsupported, or invalid templates are rejected without being stored. Pass the returned `storage_path` to `POST /v1/logos/extract` with a 1-based PDF `page` and optional `crop` array of four page coordinates; the extracted PNG is written to the same bucket under `logos/`. `POST /v1/templates/analyse` remains available for objects already in Storage and accepts JSON with `storage_path` in `bucket/object/path` format. All Storage operations use the caller's JWT.
 
 PDF and DOCX style extraction is supported. Logo candidate detection and extraction currently require PDF input. PDF templates are limited to 60 pages, and Supabase Storage operations have a 20-second timeout. Open http://localhost:8000/health to check the service or http://localhost:8000/docs for API documentation. Run the service tests from `service/` with:
 ```bash
