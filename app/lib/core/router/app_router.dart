@@ -5,6 +5,8 @@ import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/preferences/language_accessibility_screen.dart';
 import '../../features/shell/app_shell.dart';
 import '../../features/dashboard/dashboard_screen.dart';
+import '../../features/form_builder/form_builder_screen.dart';
+import '../../features/form_builder/template_style_screen.dart';
 import '../../features/new_consent/drafting_screen.dart';
 import '../../features/new_consent/review_draft_screen.dart';
 import '../../features/new_consent/upload_proposal_screen.dart';
@@ -300,6 +302,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             pageBuilder: (context, state) => projectPushPage(
               key: state.pageKey,
               child: const ReviewDraftScreen(),
+            ),
+          ),
+          GoRoute(
+            path: 'form',
+            pageBuilder: (context, state) => projectPushPage(
+              key: state.pageKey,
+              child: const FormBuilderScreen(),
+            ),
+          ),
+          GoRoute(
+            path: 'template',
+            pageBuilder: (context, state) => projectPushPage(
+              key: state.pageKey,
+              child: const TemplateStyleScreen(),
             ),
           ),
         ],

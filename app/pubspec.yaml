@@ -73,6 +73,7 @@ flutter:
     - assets/icons/dashboard/
     - assets/icons/projects/
     - assets/icons/consent/
+    - assets/icons/form/
     - assets/icons/offline/
     - assets/icons/navigation/
     - assets/icons/accessibility/
