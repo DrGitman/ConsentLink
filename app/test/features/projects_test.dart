@@ -35,7 +35,7 @@ Future<void> pumpProjects(
         ],
       ),
       GoRoute(
-        path: '/capture',
+        path: '/field-capture',
         builder: (context, state) => const Text('Capture placeholder'),
       ),
     ],

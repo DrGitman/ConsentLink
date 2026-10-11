@@ -5,6 +5,12 @@ import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/preferences/language_accessibility_screen.dart';
 import '../../features/shell/app_shell.dart';
 import '../../features/dashboard/dashboard_screen.dart';
+import '../../features/field_capture/answer_screen.dart';
+import '../../features/field_capture/choices_screen.dart';
+import '../../features/field_capture/done_screen.dart';
+import '../../features/field_capture/hand_over_screen.dart';
+import '../../features/field_capture/read_consent_screen.dart';
+import '../../features/field_capture/sign_screen.dart';
 import '../../features/form_builder/form_builder_screen.dart';
 import '../../features/form_builder/template_style_screen.dart';
 import '../../features/new_consent/drafting_screen.dart';
@@ -317,6 +323,49 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               key: state.pageKey,
               child: const TemplateStyleScreen(),
             ),
+          ),
+        ],
+      ),
+      // Field capture (Figma 06.1–06.6): full screen, outside the tab shell.
+      GoRoute(
+        path: '/field-capture',
+        pageBuilder: (context, state) => projectPushPage(
+          key: state.pageKey,
+          child: HandOverScreen(
+            projectId: state.uri.queryParameters['project'],
+          ),
+        ),
+        routes: [
+          GoRoute(
+            path: 'read',
+            pageBuilder: (context, state) => projectPushPage(
+              key: state.pageKey,
+              child: const ReadConsentScreen(),
+            ),
+          ),
+          GoRoute(
+            path: 'answer',
+            pageBuilder: (context, state) => projectPushPage(
+              key: state.pageKey,
+              child: const AnswerScreen(),
+            ),
+          ),
+          GoRoute(
+            path: 'choices',
+            pageBuilder: (context, state) => projectPushPage(
+              key: state.pageKey,
+              child: const ChoicesScreen(),
+            ),
+          ),
+          GoRoute(
+            path: 'sign',
+            pageBuilder: (context, state) =>
+                projectPushPage(key: state.pageKey, child: const SignScreen()),
+          ),
+          GoRoute(
+            path: 'done',
+            pageBuilder: (context, state) =>
+                projectPushPage(key: state.pageKey, child: const DoneScreen()),
           ),
         ],
       ),

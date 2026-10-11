@@ -350,7 +350,7 @@ class _StartCapture extends ConsumerWidget {
             radius: 40,
             color: primary,
             onPressed: enabled
-                ? () => context.go('/capture')
+                ? () => context.push('/field-capture?project=${project.id}')
                 : () => showProjectNotice(
                     context,
                     'Start field capture',
