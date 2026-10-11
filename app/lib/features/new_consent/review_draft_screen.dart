@@ -19,29 +19,11 @@ const _aiInk = Color(0xFF4B4FD8);
 const _warnFill = Color(0xFFFEF4E2);
 const _warnInk = Color(0xFF7A4700);
 
-/// Audit line such as "Logged: approved by Ndapewa, 9 Oct 14:12".
-String approvalLog(WidgetRef ref, String verb) {
+/// Name recorded with each approval (approvedBy in the Section contract).
+String approverName(WidgetRef ref) {
   final preview = ref.read(newConsentPreviewProvider);
   final first = ref.read(researcherDraftProvider).first.trim();
-  final name = first.isNotEmpty ? first : (preview ? 'Ndapewa' : 'you');
-  final now = DateTime.now();
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  final time =
-      '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-  return 'Logged: $verb by $name, ${now.day} ${months[now.month - 1]} $time';
+  return first.isNotEmpty ? first : (preview ? 'Ndapewa' : 'you');
 }
 
 /// Figma Screen Artboards 04.3 Review AI draft.
@@ -71,9 +53,9 @@ class _ReviewDraftScreenState extends ConsumerState<ReviewDraftScreen> {
   void approve(DraftSection section) {
     ref
         .read(consentDraftProvider.notifier)
-        .approve(section.id, approvalLog(ref, 'approved'));
+        .approve(section.key, approverName(ref));
     setState(() {
-      _flash = section.id;
+      _flash = section.key;
       _toast = section;
       _toastKey++;
     });
@@ -87,7 +69,7 @@ class _ReviewDraftScreenState extends ConsumerState<ReviewDraftScreen> {
     final section = _toast;
     if (section == null) return;
     _toastTimer?.cancel();
-    ref.read(consentDraftProvider.notifier).undo(section.id);
+    ref.read(consentDraftProvider.notifier).undo(section.key);
     setState(() => _toast = null);
   }
 
@@ -99,7 +81,7 @@ class _ReviewDraftScreenState extends ConsumerState<ReviewDraftScreen> {
 
   Future<void> _why(DraftSection section) => showWhySheet(
     context,
-    sectionId: section.id,
+    sectionKey: section.key,
     onApprove: () => approve(section),
   );
 
@@ -112,13 +94,13 @@ class _ReviewDraftScreenState extends ConsumerState<ReviewDraftScreen> {
       sheetAnimationStyle: sheetMotion(context),
       builder: (context) => _EditSheet(section: section),
     );
-    if (!mounted || saved == null || saved.isEmpty || saved == section.body) {
+    if (!mounted || saved == null || saved.isEmpty || saved == section.text) {
       return;
     }
     ref
         .read(consentDraftProvider.notifier)
-        .edit(section.id, saved, approvalLog(ref, 'edited'));
-    setState(() => _flash = section.id);
+        .edit(section.key, saved, approverName(ref));
+    setState(() => _flash = section.key);
   }
 
   @override
@@ -127,8 +109,8 @@ class _ReviewDraftScreenState extends ConsumerState<ReviewDraftScreen> {
     final primary = Theme.of(context).colorScheme.primary;
     final large = ref.watch(largerTouchTargetsProvider);
     final sections = draft.sections;
-    final added = sections.where((s) => s.id == 'complaints').toList();
-    final base = sections.where((s) => s.id != 'complaints').toList();
+    final added = sections.where((s) => s.key == 'contacts_ethics').toList();
+    final base = sections.where((s) => s.key != 'contacts_ethics').toList();
     final shown = [
       ...base.take(_showAll ? base.length : _visibleCount),
       ...added,
@@ -197,6 +179,7 @@ class _ReviewDraftScreenState extends ConsumerState<ReviewDraftScreen> {
                                 child: draft.missingElement
                                     ? _Checklist(
                                         key: const ValueKey('missing'),
+                                        missing: draft.missingKeys,
                                         onTap: ref
                                             .read(consentDraftProvider.notifier)
                                             .addMissingElement,
@@ -220,14 +203,14 @@ class _ReviewDraftScreenState extends ConsumerState<ReviewDraftScreen> {
                                   children: [
                                     for (final section in shown)
                                       Padding(
-                                        key: ValueKey(section.id),
+                                        key: ValueKey(section.key),
                                         padding: const EdgeInsets.only(
                                           bottom: 10,
                                         ),
                                         child: RiseIn(
                                           child: _SectionCard(
                                             section: section,
-                                            flash: _flash == section.id,
+                                            flash: _flash == section.key,
                                             onFlashDone: () =>
                                                 setState(() => _flash = null),
                                             onWhy: () => _why(section),
@@ -297,11 +280,7 @@ class _ReviewDraftScreenState extends ConsumerState<ReviewDraftScreen> {
                 _Footer(
                   done: draft.doneCount,
                   allApproved: draft.allApproved,
-                  onContinue: () => showProjectNotice(
-                    context,
-                    'Form builder',
-                    'All $requiredElementCount sections are approved. The Form builder (04.5) is the next task.',
-                  ),
+                  onContinue: () => context.push('/new-consent/form'),
                 ),
               ],
             ),
@@ -380,44 +359,50 @@ class _LanguageChip extends StatelessWidget {
 }
 
 class _Checklist extends StatelessWidget {
-  const _Checklist({super.key, required this.onTap});
+  const _Checklist({super.key, required this.missing, required this.onTap});
+  final List<String> missing;
   final VoidCallback onTap;
   @override
-  Widget build(BuildContext context) => DashboardAction(
-    label: '9 of 10 required elements found. Add the complaints contact.',
-    color: _warnFill,
-    onPressed: onTap,
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const DashboardIcon('consent/alert', color: _warnInk),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${requiredElementCount - 1} of $requiredElementCount required elements found',
-                  style: dashboardText(
-                    15,
-                    color: _warnInk,
-                    weight: FontWeight.w600,
+  Widget build(BuildContext context) {
+    final found = requiredElementCount - missing.length;
+    final names = missing.map((k) => elementLabels[k] ?? k).join(', ');
+    return DashboardAction(
+      label:
+          '$found of $requiredElementCount required elements found. Missing: $names.',
+      color: _warnFill,
+      onPressed: onTap,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const DashboardIcon('consent/alert', color: _warnInk),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$found of $requiredElementCount required elements found',
+                    style: dashboardText(
+                      15,
+                      color: _warnInk,
+                      weight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Missing: complaints contact (ethics committee). Tap to add.',
-                  style: dashboardText(12, color: _warnInk),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    'Missing: $names. Tap to add.',
+                    style: dashboardText(12, color: _warnInk),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _ChecklistDone extends StatelessWidget {
@@ -516,7 +501,7 @@ class _SectionCard extends StatelessWidget {
     };
     // Figma "Approve section": border flashes green once (600 ms).
     return TweenAnimationBuilder<double>(
-      key: ValueKey('${section.id}-${section.status}-$flash'),
+      key: ValueKey('${section.key}-${section.status}-$flash'),
       tween: Tween(begin: flash && !reduced ? 1 : 0, end: 0),
       duration: const Duration(milliseconds: 600),
       curve: Curves.easeIn,
@@ -575,7 +560,7 @@ class _SectionCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               open
-                  ? section.source
+                  ? section.sourceLabel
                   : section.status == SectionStatus.edited
                   ? 'You edited this'
                   : 'Reading level: ${section.readingLevel}',
@@ -593,7 +578,7 @@ class _SectionCard extends StatelessWidget {
                       children: [
                         const SizedBox(height: 8),
                         Text(
-                          section.body,
+                          section.text,
                           style: dashboardText(
                             13,
                             color: AppColors.muted,
@@ -775,7 +760,7 @@ class _EditSheet extends StatefulWidget {
 }
 
 class _EditSheetState extends State<_EditSheet> {
-  late final _controller = TextEditingController(text: widget.section.body);
+  late final _controller = TextEditingController(text: widget.section.text);
 
   @override
   void dispose() {

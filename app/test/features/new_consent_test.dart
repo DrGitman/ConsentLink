@@ -220,7 +220,7 @@ void main() {
     await tester.pumpAndSettle();
     await tapVisible(tester, find.text('Why?'));
     expect(find.text('Why this text?'), findsOneWidget);
-    expect(find.text('FROM YOUR PROPOSAL · p.6 · §3.4'), findsOneWidget);
+    expect(find.text('FROM YOUR PROPOSAL · p.6'), findsOneWidget);
     expect(find.text('Open page 6'), findsOneWidget);
     expect(find.text('Confidence: High'), findsOneWidget);
     await tester.tap(

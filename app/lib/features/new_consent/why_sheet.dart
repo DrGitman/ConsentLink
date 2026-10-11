@@ -12,7 +12,7 @@ import 'review_draft_screen.dart';
 /// "Navigation — sheet & dialog"); 150 ms with Reduce motion.
 Future<void> showWhySheet(
   BuildContext context, {
-  required String sectionId,
+  required String sectionKey,
   required VoidCallback onApprove,
 }) => showModalBottomSheet<void>(
   context: context,
@@ -24,12 +24,12 @@ Future<void> showWhySheet(
   shape: const RoundedRectangleBorder(
     borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
   ),
-  builder: (context) => _WhySheet(sectionId: sectionId, onApprove: onApprove),
+  builder: (context) => _WhySheet(sectionKey: sectionKey, onApprove: onApprove),
 );
 
 class _WhySheet extends ConsumerWidget {
-  const _WhySheet({required this.sectionId, required this.onApprove});
-  final String sectionId;
+  const _WhySheet({required this.sectionKey, required this.onApprove});
+  final String sectionKey;
   final VoidCallback onApprove;
 
   @override
@@ -37,7 +37,7 @@ class _WhySheet extends ConsumerWidget {
     final section = ref
         .watch(consentDraftProvider)
         .sections
-        .firstWhere((s) => s.id == sectionId);
+        .firstWhere((s) => s.key == sectionKey);
     final primary = Theme.of(context).colorScheme.primary;
     final approved = section.done;
 
@@ -69,9 +69,9 @@ class _WhySheet extends ConsumerWidget {
                 fill: AppColors.canvas,
                 children: [
                   Text(
-                    section.sourceQuote == null
-                        ? section.source.toUpperCase()
-                        : 'FROM YOUR PROPOSAL · ${section.source.replaceFirst('From proposal ', '')}',
+                    section.sourcePages.isEmpty
+                        ? section.sourceLabel.toUpperCase()
+                        : 'FROM YOUR PROPOSAL · p.${section.sourcePages.join(', ')}',
                     style: dashboardText(
                       11,
                       color: AppColors.subtle,
@@ -86,7 +86,7 @@ class _WhySheet extends ConsumerWidget {
                   ),
                   if (section.sourceQuote != null) ...[
                     const SizedBox(height: 12),
-                    _OpenPage(source: section.source, primary: primary),
+                    _OpenPage(pages: section.sourcePages, primary: primary),
                   ],
                 ],
               ),
@@ -142,13 +142,13 @@ class _WhySheet extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Confidence: ${section.confidence}',
+                      'Confidence: ${section.confidenceLabel}',
                       style: dashboardText(14, weight: FontWeight.w600),
                     ),
-                    if (section.confidenceNote.isNotEmpty) ...[
+                    ...[
                       const SizedBox(height: 4),
                       Text(
-                        section.confidenceNote,
+                        _confidenceNote(section),
                         style: dashboardText(12, color: AppColors.subtle),
                       ),
                     ],
@@ -228,12 +228,12 @@ class _Panel extends StatelessWidget {
 }
 
 class _OpenPage extends StatelessWidget {
-  const _OpenPage({required this.source, required this.primary});
-  final String source;
+  const _OpenPage({required this.pages, required this.primary});
+  final List<int> pages;
   final Color primary;
   @override
   Widget build(BuildContext context) {
-    final page = RegExp(r'p\.(\d+)').firstMatch(source)?.group(1);
+    final page = pages.isEmpty ? null : pages.first;
     final label = page == null ? 'Open proposal' : 'Open page $page';
     // 24 dp badge inside a 48 dp touch target.
     return SizedBox(
@@ -270,4 +270,17 @@ class _OpenPage extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Explains the confidence level (not part of the AI output, derived here).
+String _confidenceNote(DraftSection section) {
+  final base = section.sourcePages.isEmpty
+      ? 'Not in your proposal. Check it carefully before approving.'
+      : switch (section.confidence) {
+          'high' => 'Matches source closely.',
+          'medium' =>
+            'Partly matches the source. Check it against your proposal.',
+          _ => 'Weak match with the source. Rewrite or check it carefully.',
+        };
+  return '$base Translation to Otjiherero needs a human reviewer.';
 }
