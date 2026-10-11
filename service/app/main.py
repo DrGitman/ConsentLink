@@ -64,6 +64,12 @@ class TemplateAnalyseResponse(StyleSpec):
     logo_candidates: list[LogoCandidateResponse]
 
 
+class TemplateUploadResponse(TemplateAnalyseResponse):
+    storage_path: str
+    detected_type: str
+    size_mb: float
+
+
 class LogoExtractResponse(BaseModel):
     png_path: str
     bbox: list[float]
@@ -151,6 +157,74 @@ async def scan_uploaded_file(file: Annotated[UploadFile, File()]) -> FileScanRes
         detected_type=result.detected_type,
         size_mb=round(len(content) / (1024 * 1024), 3),
         reasons=result.reasons,
+    )
+
+
+@app.post("/v1/templates/upload", response_model=TemplateUploadResponse)
+async def upload_and_analyse_template(
+    file: Annotated[UploadFile, File()],
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(require_supabase_user)],
+) -> TemplateUploadResponse:
+    filename = file.filename or ""
+    content = await file.read(MAX_FILE_SIZE + 1)
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail={
+                "code": "file_too_large",
+                "message": "The template exceeds the 25 MB upload limit.",
+                "field": "file",
+            },
+        )
+
+    scan = scan_file(filename, content)
+    if scan.reasons:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "code": "unsafe_template",
+                "message": "The template failed file-safety checks.",
+                "field": "file",
+                "reasons": scan.reasons,
+            },
+        )
+    if scan.detected_type not in {
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    }:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "code": "unsupported_template",
+                "message": "Template analysis supports PDF and DOCX files.",
+                "field": "file",
+            },
+        )
+
+    analysis = analyse_template(filename, content)
+    bucket = storage.template_upload_bucket()
+    suffix = ".pdf" if scan.detected_type == "application/pdf" else ".docx"
+    stored_path = await storage.upload_storage_object(
+        storage.StorageObject(bucket=bucket, object_path="uploads"),
+        f"uploads/{uuid4().hex}{suffix}",
+        content,
+        credentials.credentials,
+        content_type=scan.detected_type,
+    )
+    return TemplateUploadResponse(
+        **analysis.style_spec,
+        confidence=analysis.confidence,
+        logo_candidates=[
+            LogoCandidateResponse(
+                page=candidate.page,
+                bbox=candidate.bbox,
+                confidence=candidate.confidence,
+            )
+            for candidate in analysis.logo_candidates
+        ],
+        storage_path=stored_path,
+        detected_type=scan.detected_type,
+        size_mb=round(len(content) / (1024 * 1024), 3),
     )
 
 

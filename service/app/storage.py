@@ -59,6 +59,29 @@ def _storage_configuration(access_token: str) -> tuple[str, dict[str, str]]:
     }
 
 
+def template_upload_bucket() -> str:
+    bucket = os.getenv("SUPABASE_TEMPLATE_BUCKET", "").strip()
+    if not bucket:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": "template_storage_not_configured",
+                "message": "The template upload bucket is not configured.",
+            },
+        )
+    if bucket in {".", ".."} or not all(
+        character.isalnum() or character in "._-" for character in bucket
+    ):
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": "template_storage_misconfigured",
+                "message": "The configured template bucket name is invalid.",
+            },
+        )
+    return bucket
+
+
 def _raise_storage_error(error: httpx.HTTPStatusError) -> None:
     status = error.response.status_code
     if status == 404:
@@ -121,12 +144,14 @@ async def upload_storage_object(
     object_path: str,
     content: bytes,
     access_token: str,
+    *,
+    content_type: str = "image/png",
 ) -> str:
     base_url, headers = _storage_configuration(access_token)
     encoded_path = quote(f"{source.bucket}/{object_path}", safe="/")
     headers = {
         **headers,
-        "Content-Type": "image/png",
+        "Content-Type": content_type,
         "x-upsert": "true",
     }
     url = f"{base_url}/storage/v1/object/{encoded_path}"
