@@ -76,6 +76,7 @@ flutter:
     - assets/icons/form/
     - assets/icons/capture/
     - assets/icons/responses/
+    - assets/icons/templates/
     - assets/icons/offline/
     - assets/icons/navigation/
     - assets/icons/accessibility/
