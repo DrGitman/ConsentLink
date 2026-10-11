@@ -23,6 +23,12 @@ import '../../features/responses/responses_screen.dart';
 import '../../features/projects/project_transition.dart';
 import '../../features/projects/projects_screen.dart';
 import '../../features/shell/shell_page.dart';
+import '../../features/settings/accessibility_settings_screen.dart';
+import '../../features/settings/account_settings_screen.dart';
+import '../../features/settings/feedback_settings_screen.dart';
+import '../../features/settings/language_settings_screen.dart';
+import '../../features/settings/me_screen.dart';
+import '../../features/settings/privacy_settings_screen.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/templates/clip_logo_screen.dart';
 import '../../features/templates/describe_template_screen.dart';
@@ -423,6 +429,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
+      // Settings (Figma 08.2–08.5, Account and Privacy split from 08.5): full screen, opened from the Me tab.
+      for (final (path, page) in <(String, Widget)>[
+        ('accessibility', const AccessibilitySettingsScreen()),
+        ('languages', const LanguageSettingsScreen()),
+        ('feedback', const FeedbackSettingsScreen()),
+        ('account', const AccountSettingsScreen()),
+        ('privacy', const PrivacySettingsScreen()),
+      ])
+        GoRoute(
+          path: '/settings/$path',
+          pageBuilder: (context, state) =>
+              projectPushPage(key: state.pageKey, child: page),
+        ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return AppShell(navigationShell: navigationShell);
@@ -474,6 +493,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) {
                       if (destination == ShellDestination.home) {
                         return const DashboardScreen();
+                      }
+                      if (destination == ShellDestination.me) {
+                        return const MeScreen();
                       }
                       return ShellPage(destination: destination);
                     },

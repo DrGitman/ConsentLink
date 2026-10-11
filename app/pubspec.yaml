@@ -44,6 +44,7 @@ dependencies:
   shared_preferences: ^2.5.3
   zxcvbn: 1.0.0
   speech_to_text: ^7.4.0
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
@@ -77,6 +78,7 @@ flutter:
     - assets/icons/capture/
     - assets/icons/responses/
     - assets/icons/templates/
+    - assets/icons/settings/
     - assets/icons/offline/
     - assets/icons/navigation/
     - assets/icons/accessibility/

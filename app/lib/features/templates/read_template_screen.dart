@@ -356,12 +356,14 @@ class _Scanning extends StatelessWidget {
                 ),
         ),
         const SizedBox(width: 6),
-        Text(
-          'Scanning for macros…',
-          style: dashboardText(
-            12,
-            color: AppColors.muted,
-            weight: FontWeight.w600,
+        Flexible(
+          child: Text(
+            'Scanning for macros…',
+            style: dashboardText(
+              12,
+              color: AppColors.muted,
+              weight: FontWeight.w600,
+            ),
           ),
         ),
       ],

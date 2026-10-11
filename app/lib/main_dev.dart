@@ -6,17 +6,25 @@ import 'app.dart';
 import 'core/theme/theme_provider.dart';
 import 'features/institution/institution.dart';
 import 'features/institution/institution_preferences.dart';
+import 'features/institution/researcher_details_screen.dart';
 import 'features/preferences/accessibility_preferences.dart';
 import 'features/preferences/preference_persistence.dart';
+import 'features/settings/settings_data.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final storage = SharedPreferencesAsync();
   String? savedValue;
+  String? savedPhoto;
+  String? savedResearcher;
 
   try {
     savedValue = await storage.getString(PreferencePersistence.storageKey);
+    savedPhoto = await storage.getString(PreferencePersistence.photoKey);
+    savedResearcher = await storage.getString(
+      PreferencePersistence.researcherKey,
+    );
   } catch (error, stack) {
     FlutterError.reportError(
       FlutterErrorDetails(
@@ -29,6 +37,7 @@ Future<void> main() async {
   }
 
   final saved = PreferencePersistence.decode(savedValue);
+  final researcher = PreferencePersistence.decodeResearcher(savedResearcher);
   final savedInstitution = saved['institution'] == null
       ? null
       : Institution.values.byName(saved['institution'] as String);
@@ -42,6 +51,8 @@ Future<void> main() async {
     write: (value) {
       return storage.setString(PreferencePersistence.storageKey, value);
     },
+    writeKey: (key, value) =>
+        value == null ? storage.remove(key) : storage.setString(key, value),
   );
 
   runApp(
@@ -70,6 +81,23 @@ Future<void> main() async {
         largerTouchTargetsProvider.overrideWith(
           (ref) => saved['largerTargets'] as bool,
         ),
+        reduceMotionPreferenceProvider.overrideWith(
+          (ref) => saved['reduceMotion'] as bool,
+        ),
+        dyslexiaFontProvider.overrideWith(
+          (ref) => saved['dyslexiaFont'] as bool,
+        ),
+        keepScreenBrightProvider.overrideWith(
+          (ref) => saved['keepBright'] as bool,
+        ),
+        readAloudSpeedProvider.overrideWith(
+          (ref) => saved['readSpeed'] as double,
+        ),
+        profilePhotoProvider.overrideWith(
+          (ref) => PreferencePersistence.decodePhoto(savedPhoto),
+        ),
+        researcherDraftProvider.overrideWith((ref) => researcher.details),
+        researcherEmailProvider.overrideWith((ref) => researcher.email),
       ],
       child: const ConsentLinkApp(),
     ),
