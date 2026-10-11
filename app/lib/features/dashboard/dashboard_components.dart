@@ -81,13 +81,15 @@ class _DashboardActionState extends State<DashboardAction> {
   }
 
   @override
-  Widget build(BuildContext context) => AnimatedScale(
-    scale: _pressed ? .97 : 1,
-    duration: MediaQuery.disableAnimationsOf(context)
-        ? Duration.zero
-        : const Duration(milliseconds: 90),
-    child: Semantics(
-      label: widget.label,
+  // Semantics is outermost: a RenderTransform root never reports itself in
+  // hit tests, which makes tester.tap(DashboardAction) warn in every test.
+  Widget build(BuildContext context) => Semantics(
+    label: widget.label,
+    child: AnimatedScale(
+      scale: _pressed ? .97 : 1,
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 90),
       child: TextButton(
         statesController: _states,
         onPressed: widget.onPressed,
