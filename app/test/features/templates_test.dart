@@ -138,13 +138,11 @@ void main() {
     expect(find.text('Official · NUST'), findsNWidgets(2));
     expect(find.text('Shared · NUST'), findsOneWidget);
 
-    await tester.tap(find.text('Official'));
-    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text('Official'));
     expect(find.text('My Opuwo health consent'), findsNothing);
     expect(find.text('Health research v3'), findsOneWidget);
 
-    await tester.tap(find.text('All'));
-    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text('All'));
     await tester.enterText(find.byType(TextField), 'kavari');
     await tester.pumpAndSettle();
     expect(find.text('Interview + audio consent'), findsOneWidget);
@@ -267,7 +265,8 @@ void main() {
     await tester.tap(find.text('NUST researchers'));
     await tester.pumpAndSettle();
     await tapVisible(tester, find.text('Save template').last);
-    expect(find.text('Opuwo health consent'), findsOneWidget);
+    // The card and the toast subtitle.
+    expect(find.text('Opuwo health consent'), findsWidgets);
     expect(find.text('Shared · NUST'), findsNWidgets(2));
     expect(find.text('Template saved'), findsOneWidget);
     await clearToast(tester);
@@ -315,6 +314,7 @@ void main() {
         (w) => w is DashboardIcon && w.name == 'capture/play',
       ),
     );
+    await tester.pump();
     await tester.pump(const Duration(seconds: 3));
     expect(find.text('0:05'), findsOneWidget);
     await tester.pump(const Duration(seconds: 6));

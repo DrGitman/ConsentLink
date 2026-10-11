@@ -11,6 +11,7 @@ import '../dashboard/dashboard_components.dart';
 import '../new_consent/consent_widgets.dart';
 import '../preferences/accessibility_preferences.dart';
 import 'capture_widgets.dart';
+import '../settings/settings_data.dart';
 import 'field_capture_data.dart';
 
 /// Consent saved (Figma 06.6 background, 3:3182) and the optional feedback
@@ -53,33 +54,18 @@ class _DoneScreenState extends ConsumerState<DoneScreen> {
 
   Future<void> _askFeedback() async {
     if (!shouldAskFeedback(ref.read(captureParticipantProvider))) return;
-    final reduced = reduceMotion(context);
+    // Settings 08.4: on/off and how often.
+    final count = ref.read(completedFormsProvider) + 1;
+    ref.read(completedFormsProvider.notifier).state = count;
+    if (!feedbackDue(
+      ref.read(feedbackSettingsProvider),
+      count,
+      random: math.Random().nextDouble(),
+    )) {
+      return;
+    }
     setState(() => _feedbackOpen = true);
-    final sent = await showGeneralDialog<bool>(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: 'Close feedback',
-      barrierColor: const Color(0xFF0B100E).withValues(alpha: .45),
-      transitionDuration: Duration(milliseconds: reduced ? 150 : 400),
-      pageBuilder: (context, _, _) => const _FeedbackDialog(),
-      transitionBuilder: (context, animation, _, child) {
-        final fade = FadeTransition(
-          opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-          child: child,
-        );
-        if (reduced) return fade;
-        return ScaleTransition(
-          scale: Tween(begin: .92, end: 1.0).animate(
-            CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutBack,
-              reverseCurve: Curves.easeInCubic,
-            ),
-          ),
-          child: fade,
-        );
-      },
-    );
+    final sent = await showFeedbackPopup(context);
     if (!mounted) return;
     setState(() {
       _feedbackOpen = false;
@@ -177,6 +163,37 @@ class _DoneScreenState extends ConsumerState<DoneScreen> {
   }
 }
 
+/// The optional feedback pop-up (06.6). [preview] (from Settings 08.4)
+/// shows it without saving anything.
+Future<bool?> showFeedbackPopup(BuildContext context, {bool preview = false}) {
+  final reduced = MediaQuery.disableAnimationsOf(context);
+  return showGeneralDialog<bool>(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: 'Close feedback',
+    barrierColor: const Color(0xFF0B100E).withValues(alpha: .45),
+    transitionDuration: Duration(milliseconds: reduced ? 150 : 400),
+    pageBuilder: (context, _, _) => _FeedbackDialog(preview: preview),
+    transitionBuilder: (context, animation, _, child) {
+      final fade = FadeTransition(
+        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+        child: child,
+      );
+      if (reduced) return fade;
+      return ScaleTransition(
+        scale: Tween(begin: .92, end: 1.0).animate(
+          CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutBack,
+            reverseCurve: Curves.easeInCubic,
+          ),
+        ),
+        child: fade,
+      );
+    },
+  );
+}
+
 /// 100 dp brand-50 circle, 64 dp brand check that pops, plus a soft burst.
 class _SavedBadge extends StatelessWidget {
   const _SavedBadge();
@@ -252,7 +269,8 @@ class _BurstPainter extends CustomPainter {
 }
 
 class _FeedbackDialog extends ConsumerStatefulWidget {
-  const _FeedbackDialog();
+  const _FeedbackDialog({this.preview = false});
+  final bool preview;
   @override
   ConsumerState<_FeedbackDialog> createState() => _FeedbackDialogState();
 }
@@ -288,6 +306,10 @@ class _FeedbackDialogState extends ConsumerState<_FeedbackDialog> {
   }
 
   void _send() {
+    if (widget.preview) {
+      Navigator.pop(context, true);
+      return;
+    }
     final list = ref.read(captureFeedbackProvider);
     ref.read(captureFeedbackProvider.notifier).state = [
       ...list,
@@ -389,15 +411,18 @@ class _FeedbackDialogState extends ConsumerState<_FeedbackDialog> {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              CaptureIconButton(
-                                label: 'Speak feedback',
-                                icon: 'mic',
-                                size: 36,
-                                iconSize: 20,
-                                fill: AppColors.brand50,
-                                iconColor: AppColors.brand,
-                                onPressed: _speak,
-                              ),
+                              if (ref
+                                  .watch(feedbackSettingsProvider)
+                                  .voiceComments)
+                                CaptureIconButton(
+                                  label: 'Speak feedback',
+                                  icon: 'mic',
+                                  size: 36,
+                                  iconSize: 20,
+                                  fill: AppColors.brand50,
+                                  iconColor: AppColors.brand,
+                                  onPressed: _speak,
+                                ),
                             ],
                           ),
                         ),

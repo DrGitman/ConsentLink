@@ -12,44 +12,59 @@ class ConsentLinkApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final textScale = ref.watch(appTextScaleProvider);
+    final reduceMotionSetting = ref.watch(reduceMotionPreferenceProvider);
 
     return MediaQuery.fromView(
       view: View.of(context),
       child: Builder(
         builder: (context) {
-          final reduceMotion = MediaQuery.disableAnimationsOf(context);
-
-          return MaterialApp.router(
-            debugShowCheckedModeBanner: false,
-            onGenerateTitle: (context) {
-              return AppLocalizations.of(context).appName;
-            },
-            theme: ref.watch(appThemeProvider),
-            themeAnimationDuration: reduceMotion
-                ? Duration.zero
-                : const Duration(milliseconds: 120),
-            themeAnimationCurve: Curves.easeOut,
-            routerConfig: ref.watch(appRouterProvider),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            builder: (context, child) {
-              final media = MediaQuery.of(context);
-
-              return MediaQuery(
-                data: media.copyWith(
-                  textScaler: _AppTextScaler(
-                    system: media.textScaler,
-                    multiplier: textScale,
-                  ),
-                ),
-                child: child ?? const SizedBox.shrink(),
-              );
-            },
+          // Settings 08.2 "Reduce motion" works like the phone setting.
+          // Always wrapped, so toggling it doesn't rebuild the router.
+          final media = MediaQuery.of(context);
+          return MediaQuery(
+            data: media.copyWith(
+              disableAnimations: media.disableAnimations || reduceMotionSetting,
+            ),
+            child: _app(context, ref, textScale),
           );
         },
       ),
     );
   }
+
+  Widget _app(BuildContext context, WidgetRef ref, double textScale) => Builder(
+    builder: (context) {
+      final reduceMotion = MediaQuery.disableAnimationsOf(context);
+
+      return MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        onGenerateTitle: (context) {
+          return AppLocalizations.of(context).appName;
+        },
+        theme: ref.watch(appThemeProvider),
+        themeAnimationDuration: reduceMotion
+            ? Duration.zero
+            : const Duration(milliseconds: 120),
+        themeAnimationCurve: Curves.easeOut,
+        routerConfig: ref.watch(appRouterProvider),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        builder: (context, child) {
+          final media = MediaQuery.of(context);
+
+          return MediaQuery(
+            data: media.copyWith(
+              textScaler: _AppTextScaler(
+                system: media.textScaler,
+                multiplier: textScale,
+              ),
+            ),
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
+      );
+    },
+  );
 }
 
 class _AppTextScaler extends TextScaler {

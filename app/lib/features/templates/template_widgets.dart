@@ -113,6 +113,7 @@ class VoiceTextField extends StatelessWidget {
     this.focusNode,
     this.onChanged,
     this.autofocus = false,
+    this.keyboardType,
   });
   final TextEditingController controller;
   final String hint;
@@ -121,6 +122,7 @@ class VoiceTextField extends StatelessWidget {
   final FocusNode? focusNode;
   final ValueChanged<String>? onChanged;
   final bool autofocus;
+  final TextInputType? keyboardType;
 
   Future<void> _dictate(BuildContext context) async {
     final text = await showDictationSheet(context, fieldLabel: fieldLabel);
@@ -151,6 +153,7 @@ class VoiceTextField extends StatelessWidget {
             focusNode: focusNode,
             autofocus: autofocus,
             onChanged: onChanged,
+            keyboardType: keyboardType,
             style: dashboardText(15),
             decoration: InputDecoration(
               isCollapsed: true,
