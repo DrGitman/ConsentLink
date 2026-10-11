@@ -43,8 +43,8 @@ class AppShell extends StatelessWidget {
         final useSideRail = constraints.maxWidth >= 900;
 
         return Scaffold(
-          // Home and Projects draw their own Figma headers.
-          appBar: selectedIndex <= 1
+          // Home, Projects and Insights draw their own Figma headers.
+          appBar: selectedIndex <= 1 || selectedIndex == 3
               ? null
               : AppBar(
                   title: AnimatedSwitcher(

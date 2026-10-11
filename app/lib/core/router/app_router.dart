@@ -17,6 +17,9 @@ import '../../features/new_consent/drafting_screen.dart';
 import '../../features/new_consent/review_draft_screen.dart';
 import '../../features/new_consent/upload_proposal_screen.dart';
 import '../../features/projects/project_detail_screen.dart';
+import '../../features/responses/consent_record_screen.dart';
+import '../../features/responses/insights_screen.dart';
+import '../../features/responses/responses_screen.dart';
 import '../../features/projects/project_transition.dart';
 import '../../features/projects/projects_screen.dart';
 import '../../features/shell/shell_page.dart';
@@ -369,6 +372,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
+      // Consent record (Figma 07.2 / 07.5): full screen, outside the tab shell.
+      GoRoute(
+        path: '/responses/:code',
+        pageBuilder: (context, state) => projectPushPage(
+          key: state.pageKey,
+          child: ConsentRecordScreen(code: state.pathParameters['code']!),
+        ),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return AppShell(navigationShell: navigationShell);
@@ -392,6 +403,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                           child: ProjectDetailScreen(
                             projectId: state.pathParameters['id']!,
                           ),
+                        ),
+                      ),
+                    ],
+                  )
+                else if (destination == ShellDestination.insights)
+                  // Insights (07.3) and Responses (07.1).
+                  GoRoute(
+                    path: '/insights',
+                    pageBuilder: (context, state) => projectPushPage(
+                      key: state.pageKey,
+                      child: const InsightsScreen(),
+                    ),
+                    routes: [
+                      GoRoute(
+                        path: 'responses',
+                        pageBuilder: (context, state) => projectPushPage(
+                          key: state.pageKey,
+                          child: const ResponsesScreen(),
                         ),
                       ),
                     ],

@@ -5,6 +5,8 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_back_button.dart';
 import '../dashboard/dashboard_components.dart';
 import '../preferences/accessibility_preferences.dart';
+import '../responses/export_sheet.dart';
+import '../responses/responses_data.dart';
 import 'project_data.dart';
 import 'project_widgets.dart';
 
@@ -37,10 +39,11 @@ class ProjectDetailScreen extends ConsumerWidget {
           ProjectCircleButton(
             icon: 'projects/download',
             label: 'Export responses',
-            onPressed: () => showProjectNotice(
+            onPressed: () => showExportSheet(
               context,
-              'Export responses',
-              'PDF, Word and CSV export will be connected in the Insights task.',
+              subtitle:
+                  '${project.title} · ${ref.read(responsesProvider).length} records',
+              count: ref.read(responsesProvider).length,
             ),
           ),
           const SizedBox(width: 4),
