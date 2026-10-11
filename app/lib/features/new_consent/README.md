@@ -37,7 +37,16 @@ stays disabled.
 - AI drafting — progress: orb halo breathes (1.2 s), steps tick with a drawn,
   popping check, bar fills.
 - Approve section: badge morphs AI draft → Approved, green border flash, themed Undo toast 5 s.
-- Upload icon lifts and pulses (3 cycles); AI orb twinkles, breathes and ripples.
+- Upload icon lifts and pulses in a loop while visible; AI orb twinkles, breathes
+  and ripples.
 - Sheets rise with a slight overshoot (easeOutBack 400 ms) over a fading scrim;
   dialogs scale 92% → 100%.
 - Reduce motion: no breathing, shake, slide or pop; 150 ms fades only.
+
+## Data shape
+`DraftSection` uses the agreed AI output from Figma Development Diagrams,
+frame G (`schemas/consent_draft`) and the `Section` contract in frame F:
+`key, title, text, sourcePages, sourceQuote, changes, confidence ("high" |
+"medium" | "low"), aiGenerated, readingGrade, approvedBy, approvedAt`.
+Keys are the 10 required elements from G (`requiredElementKeys`); the 4 minors
+keys are listed in `minorsElementKeys` for the rule checker (P3).

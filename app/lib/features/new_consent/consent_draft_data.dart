@@ -40,56 +40,149 @@ class UploadedFile {
 
 enum SectionStatus { aiDraft, approved, edited }
 
+/// One consent-form section. Field names follow the agreed AI output,
+/// schemas/consent_draft.schema.json (Figma Development Diagrams, frame G),
+/// and the shared `Section` contract (frame F):
+/// key, title, text, sourcePages, sourceQuote, changes, confidence,
+/// aiGenerated, readingGrade, approvedBy, approvedAt.
+/// [status] is UI state only (AI draft / approved / edited).
 class DraftSection {
   const DraftSection({
-    required this.id,
+    required this.key,
     required this.title,
-    required this.readingLevel,
+    required this.text,
     required this.status,
-    required this.body,
-    required this.source,
+    this.sourcePages = const [],
     this.sourceQuote,
     this.changes = const [],
-    this.confidence = 'High',
-    this.confidenceNote = '',
-    this.log,
+    this.confidence = 'high',
+    this.aiGenerated = true,
+    this.readingGrade = 6,
+    this.approvedBy,
+    this.approvedAt,
   });
-  final String id;
-  final String title;
-  final String readingLevel;
-  final SectionStatus status;
-  final String body;
 
-  /// Where the text came from, e.g. "From proposal p.6 · §3.4".
-  final String source;
+  /// Required-element key from G, e.g. `risks`, `contacts_ethics`.
+  final String key;
+  final String title;
+  final String text;
+  final SectionStatus status;
+  final List<int> sourcePages;
   final String? sourceQuote;
   final List<String> changes;
-  final String confidence;
-  final String confidenceNote;
 
-  /// Audit line, e.g. "Logged: approved by Ndapewa, 9 Oct 14:12".
-  final String? log;
+  /// `high`, `medium` or `low` (text, as in G).
+  final String confidence;
+  final bool aiGenerated;
+  final int readingGrade;
+  final String? approvedBy;
+  final DateTime? approvedAt;
 
   bool get done => status != SectionStatus.aiDraft;
 
-  DraftSection copyWith({SectionStatus? status, String? body, String? log}) =>
-      DraftSection(
-        id: id,
-        title: title,
-        readingLevel: readingLevel,
-        status: status ?? this.status,
-        body: body ?? this.body,
-        source: source,
-        sourceQuote: sourceQuote,
-        changes: changes,
-        confidence: confidence,
-        confidenceNote: confidenceNote,
-        log: log ?? this.log,
-      );
+  String get readingLevel => 'Grade $readingGrade';
+
+  String get confidenceLabel => confidence.isEmpty
+      ? confidence
+      : confidence[0].toUpperCase() + confidence.substring(1);
+
+  /// "From proposal p.6", or why there is no page.
+  String get sourceLabel => sourcePages.isNotEmpty
+      ? 'From proposal p.${sourcePages.join(', ')}'
+      : aiGenerated
+      ? 'Not in your proposal'
+      : 'You wrote this';
+
+  /// Audit line, e.g. "Logged: approved by Ndapewa, 9 Oct 14:12".
+  String? get log {
+    if (approvedBy == null || approvedAt == null) return null;
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final t = approvedAt!;
+    final time =
+        '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+    final verb = status == SectionStatus.edited ? 'edited' : 'approved';
+    return 'Logged: $verb by $approvedBy, ${t.day} ${months[t.month - 1]} $time';
+  }
+
+  DraftSection copyWith({
+    SectionStatus? status,
+    String? text,
+    bool? aiGenerated,
+    String? approvedBy,
+    DateTime? approvedAt,
+    bool clearApproval = false,
+  }) => DraftSection(
+    key: key,
+    title: title,
+    text: text ?? this.text,
+    status: status ?? this.status,
+    sourcePages: sourcePages,
+    sourceQuote: sourceQuote,
+    changes: changes,
+    confidence: confidence,
+    aiGenerated: aiGenerated ?? this.aiGenerated,
+    readingGrade: readingGrade,
+    approvedBy: clearApproval ? null : (approvedBy ?? this.approvedBy),
+    approvedAt: clearApproval ? null : (approvedAt ?? this.approvedAt),
+  );
 }
 
+/// The 10 required consent elements (G), in display order.
+const requiredElementKeys = [
+  'purpose',
+  'procedures',
+  'duration',
+  'risks',
+  'benefits',
+  'compensation',
+  'confidentiality',
+  'voluntary_withdrawal',
+  'contacts_researcher',
+  'contacts_ethics',
+];
+
+/// Extra required elements for projects that include minors (Figma C + G).
+/// Not used by these screens yet; the rule checker (P3) owns them.
+const minorsElementKeys = [
+  'guardian_permission',
+  'child_assent',
+  'child_dissent_respected',
+  'safeguarding_contact',
+];
+
+/// Plain-language names for the "Missing: …" checklist.
+const elementLabels = {
+  'purpose': 'purpose of the study',
+  'procedures': 'what participants will do',
+  'duration': 'how long it takes',
+  'risks': 'risks and discomforts',
+  'benefits': 'possible benefits',
+  'compensation': 'payment or compensation',
+  'confidentiality': 'confidentiality',
+  'voluntary_withdrawal': 'right to say no or stop',
+  'contacts_researcher': 'researcher contact',
+  'contacts_ethics': 'complaints contact (ethics committee)',
+  'guardian_permission': 'guardian permission',
+  'child_assent': 'child assent',
+  'child_dissent_respected': 'child’s “No” is respected',
+  'safeguarding_contact': 'safeguarding contact',
+};
+
 /// Required consent elements. The tenth one is missing until it is added.
-const requiredElementCount = 10;
+const requiredElementCount = 10; // = requiredElementKeys.length
 
 class ConsentDraftState {
   const ConsentDraftState({
@@ -105,7 +198,13 @@ class ConsentDraftState {
 
   bool get canAnalyse => file?.status == UploadStatus.safe;
   int get doneCount => sections.where((s) => s.done).length;
-  bool get missingElement => sections.length < requiredElementCount;
+
+  /// Keys from [requiredElementKeys] with no section yet (G "missing").
+  List<String> get missingKeys => [
+    for (final key in requiredElementKeys)
+      if (!sections.any((s) => s.key == key)) key,
+  ];
+  bool get missingElement => missingKeys.isNotEmpty;
   bool get allApproved => !missingElement && doneCount == requiredElementCount;
 
   ConsentDraftState copyWith({
@@ -190,21 +289,35 @@ class ConsentDraftController extends StateNotifier<ConsentDraftState> {
     state = state.copyWith(sections: [...state.sections, complaintsSection]);
   }
 
-  void _update(String id, DraftSection Function(DraftSection) change) {
+  void _update(String key, DraftSection Function(DraftSection) change) {
     state = state.copyWith(
-      sections: [for (final s in state.sections) s.id == id ? change(s) : s],
+      sections: [for (final s in state.sections) s.key == key ? change(s) : s],
     );
   }
 
-  void approve(String id, String log) =>
-      _update(id, (s) => s.copyWith(status: SectionStatus.approved, log: log));
+  void approve(String key, String by) => _update(
+    key,
+    (s) => s.copyWith(
+      status: SectionStatus.approved,
+      approvedBy: by,
+      approvedAt: DateTime.now(),
+    ),
+  );
 
-  void undo(String id) =>
-      _update(id, (s) => s.copyWith(status: SectionStatus.aiDraft));
+  void undo(String key) => _update(
+    key,
+    (s) => s.copyWith(status: SectionStatus.aiDraft, clearApproval: true),
+  );
 
-  void edit(String id, String body, String log) => _update(
-    id,
-    (s) => s.copyWith(status: SectionStatus.edited, body: body, log: log),
+  void edit(String key, String text, String by) => _update(
+    key,
+    (s) => s.copyWith(
+      status: SectionStatus.edited,
+      text: text,
+      aiGenerated: false,
+      approvedBy: by,
+      approvedAt: DateTime.now(),
+    ),
   );
 
   @override
@@ -222,41 +335,43 @@ final consentDraftProvider =
     );
 
 /// Figma 04.3 sample. 9 of 10 required elements; 7 approved or edited.
-const sampleSections = [
+/// Field names and keys follow schemas/consent_draft (Figma G).
+final _sampleApproved = DateTime(2026, 10, 4, 14, 12);
+
+final sampleSections = [
   DraftSection(
-    id: 'purpose',
+    key: 'purpose',
     title: 'Purpose of the study',
-    readingLevel: 'Grade 6',
     status: SectionStatus.approved,
-    body:
+    text:
         'We want to learn how families in Opuwo get clean water and how this affects their health.',
-    source: 'From proposal p.2 · §1.1',
+    sourcePages: const [2],
     sourceQuote:
         '“This study investigates household water access and associated health outcomes in Opuwo.”',
-    changes: ['Reading level: university → Grade 6'],
-    log: 'Logged: approved by you',
+    changes: const ['Reading level: university → Grade 6'],
+    approvedBy: 'Ndapewa',
+    approvedAt: _sampleApproved,
   ),
   DraftSection(
-    id: 'procedures',
+    key: 'procedures',
     title: 'What you will do',
-    readingLevel: 'Grade 5',
+    readingGrade: 5,
     status: SectionStatus.approved,
-    body:
-        'You will answer questions in one interview. It takes about 40 minutes.',
-    source: 'From proposal p.5 · §3.1',
+    text: 'You will answer questions in one interview with the researcher.',
+    sourcePages: const [5],
     sourceQuote:
-        '“Data will be collected through a single semi-structured interview of approximately 40 minutes.”',
-    changes: ['Replaced “semi-structured interview” with “interview”'],
-    log: 'Logged: approved by you',
+        '“Data will be collected through a single semi-structured interview.”',
+    changes: const ['Replaced “semi-structured interview” with “interview”'],
+    approvedBy: 'Ndapewa',
+    approvedAt: _sampleApproved,
   ),
-  DraftSection(
-    id: 'risks',
+  const DraftSection(
+    key: 'risks',
     title: 'Risks & discomforts',
-    readingLevel: 'Grade 6',
     status: SectionStatus.aiDraft,
-    body:
+    text:
         'You may feel tired during the 40-minute interview. You can rest or stop at any time without any problem.',
-    source: 'From proposal p.6 · §3.4',
+    sourcePages: [6],
     sourceQuote:
         '“Participants may experience mild fatigue owing to the duration of the semi-structured interview (approx. 40 min).”',
     changes: [
@@ -264,82 +379,77 @@ const sampleSections = [
       'Added that stopping has no penalty (required element)',
       'Reading level: university → Grade 6',
     ],
-    confidenceNote:
-        'Matches source closely. Translation to Otjiherero needs a human reviewer.',
   ),
   DraftSection(
-    id: 'rights',
+    key: 'voluntary_withdrawal',
     title: 'Your rights & withdrawing',
-    readingLevel: 'Grade 6',
     status: SectionStatus.edited,
-    body:
+    aiGenerated: false,
+    text:
         'Taking part is your choice. You can say no, skip any question, or stop at any time. Nothing bad will happen if you stop.',
-    source: 'You edited this',
-    log: 'Logged: edited by you',
+    approvedBy: 'Ndapewa',
+    approvedAt: _sampleApproved,
   ),
   DraftSection(
-    id: 'benefits',
+    key: 'benefits',
     title: 'Possible benefits',
-    readingLevel: 'Grade 6',
     status: SectionStatus.approved,
-    body:
+    text:
         'There is no direct benefit to you. What we learn may help improve water services in your area.',
-    source: 'From proposal p.6 · §3.5',
-    log: 'Logged: approved by you',
+    sourcePages: const [6],
+    approvedBy: 'Ndapewa',
+    approvedAt: _sampleApproved,
   ),
   DraftSection(
-    id: 'privacy',
+    key: 'confidentiality',
     title: 'Keeping your information private',
-    readingLevel: 'Grade 6',
     status: SectionStatus.approved,
-    body:
-        'Your name will not be written on your answers. Only the research team can see them.',
-    source: 'From proposal p.7 · §4.2',
-    log: 'Logged: approved by you',
+    text:
+        'Your name will not be written on your answers. Only the research team can see them, and they are deleted after 5 years.',
+    sourcePages: const [7, 8],
+    approvedBy: 'Ndapewa',
+    approvedAt: _sampleApproved,
   ),
   DraftSection(
-    id: 'compensation',
+    key: 'compensation',
     title: 'Payment',
-    readingLevel: 'Grade 5',
+    readingGrade: 5,
     status: SectionStatus.approved,
-    body: 'You will not be paid. We will give you water and a snack.',
-    source: 'From proposal p.7 · §4.4',
-    log: 'Logged: approved by you',
+    text: 'You will not be paid. We will give you water and a snack.',
+    sourcePages: const [7],
+    approvedBy: 'Ndapewa',
+    approvedAt: _sampleApproved,
   ),
   DraftSection(
-    id: 'storage',
-    title: 'How long we keep your answers',
-    readingLevel: 'Grade 6',
+    key: 'duration',
+    title: 'How long it takes',
+    readingGrade: 5,
     status: SectionStatus.approved,
-    body: 'We keep your answers safely for 5 years. Then we delete them.',
-    source: 'From proposal p.8 · §4.5',
-    log: 'Logged: approved by you',
+    text: 'The interview takes about 40 minutes. We only meet once.',
+    sourcePages: const [5],
+    approvedBy: 'Ndapewa',
+    approvedAt: _sampleApproved,
   ),
-  DraftSection(
-    id: 'contact',
+  const DraftSection(
+    key: 'contacts_researcher',
     title: 'Questions about the study',
-    readingLevel: 'Grade 6',
     status: SectionStatus.aiDraft,
-    body:
+    text:
         'If you have questions, you can ask the researcher now or contact them later. Their details are on the copy you keep.',
-    source: 'From proposal p.9 · §5.1',
+    sourcePages: [9],
     sourceQuote:
         '“Participants will receive the principal investigator’s contact details.”',
     changes: ['Reading level: university → Grade 6'],
-    confidenceNote: 'Matches source closely.',
   ),
 ];
 
+/// The missing `contacts_ethics` element, added from the institution template.
 const complaintsSection = DraftSection(
-  id: 'complaints',
+  key: 'contacts_ethics',
   title: 'If you have a complaint',
-  readingLevel: 'Grade 6',
   status: SectionStatus.aiDraft,
-  body:
+  text:
       'If you are unhappy with how this study is done, you can contact the ethics committee that approved it. Their contact details are on the copy you keep.',
-  source: 'Added from your institution template',
   changes: ['Added because it is a required consent element'],
-  confidence: 'Medium',
-  confidenceNote:
-      'Not in your proposal. Check that the committee contact on the printed copy is correct.',
+  confidence: 'medium',
 );
