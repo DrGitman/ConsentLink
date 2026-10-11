@@ -24,6 +24,11 @@ import '../../features/projects/project_transition.dart';
 import '../../features/projects/projects_screen.dart';
 import '../../features/shell/shell_page.dart';
 import '../../features/splash/splash_screen.dart';
+import '../../features/templates/clip_logo_screen.dart';
+import '../../features/templates/describe_template_screen.dart';
+import '../../features/templates/read_template_screen.dart';
+import '../../features/templates/template_detail_screen.dart';
+import '../../features/templates/template_library_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/sign_up_screen.dart';
@@ -379,6 +384,44 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           key: state.pageKey,
           child: ConsentRecordScreen(code: state.pathParameters['code']!),
         ),
+      ),
+      // Template Studio (Figma 05.1–05.6): full screen, outside the tab shell.
+      GoRoute(
+        path: '/templates',
+        pageBuilder: (context, state) => projectPushPage(
+          key: state.pageKey,
+          child: const TemplateLibraryScreen(),
+        ),
+        routes: [
+          GoRoute(
+            path: 'read',
+            pageBuilder: (context, state) => projectPushPage(
+              key: state.pageKey,
+              child: const ReadTemplateScreen(),
+            ),
+          ),
+          GoRoute(
+            path: 'clip',
+            pageBuilder: (context, state) => projectPushPage(
+              key: state.pageKey,
+              child: const ClipLogoScreen(),
+            ),
+          ),
+          GoRoute(
+            path: 'describe',
+            pageBuilder: (context, state) => projectPushPage(
+              key: state.pageKey,
+              child: const DescribeTemplateScreen(),
+            ),
+          ),
+          GoRoute(
+            path: 'view/:id',
+            pageBuilder: (context, state) => projectPushPage(
+              key: state.pageKey,
+              child: TemplateDetailScreen(id: state.pathParameters['id']!),
+            ),
+          ),
+        ],
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

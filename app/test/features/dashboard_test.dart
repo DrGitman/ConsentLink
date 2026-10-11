@@ -6,6 +6,7 @@ import 'package:consentlink/features/preferences/accessibility_preferences.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 Future<void> pumpDashboard(
   WidgetTester tester, {
@@ -20,9 +21,22 @@ Future<void> pumpDashboard(
         dashboardLoadingPreviewProvider.overrideWithValue(loading),
         largerTouchTargetsProvider.overrideWith((ref) => large),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         theme: AppTheme.light(),
-        home: const Scaffold(body: SafeArea(child: DashboardScreen())),
+        routerConfig: GoRouter(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) =>
+                  const Scaffold(body: SafeArea(child: DashboardScreen())),
+            ),
+            GoRoute(
+              path: '/templates',
+              builder: (context, state) =>
+                  const Scaffold(body: Text('Template library placeholder')),
+            ),
+          ],
+        ),
       ),
     ),
   );
@@ -69,10 +83,7 @@ void main() {
       expect(row.position.pixels, greaterThan(0));
       await tester.tap(find.text('Templates'));
       await tester.pumpAndSettle();
-      expect(
-        find.text('Templates will be connected in its feature task.'),
-        findsOneWidget,
-      );
+      expect(find.text('Template library placeholder'), findsOneWidget);
       // Let preview sync timers finish.
       await tester.pump(const Duration(seconds: 4));
       expect(tester.takeException(), isNull);
@@ -117,20 +128,6 @@ void main() {
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
     expect(find.text('Dashboard design preview'), findsNothing);
-    await tester.ensureVisible(find.text('Templates'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Templates'));
-    await tester.pumpAndSettle();
-    expect(
-      find.text('Templates will be connected in its feature task.'),
-      findsOneWidget,
-    );
-    await tester.tap(find.text('OK'));
-    await tester.pumpAndSettle();
-    expect(
-      find.text('Templates will be connected in its feature task.'),
-      findsNothing,
-    );
     // Let preview sync timers finish.
     await tester.pump(const Duration(seconds: 4));
     expect(tester.takeException(), isNull);

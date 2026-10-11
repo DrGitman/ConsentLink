@@ -289,6 +289,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                       ? context.go('/capture')
                                       : action.$1 == 'sparkle'
                                       ? context.push('/new-consent')
+                                      : action.$1 == 'layers'
+                                      ? context.push('/templates')
                                       : _notice(
                                           action.$2,
                                           '${action.$2} will be connected in its feature task.',
