@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ConsentDraft",
+  "description": "What the on-device AI must output for one consent form (Figma G). Each required element has at most one section.",
+  "type": "object",
+  "required": [
+    "form_language",
+    "reading_grade",
+    "sections",
+    "missing"
+  ],
+  "properties": {
+    "form_language": {
+      "type": "string",
+      "minLength": 1,
+      "description": "en, af, de, herero, khoekhoegowab, rukwangali, silozi, oshiwambo"
+    },
+    "reading_grade": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Estimated school grade needed to read the form; the target is 6"
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/section"
+      }
+    },
+    "missing": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/element_key"
+      },
+      "description": "Required elements the AI could not write a section for"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "element_key": {
+      "enum": [
+        "purpose",
+        "procedures",
+        "duration",
+        "risks",
+        "benefits",
+        "compensation",
+        "confidentiality",
+        "voluntary_withdrawal",
+        "contacts_researcher",
+        "contacts_ethics",
+        "guardian_permission",
+        "child_assent",
+        "child_dissent_respected",
+        "safeguarding_contact"
+      ],
+      "description": "Required consent element. The last 4 apply only to studies with minors. Data retention is written inside confidentiality."
+    },
+    "section": {
+      "type": "object",
+      "required": [
+        "key",
+        "title",
+        "text",
+        "source_pages",
+        "changes",
+        "confidence"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/element_key"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_pages": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "description": "Pages of the uploaded proposal this section came from. Empty only when source is template."
+        },
+        "source_quote": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Exact text from the proposal this section came from"
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "What the AI changed from the source, one entry per change"
+        },
+        "confidence": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "source": {
+          "enum": [
+            "proposal",
+            "template"
+          ],
+          "description": "Where the text comes from. Omitted means proposal."
+        }
+      },
+      "additionalProperties": false,
+      "if": {
+        "required": [
+          "source"
+        ],
+        "properties": {
+          "source": {
+            "const": "template"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "source_pages": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  }
+}
