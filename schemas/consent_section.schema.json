@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ConsentSection",
+  "type": "object",
+  "required": [
+    "id",
+    "study_id",
+    "order",
+    "language",
+    "text",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "study_id": {
+      "type": "string"
+    },
+    "order": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "language": {
+      "type": "string",
+      "description": "en, af, de, herero, khoekhoegowab, rukwangali, silozi, oshiwambo"
+    },
+    "text": {
+      "type": "string"
+    },
+    "source_page": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Page of the uploaded proposal this section came from"
+    },
+    "source_quote": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Exact text from the proposal this section came from"
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "What the AI changed from the source, one entry per change"
+    },
+    "confidence": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        null
+      ]
+    },
+    "required_element": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Key of the required consent element this section covers, e.g. purpose, risks"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "edited",
+        "approved"
+      ]
+    },
+    "approved_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "approved_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}
