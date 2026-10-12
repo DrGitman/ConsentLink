@@ -325,9 +325,7 @@ void main() {
     expectNoException(tester);
   });
 
-  testWidgets('researcher details sheet swipes down to close', (
-    tester,
-  ) async {
+  testWidgets('researcher details sheet swipes down to close', (tester) async {
     await pumpSettings(tester, initial: '/settings/account');
     await tapVisible(tester, find.text('Researcher details'));
     expect(find.text('Save details'), findsOneWidget);

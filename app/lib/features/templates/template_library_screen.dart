@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_back_button.dart';
+import '../../core/widgets/screen_skeletons.dart';
+import '../../core/widgets/skeleton.dart';
 import '../dashboard/dashboard_components.dart';
 import '../new_consent/consent_widgets.dart';
 import '../new_consent/review_draft_screen.dart' show sheetMotion;
@@ -188,50 +190,66 @@ class _TemplateLibraryScreenState extends ConsumerState<TemplateLibraryScreen> {
                         const SizedBox(height: 16),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: AnimatedSwitcher(
-                            duration: Duration(
-                              milliseconds: reduced ? 150 : 250,
-                            ),
-                            layoutBuilder: (current, previous) => Stack(
-                              alignment: Alignment.topCenter,
-                              children: [...previous, ?current],
-                            ),
-                            child: Column(
-                              key: ValueKey('$filter-$query'),
-                              children: [
-                                if (!preview)
-                                  const EmptyCard(
-                                    title: 'No templates yet',
-                                    message:
-                                        'Your templates and your institution\'s '
-                                        'official ones appear here once template '
-                                        'storage is connected.',
-                                  )
-                                else if (visible.isEmpty)
-                                  EmptyCard(
-                                    title: query.isEmpty
-                                        ? 'No ${filter.label.toLowerCase()} templates'
-                                        : 'No matches for “$query”',
-                                    message:
-                                        'Upload one or describe what you need.',
-                                  )
-                                else
-                                  for (final (i, t) in visible.indexed)
-                                    StaggerIn(
-                                      index: i,
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                          bottom: 10,
-                                        ),
-                                        child: _TemplateCard(
-                                          template: t,
-                                          onOpen: () => context.push(
-                                            '/templates/view/${t.id}',
+                          // Figma 11.6: search, filters and Upload /
+                          // Describe stay usable while templates load.
+                          child: PreviewLoad(
+                            builder: (context, loading) => SkeletonSwitch(
+                              loading: loading,
+                              label: 'Loading templates',
+                              skeleton: TemplatesSkeleton(
+                                tint: institutionTint(ref, context),
+                                ink: Color.lerp(
+                                  institutionTint(ref, context),
+                                  Theme.of(context).colorScheme.primary,
+                                  .12,
+                                )!,
+                              ),
+                              child: AnimatedSwitcher(
+                                duration: Duration(
+                                  milliseconds: reduced ? 150 : 250,
+                                ),
+                                layoutBuilder: (current, previous) => Stack(
+                                  alignment: Alignment.topCenter,
+                                  children: [...previous, ?current],
+                                ),
+                                child: Column(
+                                  key: ValueKey('$filter-$query'),
+                                  children: [
+                                    if (!preview)
+                                      const EmptyCard(
+                                        title: 'No templates yet',
+                                        message:
+                                            'Your templates and your institution\'s '
+                                            'official ones appear here once template '
+                                            'storage is connected.',
+                                      )
+                                    else if (visible.isEmpty)
+                                      EmptyCard(
+                                        title: query.isEmpty
+                                            ? 'No ${filter.label.toLowerCase()} templates'
+                                            : 'No matches for “$query”',
+                                        message:
+                                            'Upload one or describe what you need.',
+                                      )
+                                    else
+                                      for (final (i, t) in visible.indexed)
+                                        StaggerIn(
+                                          index: i,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                              bottom: 10,
+                                            ),
+                                            child: _TemplateCard(
+                                              template: t,
+                                              onOpen: () => context.push(
+                                                '/templates/view/${t.id}',
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ),
-                              ],
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ),

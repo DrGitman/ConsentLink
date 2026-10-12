@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_provider.dart';
+import '../../core/widgets/screen_skeletons.dart';
+import '../../core/widgets/skeleton.dart';
 import '../dashboard/dashboard_components.dart';
 import '../new_consent/consent_widgets.dart';
 import '../new_consent/review_draft_screen.dart' show sheetMotion;
@@ -120,130 +122,138 @@ class MeScreen extends ConsumerWidget {
         child: SingleChildScrollView(
           key: const PageStorageKey('me-scroll'),
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-          child: Column(
-            children: [
-              RiseIn(
-                child: DashboardAction(
-                  label: '$name, $roleLine. Account',
-                  onPressed: () => context.push('/settings/account'),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(minHeight: 96),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 18, 12, 18),
-                      child: Row(
-                        children: [
-                          const ProfileAvatar(),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Semantics(
-                                  header: true,
-                                  child: Text(
-                                    name,
-                                    key: const ValueKey('page-title-me'),
-                                    style: dashboardText(
-                                      17,
-                                      weight: FontWeight.w600,
+          // Figma 11.8: the tab bar stays real; the page is a skeleton.
+          child: PreviewLoad(
+            builder: (context, loading) => SkeletonSwitch(
+              loading: loading,
+              label: 'Loading settings',
+              skeleton: const MeSkeleton(),
+              child: Column(
+                children: [
+                  RiseIn(
+                    child: DashboardAction(
+                      label: '$name, $roleLine. Account',
+                      onPressed: () => context.push('/settings/account'),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(minHeight: 96),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 18, 12, 18),
+                          child: Row(
+                            children: [
+                              const ProfileAvatar(),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Semantics(
+                                      header: true,
+                                      child: Text(
+                                        name,
+                                        key: const ValueKey('page-title-me'),
+                                        style: dashboardText(
+                                          17,
+                                          weight: FontWeight.w600,
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      roleLine,
+                                      style: dashboardText(
+                                        13,
+                                        color: AppColors.subtle,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  roleLine,
-                                  style: dashboardText(
-                                    13,
-                                    color: AppColors.subtle,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                              const SizedBox(width: 8),
+                              const DashboardIcon(
+                                'chevron_right',
+                                color: AppColors.subtle,
+                                size: 20,
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          const DashboardIcon(
-                            'chevron_right',
-                            color: AppColors.subtle,
-                            size: 20,
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  StaggerIn(
+                    index: 1,
+                    child: SettingsCard(
+                      children: [
+                        SettingsRow(
+                          icon: 'form/globe',
+                          title: 'Language',
+                          subtitle:
+                              '${ref.watch(selectedAppLanguageProvider)} · forms: $formsOn',
+                          onTap: () => context.push('/settings/languages'),
+                        ),
+                        SettingsRow(
+                          icon: 'settings/access',
+                          title: 'Accessibility',
+                          subtitle: accessibilitySummary(ref),
+                          onTap: () => context.push('/settings/accessibility'),
+                        ),
+                        SettingsRow(
+                          icon: 'settings/moon',
+                          title: 'Appearance',
+                          subtitle: ref.watch(appearanceProvider).label,
+                          onTap: () => _appearance(context, ref),
+                        ),
+                        SettingsRow(
+                          icon: 'settings/smile',
+                          title: 'Feedback pop-up',
+                          subtitle: ref.watch(feedbackSettingsProvider).summary,
+                          onTap: () => context.push('/settings/feedback'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  StaggerIn(
+                    index: 2,
+                    child: SettingsCard(
+                      children: [
+                        SettingsRow(
+                          icon: 'sparkle',
+                          title: 'AI model',
+                          subtitle: preview
+                              ? 'Gemma 4 E2B · 1.3 GB'
+                              : 'Not downloaded',
+                          onTap: () => context.push('/offline-pack'),
+                        ),
+                        SettingsRow(
+                          icon: 'sync',
+                          title: 'Sync',
+                          subtitle: preview
+                              ? '3 pending · Wi-Fi only'
+                              : 'Not connected',
+                          onTap: () => showProjectNotice(
+                            context,
+                            'Sync',
+                            preview
+                                ? '3 records are waiting on this phone. They sync '
+                                      'over Wi-Fi once project storage is connected.'
+                                : 'Sync with project storage isn\'t connected yet. '
+                                      'Everything stays encrypted on this phone.',
+                          ),
+                        ),
+                        SettingsRow(
+                          icon: 'projects/shield',
+                          title: 'Privacy & data',
+                          subtitle: 'Encryption, records, download',
+                          onTap: () => context.push('/settings/privacy'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              StaggerIn(
-                index: 1,
-                child: SettingsCard(
-                  children: [
-                    SettingsRow(
-                      icon: 'form/globe',
-                      title: 'Language',
-                      subtitle:
-                          '${ref.watch(selectedAppLanguageProvider)} · forms: $formsOn',
-                      onTap: () => context.push('/settings/languages'),
-                    ),
-                    SettingsRow(
-                      icon: 'settings/access',
-                      title: 'Accessibility',
-                      subtitle: accessibilitySummary(ref),
-                      onTap: () => context.push('/settings/accessibility'),
-                    ),
-                    SettingsRow(
-                      icon: 'settings/moon',
-                      title: 'Appearance',
-                      subtitle: ref.watch(appearanceProvider).label,
-                      onTap: () => _appearance(context, ref),
-                    ),
-                    SettingsRow(
-                      icon: 'settings/smile',
-                      title: 'Feedback pop-up',
-                      subtitle: ref.watch(feedbackSettingsProvider).summary,
-                      onTap: () => context.push('/settings/feedback'),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              StaggerIn(
-                index: 2,
-                child: SettingsCard(
-                  children: [
-                    SettingsRow(
-                      icon: 'sparkle',
-                      title: 'AI model',
-                      subtitle: preview
-                          ? 'Gemma 4 E2B · 1.3 GB'
-                          : 'Not downloaded',
-                      onTap: () => context.push('/offline-pack'),
-                    ),
-                    SettingsRow(
-                      icon: 'sync',
-                      title: 'Sync',
-                      subtitle: preview
-                          ? '3 pending · Wi-Fi only'
-                          : 'Not connected',
-                      onTap: () => showProjectNotice(
-                        context,
-                        'Sync',
-                        preview
-                            ? '3 records are waiting on this phone. They sync '
-                                  'over Wi-Fi once project storage is connected.'
-                            : 'Sync with project storage isn\'t connected yet. '
-                                  'Everything stays encrypted on this phone.',
-                      ),
-                    ),
-                    SettingsRow(
-                      icon: 'projects/shield',
-                      title: 'Privacy & data',
-                      subtitle: 'Encryption, records, download',
-                      onTap: () => context.push('/settings/privacy'),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

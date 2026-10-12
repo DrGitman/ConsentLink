@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_back_button.dart';
 import '../../core/widgets/app_toast.dart';
+import '../../core/widgets/screen_skeletons.dart';
+import '../../core/widgets/skeleton.dart';
 import '../dashboard/dashboard_components.dart';
 import '../institution/researcher_details_screen.dart';
 import '../preferences/accessibility_preferences.dart';
@@ -119,170 +121,203 @@ class _ReviewDraftScreenState extends ConsumerState<ReviewDraftScreen> {
     // Second language of the sample project (Figma 04.3).
     const otherLanguage = 'Otjiherero';
 
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: Column(
-              children: [
-                Expanded(
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.fromLTRB(20, 14, 20, 88),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ConsentTopBar(
-                                leading: AppBackButton(onPressed: _back),
-                                title: 'Review draft',
-                                trailing: ProjectCircleButton(
-                                  icon: 'consent/preview_doc',
-                                  label: 'Preview as participant',
-                                  onPressed: () => showProjectNotice(
-                                    context,
-                                    'Preview as participant',
-                                    'The participant view comes with the Form builder (04.5).',
+    // Figma 11.4: sections are skeletons while the draft loads; the back
+    // button and footer stay real ("Preparing sections…").
+    return PreviewLoad(
+      builder: (context, loading) => Scaffold(
+        body: SafeArea(
+          bottom: false,
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.fromLTRB(20, 14, 20, 88),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ConsentTopBar(
+                                  leading: AppBackButton(onPressed: _back),
+                                  title: 'Review draft',
+                                  trailing: ProjectCircleButton(
+                                    icon: 'consent/preview_doc',
+                                    label: 'Preview as participant',
+                                    onPressed: () => showProjectNotice(
+                                      context,
+                                      'Preview as participant',
+                                      'The participant view comes with the Form builder (04.5).',
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 16),
-                              Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: [
-                                  for (final language in [
-                                    'English',
-                                    otherLanguage,
-                                  ])
-                                    _LanguageChip(
-                                      label: language,
-                                      selected: draft.language == language,
-                                      large: large,
-                                      onTap: () => ref
-                                          .read(consentDraftProvider.notifier)
-                                          .setLanguage(language),
-                                    ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              AnimatedSwitcher(
-                                duration: Duration(
-                                  milliseconds: reduceMotion(context)
-                                      ? 150
-                                      : 250,
-                                ),
-                                child: draft.missingElement
-                                    ? _Checklist(
-                                        key: const ValueKey('missing'),
-                                        missing: draft.missingKeys,
-                                        onTap: ref
-                                            .read(consentDraftProvider.notifier)
-                                            .addMissingElement,
-                                      )
-                                    : const _ChecklistDone(
-                                        key: ValueKey('done'),
+                                const SizedBox(height: 16),
+                                SkeletonSwitch(
+                                  loading: loading,
+                                  label: 'Loading draft',
+                                  slowMessage:
+                                      'Preparing the AI draft on this phone…',
+                                  skeleton: const ReviewDraftSkeleton(),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Wrap(
+                                        spacing: 8,
+                                        runSpacing: 8,
+                                        children: [
+                                          for (final language in [
+                                            'English',
+                                            otherLanguage,
+                                          ])
+                                            _LanguageChip(
+                                              label: language,
+                                              selected:
+                                                  draft.language == language,
+                                              large: large,
+                                              onTap: () => ref
+                                                  .read(
+                                                    consentDraftProvider
+                                                        .notifier,
+                                                  )
+                                                  .setLanguage(language),
+                                            ),
+                                        ],
                                       ),
-                              ),
-                              if (draft.language != 'English') ...[
-                                const SizedBox(height: 10),
-                                _TranslationNote(language: draft.language),
-                              ],
-                              const SizedBox(height: 10),
-                              AnimatedSize(
-                                duration: reduceMotion(context)
-                                    ? Duration.zero
-                                    : const Duration(milliseconds: 300),
-                                curve: Curves.easeOutCubic,
-                                alignment: Alignment.topCenter,
-                                child: Column(
-                                  children: [
-                                    for (final section in shown)
-                                      Padding(
-                                        key: ValueKey(section.key),
-                                        padding: const EdgeInsets.only(
-                                          bottom: 10,
+                                      const SizedBox(height: 12),
+                                      AnimatedSwitcher(
+                                        duration: Duration(
+                                          milliseconds: reduceMotion(context)
+                                              ? 150
+                                              : 250,
                                         ),
-                                        child: RiseIn(
-                                          child: _SectionCard(
-                                            section: section,
-                                            flash: _flash == section.key,
-                                            onFlashDone: () =>
-                                                setState(() => _flash = null),
-                                            onWhy: () => _why(section),
-                                            onEdit: () => _edit(section),
-                                            onApprove: () => approve(section),
+                                        child: draft.missingElement
+                                            ? _Checklist(
+                                                key: const ValueKey('missing'),
+                                                missing: draft.missingKeys,
+                                                onTap: ref
+                                                    .read(
+                                                      consentDraftProvider
+                                                          .notifier,
+                                                    )
+                                                    .addMissingElement,
+                                              )
+                                            : const _ChecklistDone(
+                                                key: ValueKey('done'),
+                                              ),
+                                      ),
+                                      if (draft.language != 'English') ...[
+                                        const SizedBox(height: 10),
+                                        _TranslationNote(
+                                          language: draft.language,
+                                        ),
+                                      ],
+                                      const SizedBox(height: 10),
+                                      AnimatedSize(
+                                        duration: reduceMotion(context)
+                                            ? Duration.zero
+                                            : const Duration(milliseconds: 300),
+                                        curve: Curves.easeOutCubic,
+                                        alignment: Alignment.topCenter,
+                                        child: Column(
+                                          children: [
+                                            for (final section in shown)
+                                              Padding(
+                                                key: ValueKey(section.key),
+                                                padding: const EdgeInsets.only(
+                                                  bottom: 10,
+                                                ),
+                                                child: RiseIn(
+                                                  child: _SectionCard(
+                                                    section: section,
+                                                    flash:
+                                                        _flash == section.key,
+                                                    onFlashDone: () => setState(
+                                                      () => _flash = null,
+                                                    ),
+                                                    onWhy: () => _why(section),
+                                                    onEdit: () =>
+                                                        _edit(section),
+                                                    onApprove: () =>
+                                                        approve(section),
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      if (hidden > 0)
+                                        TextButton(
+                                          style: TextButton.styleFrom(
+                                            padding: EdgeInsets.zero,
+                                            minimumSize: const Size(48, 48),
+                                            overlayColor: Colors.transparent,
+                                            splashFactory:
+                                                NoSplash.splashFactory,
+                                          ),
+                                          onPressed: () => setState(
+                                            () => _showAll = !_showAll,
+                                          ),
+                                          child: Text(
+                                            _showAll
+                                                ? 'Show fewer sections'
+                                                : '+ $hidden more sections',
+                                            style: dashboardText(
+                                              13,
+                                              color: primary,
+                                              weight: FontWeight.w500,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              if (hidden > 0)
-                                TextButton(
-                                  style: TextButton.styleFrom(
-                                    padding: EdgeInsets.zero,
-                                    minimumSize: const Size(48, 48),
-                                    overlayColor: Colors.transparent,
-                                    splashFactory: NoSplash.splashFactory,
-                                  ),
-                                  onPressed: () =>
-                                      setState(() => _showAll = !_showAll),
-                                  child: Text(
-                                    _showAll
-                                        ? 'Show fewer sections'
-                                        : '+ $hidden more sections',
-                                    style: dashboardText(
-                                      13,
-                                      color: primary,
-                                      weight: FontWeight.w500,
-                                    ),
+                                    ],
                                   ),
                                 ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      // App-styled "approved" toast with Undo (Figma Approve
-                      // section: Undo for 5 s).
-                      Positioned(
-                        left: 20,
-                        right: 20,
-                        bottom: 12,
-                        child: AnimatedSwitcher(
-                          duration: Duration(
-                            milliseconds: reduceMotion(context) ? 150 : 250,
+                        // App-styled "approved" toast with Undo (Figma Approve
+                        // section: Undo for 5 s).
+                        Positioned(
+                          left: 20,
+                          right: 20,
+                          bottom: 12,
+                          child: AnimatedSwitcher(
+                            duration: Duration(
+                              milliseconds: reduceMotion(context) ? 150 : 250,
+                            ),
+                            switchInCurve: Curves.easeOutCubic,
+                            switchOutCurve: Curves.easeInCubic,
+                            transitionBuilder: (child, a) =>
+                                appToastTransition(context, child, a),
+                            child: _toast == null
+                                ? const SizedBox(key: ValueKey('no-toast'))
+                                : AppToast(
+                                    key: ValueKey('toast-$_toastKey'),
+                                    kind: AppToastKind.success,
+                                    title: 'Section approved',
+                                    subtitle: _toast!.title,
+                                    actionLabel: 'Undo',
+                                    onAction: _undo,
+                                    countdown: const Duration(seconds: 5),
+                                  ),
                           ),
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.easeInCubic,
-                          transitionBuilder: (child, a) =>
-                              appToastTransition(context, child, a),
-                          child: _toast == null
-                              ? const SizedBox(key: ValueKey('no-toast'))
-                              : AppToast(
-                                  key: ValueKey('toast-$_toastKey'),
-                                  kind: AppToastKind.success,
-                                  title: 'Section approved',
-                                  subtitle: _toast!.title,
-                                  actionLabel: 'Undo',
-                                  onAction: _undo,
-                                  countdown: const Duration(seconds: 5),
-                                ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                _Footer(
-                  done: draft.doneCount,
-                  allApproved: draft.allApproved,
-                  onContinue: () => context.push('/new-consent/form'),
-                ),
-              ],
+                  _Footer(
+                    done: draft.doneCount,
+                    allApproved: draft.allApproved,
+                    preparing: loading,
+                    onContinue: () => context.push('/new-consent/form'),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -676,10 +711,14 @@ class _Footer extends StatelessWidget {
     required this.done,
     required this.allApproved,
     required this.onContinue,
+    this.preparing = false,
   });
   final int done;
   final bool allApproved;
   final VoidCallback onContinue;
+
+  /// While the draft loads (Figma 11.4): label only, button disabled.
+  final bool preparing;
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
@@ -697,52 +736,64 @@ class _Footer extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            children: [
-              ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery.sizeOf(context).width * .55,
+          if (preparing)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Semantics(
+                liveRegion: true,
+                child: Text(
+                  'Preparing sections…',
+                  style: dashboardText(13, color: AppColors.muted),
                 ),
-                child: Semantics(
-                  liveRegion: true,
-                  child: Text(
-                    '$done of $requiredElementCount approved',
-                    style: dashboardText(
-                      13,
-                      color: AppColors.muted,
-                      weight: FontWeight.w600,
+              ),
+            )
+          else
+            Row(
+              children: [
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.sizeOf(context).width * .55,
+                  ),
+                  child: Semantics(
+                    liveRegion: true,
+                    child: Text(
+                      '$done of $requiredElementCount approved',
+                      style: dashboardText(
+                        13,
+                        color: AppColors.muted,
+                        weight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(end: done / requiredElementCount),
-                  duration: reduceMotion(context)
-                      ? Duration.zero
-                      : const Duration(milliseconds: 400),
-                  curve: Curves.easeInOutCubic,
-                  builder: (context, v, _) => ClipRRect(
-                    borderRadius: BorderRadius.circular(3),
-                    child: LinearProgressIndicator(
-                      value: v,
-                      minHeight: 6,
-                      color: primary,
-                      backgroundColor: AppColors.line,
+                const SizedBox(width: 24),
+                Expanded(
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(end: done / requiredElementCount),
+                    duration: reduceMotion(context)
+                        ? Duration.zero
+                        : const Duration(milliseconds: 400),
+                    curve: Curves.easeInOutCubic,
+                    builder: (context, v, _) => ClipRRect(
+                      borderRadius: BorderRadius.circular(3),
+                      child: LinearProgressIndicator(
+                        value: v,
+                        minHeight: 6,
+                        color: primary,
+                        backgroundColor: AppColors.line,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           const SizedBox(height: 8),
           ConsentPillButton(
-            label: allApproved
+            label: allApproved && !preparing
                 ? 'Continue to form builder'
                 : 'Approve remaining to continue',
             height: 52,
-            onPressed: allApproved ? onContinue : null,
+            onPressed: allApproved && !preparing ? onContinue : null,
           ),
         ],
       ),

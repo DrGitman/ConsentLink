@@ -386,60 +386,60 @@ class _ResearcherDetailsSheetState
           Flexible(
             child: _PullDownToClose(
               child: SingleChildScrollView(
-              // Clamping, so pulling down at the top reports overscroll.
-              primary: false,
-              physics: const ClampingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(24, 19, 24, 8),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Researcher details',
-                    style: dashboardText(22, weight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Shown to participants so they know who to contact.',
-                    style: dashboardText(13, color: AppColors.subtle),
-                  ),
-                  const SizedBox(height: 14),
-                  for (var k = 0; k < _fields.length; k++) ...[
+                // Clamping, so pulling down at the top reports overscroll.
+                primary: false,
+                physics: const ClampingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(24, 19, 24, 8),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      _fields[k].$1,
-                      style: dashboardText(
-                        13,
-                        color: AppColors.muted,
-                        weight: FontWeight.w600,
-                      ),
+                      'Researcher details',
+                      style: dashboardText(22, weight: FontWeight.w600),
                     ),
-                    const SizedBox(height: 6),
-                    VoiceTextField(
-                      controller: _controllers[k],
-                      hint: _fields[k].$2,
-                      icon: _fields[k].$3,
-                      fieldLabel: _fields[k].$1,
-                      keyboardType: switch (k) {
-                        1 => TextInputType.emailAddress,
-                        4 => TextInputType.phone,
-                        _ => null,
-                      },
-                      onChanged: k == 1 && _emailError != null
-                          ? (_) => setState(() => _emailError = null)
-                          : null,
+                    const SizedBox(height: 4),
+                    Text(
+                      'Shown to participants so they know who to contact.',
+                      style: dashboardText(13, color: AppColors.subtle),
                     ),
-                    if (k == 1 && _emailError != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        _emailError!,
-                        style: dashboardText(12, color: AppColors.error),
-                      ),
-                    ],
                     const SizedBox(height: 14),
+                    for (var k = 0; k < _fields.length; k++) ...[
+                      Text(
+                        _fields[k].$1,
+                        style: dashboardText(
+                          13,
+                          color: AppColors.muted,
+                          weight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      VoiceTextField(
+                        controller: _controllers[k],
+                        hint: _fields[k].$2,
+                        icon: _fields[k].$3,
+                        fieldLabel: _fields[k].$1,
+                        keyboardType: switch (k) {
+                          1 => TextInputType.emailAddress,
+                          4 => TextInputType.phone,
+                          _ => null,
+                        },
+                        onChanged: k == 1 && _emailError != null
+                            ? (_) => setState(() => _emailError = null)
+                            : null,
+                      ),
+                      if (k == 1 && _emailError != null) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          _emailError!,
+                          style: dashboardText(12, color: AppColors.error),
+                        ),
+                      ],
+                      const SizedBox(height: 14),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
             ),
           ),
           Padding(
