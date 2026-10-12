@@ -15,7 +15,8 @@ then folds away and the content moves up). It drops back in 2 s later so it can 
 replayed. `SyncBanner` only draws a phase, so the real sync layer can drive it later.
 Reduce motion turns all of this into 150 ms fades with no spinner. Nothing is uploaded.
 
-Add `DASHBOARD_LOADING_PREVIEW=true` to inspect the 1.3-second loading shimmer.
+Add `DASHBOARD_LOADING_PREVIEW=true` to hold the Figma 11.1 loading skeleton
+(shared skeleton in `lib/core/widgets/skeleton.dart`).
 It is static with Reduce motion enabled and stops when its tab is inactive.
 Neither preview flag is enabled by default. Normal mode shows disconnected/empty
 states; no backend data, real search, notifications or consent creation is wired.

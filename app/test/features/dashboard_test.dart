@@ -1,7 +1,8 @@
 import 'package:consentlink/core/theme/app_theme.dart';
+import 'package:consentlink/core/widgets/screen_skeletons.dart';
+import 'package:consentlink/core/widgets/skeleton.dart';
 import 'package:consentlink/features/dashboard/dashboard_components.dart';
 import 'package:consentlink/features/dashboard/dashboard_screen.dart';
-import 'package:consentlink/features/dashboard/dashboard_loading.dart';
 import 'package:consentlink/features/preferences/accessibility_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -187,7 +188,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
-    expect(find.byType(DashboardLoading), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byType(DashboardSkeleton), findsOneWidget);
+    expect(find.byType(SkeletonShimmer), findsOneWidget);
     expect(tester.hasRunningAnimations, isFalse);
     // Let preview sync timers finish.
     await tester.pump(const Duration(seconds: 4));

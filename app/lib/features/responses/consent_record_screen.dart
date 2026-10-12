@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_back_button.dart';
 import '../../core/widgets/app_toast.dart';
+import '../../core/widgets/screen_skeletons.dart';
+import '../../core/widgets/skeleton.dart';
 import '../dashboard/dashboard_components.dart';
 import '../new_consent/consent_widgets.dart';
 import '../preferences/accessibility_preferences.dart';
@@ -52,74 +54,87 @@ class ConsentRecordScreen extends ConsumerWidget {
         .firstOrNull;
     final title = r == null ? code : '${r.code} · ${r.name}';
 
-    return Scaffold(
-      backgroundColor: AppColors.canvas,
-      body: SafeArea(
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 9, 20, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ConsentTopBar(
-                          leading: AppBackButton(
-                            onPressed: () => _back(context),
-                          ),
-                          title: title,
-                          trailing: r == null
-                              ? null
-                              : ProjectCircleButton(
-                                  icon: 'projects/download',
-                                  label: 'Export this record',
-                                  onPressed: () => showExportSheet(
-                                    context,
-                                    subtitle: '${r.code} · 1 record',
-                                    count: 1,
+    // Figma 11.7: back and export stay real; the record is a skeleton
+    // while it is decrypted.
+    return PreviewLoad(
+      builder: (context, loading) => Scaffold(
+        backgroundColor: AppColors.canvas,
+        body: SafeArea(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(20, 9, 20, 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ConsentTopBar(
+                            leading: AppBackButton(
+                              onPressed: () => _back(context),
+                            ),
+                            title: title,
+                            trailing: r == null
+                                ? null
+                                : ProjectCircleButton(
+                                    icon: 'projects/download',
+                                    label: 'Export this record',
+                                    onPressed: () => showExportSheet(
+                                      context,
+                                      subtitle: '${r.code} · 1 record',
+                                      count: 1,
+                                    ),
                                   ),
-                                ),
-                        ),
-                        const SizedBox(height: 10),
-                        if (r == null)
-                          const EmptyCard(
-                            title: 'Record not found',
-                            message:
-                                'It may not be on this phone. Sync isn\'t connected yet.',
-                          )
-                        else ...[
-                          _StatusLine(response: r),
-                          const SizedBox(height: 12),
-                          RiseIn(child: _Answers(response: r)),
-                          const SizedBox(height: 12),
-                          RiseIn(child: _Signature(response: r)),
-                          const SizedBox(height: 12),
-                          RiseIn(child: _AuditTrail(response: r)),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-                if (r != null)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                    child: AnimatedSwitcher(
-                      duration: Duration(
-                        milliseconds: reduceMotion(context) ? 150 : 250,
-                      ),
-                      child: r.status == ResponseStatus.agreed
-                          ? _WithdrawButton(
-                              key: const ValueKey('withdraw'),
-                              onPressed: () => _withdraw(context, ref, r),
+                          ),
+                          const SizedBox(height: 10),
+                          if (r == null)
+                            const EmptyCard(
+                              title: 'Record not found',
+                              message:
+                                  'It may not be on this phone. Sync isn\'t connected yet.',
                             )
-                          : const SizedBox(key: ValueKey('none')),
+                          else
+                            SkeletonSwitch(
+                              loading: loading,
+                              label: 'Loading consent record',
+                              skeleton: const ConsentRecordSkeleton(),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _StatusLine(response: r),
+                                  const SizedBox(height: 12),
+                                  RiseIn(child: _Answers(response: r)),
+                                  const SizedBox(height: 12),
+                                  RiseIn(child: _Signature(response: r)),
+                                  const SizedBox(height: 12),
+                                  RiseIn(child: _AuditTrail(response: r)),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
-              ],
+                  if (r != null && !loading)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+                      child: AnimatedSwitcher(
+                        duration: Duration(
+                          milliseconds: reduceMotion(context) ? 150 : 250,
+                        ),
+                        child: r.status == ResponseStatus.agreed
+                            ? _WithdrawButton(
+                                key: const ValueKey('withdraw'),
+                                onPressed: () => _withdraw(context, ref, r),
+                              )
+                            : const SizedBox(key: ValueKey('none')),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),

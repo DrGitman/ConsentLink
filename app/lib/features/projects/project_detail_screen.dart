@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_back_button.dart';
+import '../../core/widgets/screen_skeletons.dart';
+import '../../core/widgets/skeleton.dart';
 import '../dashboard/dashboard_components.dart';
 import '../preferences/accessibility_preferences.dart';
 import '../responses/export_sheet.dart';
@@ -96,36 +98,52 @@ class ProjectDetailScreen extends ConsumerWidget {
                     children: [
                       header,
                       const SizedBox(height: 12),
-                      Semantics(
-                        header: true,
-                        child: Text(
-                          project.title,
-                          style: dashboardText(26, weight: FontWeight.w600),
+                      // Figma 11.3: back and more stay real while loading.
+                      PreviewLoad(
+                        builder: (context, loading) => SkeletonSwitch(
+                          loading: loading,
+                          label: 'Loading project',
+                          skeleton: const ProjectDetailSkeleton(),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Semantics(
+                                header: true,
+                                child: Text(
+                                  project.title,
+                                  style: dashboardText(
+                                    26,
+                                    weight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              if (project.ethicsRef != null)
+                                ProjectBadge(
+                                  icon: 'projects/shield',
+                                  label:
+                                      'Ethics: ${project.ethicsRef} · valid to ${project.ethicsValidTo}',
+                                  fill: institutionTint(ref, context),
+                                  ink: primary,
+                                )
+                              else
+                                ProjectStatusBadge(project.status),
+                              const SizedBox(height: 14),
+                              _Stats(project: project),
+                              const SizedBox(height: 18),
+                              _SectionTitle('Consent form'),
+                              const SizedBox(height: 10),
+                              _FormCard(project: project),
+                              const SizedBox(height: 18),
+                              _SectionTitle('Collect consent'),
+                              const SizedBox(height: 10),
+                              _StartCapture(project: project),
+                              const SizedBox(height: 12),
+                              _OtherWays(project: project),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      if (project.ethicsRef != null)
-                        ProjectBadge(
-                          icon: 'projects/shield',
-                          label:
-                              'Ethics: ${project.ethicsRef} · valid to ${project.ethicsValidTo}',
-                          fill: institutionTint(ref, context),
-                          ink: primary,
-                        )
-                      else
-                        ProjectStatusBadge(project.status),
-                      const SizedBox(height: 14),
-                      _Stats(project: project),
-                      const SizedBox(height: 18),
-                      _SectionTitle('Consent form'),
-                      const SizedBox(height: 10),
-                      _FormCard(project: project),
-                      const SizedBox(height: 18),
-                      _SectionTitle('Collect consent'),
-                      const SizedBox(height: 10),
-                      _StartCapture(project: project),
-                      const SizedBox(height: 12),
-                      _OtherWays(project: project),
                     ],
                   ),
           ),

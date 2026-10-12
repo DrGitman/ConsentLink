@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/screen_skeletons.dart';
+import '../../core/widgets/skeleton.dart';
 import '../dashboard/dashboard_components.dart';
 import '../preferences/accessibility_preferences.dart';
 import 'project_data.dart';
@@ -75,37 +77,45 @@ class ProjectsScreen extends ConsumerWidget {
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
               sliver: SliverToBoxAdapter(
-                child: AnimatedSwitcher(
-                  duration: Duration(milliseconds: reduced ? 150 : 250),
-                  switchInCurve: Curves.easeOutCubic,
-                  layoutBuilder: (current, previous) => Stack(
-                    alignment: Alignment.topCenter,
-                    children: [...previous, ?current],
-                  ),
-                  child: Column(
-                    key: ValueKey(filter),
-                    children: [
-                      if (visible.isEmpty)
-                        _EmptyState(preview: preview, filter: filter)
-                      else
-                        for (final (i, project) in visible.indexed)
-                          _StaggeredIn(
-                            index: i,
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: ProjectCard(
-                                project: project,
-                                onOpen: () =>
-                                    context.go('/projects/${project.id}'),
-                                onMore: () => showProjectNotice(
-                                  context,
-                                  project.title,
-                                  'Rename, duplicate and close will be connected with the project data source.',
+                // Figma 11.2: cards are skeletons while projects load.
+                child: PreviewLoad(
+                  builder: (context, loading) => SkeletonSwitch(
+                    loading: loading,
+                    label: 'Loading projects',
+                    skeleton: const ProjectsSkeleton(),
+                    child: AnimatedSwitcher(
+                      duration: Duration(milliseconds: reduced ? 150 : 250),
+                      switchInCurve: Curves.easeOutCubic,
+                      layoutBuilder: (current, previous) => Stack(
+                        alignment: Alignment.topCenter,
+                        children: [...previous, ?current],
+                      ),
+                      child: Column(
+                        key: ValueKey(filter),
+                        children: [
+                          if (visible.isEmpty)
+                            _EmptyState(preview: preview, filter: filter)
+                          else
+                            for (final (i, project) in visible.indexed)
+                              _StaggeredIn(
+                                index: i,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: ProjectCard(
+                                    project: project,
+                                    onOpen: () =>
+                                        context.go('/projects/${project.id}'),
+                                    onMore: () => showProjectNotice(
+                                      context,
+                                      project.title,
+                                      'Rename, duplicate and close will be connected with the project data source.',
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                    ],
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),

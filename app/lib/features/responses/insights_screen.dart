@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/screen_skeletons.dart';
+import '../../core/widgets/skeleton.dart';
 import '../dashboard/dashboard_components.dart';
 import '../projects/project_widgets.dart';
 import 'export_sheet.dart';
@@ -73,23 +75,35 @@ class InsightsScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: !preview
-                    ? const EmptyCard(
-                        title: 'No insights yet',
-                        message:
-                            'Recruitment, agreement and understanding appear '
-                            'here once responses sync. Sync isn\'t connected yet.',
-                      )
-                    : AnimatedSwitcher(
-                        duration: Duration(milliseconds: reduced ? 150 : 250),
-                        child: _Body(
-                          key: ValueKey(period),
-                          data: data,
-                          total: responses.length,
-                          waiting: responses.where((r) => !r.synced).length,
-                          onResponses: () => context.go('/insights/responses'),
-                        ),
-                      ),
+                // Figma 11.5: title, export and periods stay real.
+                child: PreviewLoad(
+                  builder: (context, loading) => SkeletonSwitch(
+                    loading: loading,
+                    label: 'Loading insights',
+                    slowMessage: 'Counting responses on this phone…',
+                    skeleton: const InsightsSkeleton(),
+                    child: !preview
+                        ? const EmptyCard(
+                            title: 'No insights yet',
+                            message:
+                                'Recruitment, agreement and understanding appear '
+                                'here once responses sync. Sync isn\'t connected yet.',
+                          )
+                        : AnimatedSwitcher(
+                            duration: Duration(
+                              milliseconds: reduced ? 150 : 250,
+                            ),
+                            child: _Body(
+                              key: ValueKey(period),
+                              data: data,
+                              total: responses.length,
+                              waiting: responses.where((r) => !r.synced).length,
+                              onResponses: () =>
+                                  context.go('/insights/responses'),
+                            ),
+                          ),
+                  ),
+                ),
               ),
             ],
           ),
