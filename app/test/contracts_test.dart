@@ -4,25 +4,28 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:json_schema/json_schema.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/contracts/form_hash.dart';
-import '../lib/contracts/models.dart';
+import 'package:consentlink/contracts/form_hash.dart';
+import 'package:consentlink/contracts/models.dart';
 
-ConsentSection section({String text = 'Hello', int order = 0, String id = 's1'}) =>
-    ConsentSection(
-      id: id,
-      studyId: 'study1',
-      order: order,
-      language: 'en',
-      text: text,
-      sourcePage: 3,
-      sourceQuote: 'quote',
-      changes: const ['simplified wording'],
-      confidence: Confidence.high,
-      requiredElement: 'purpose',
-      status: SectionStatus.approved,
-      approvedBy: 'u1',
-      approvedAt: DateTime.utc(2026, 10, 12),
-    );
+ConsentSection section({
+  String text = 'Hello',
+  int order = 0,
+  String id = 's1',
+}) => ConsentSection(
+  id: id,
+  studyId: 'study1',
+  order: order,
+  language: 'en',
+  text: text,
+  sourcePage: 3,
+  sourceQuote: 'quote',
+  changes: const ['simplified wording'],
+  confidence: Confidence.high,
+  requiredElement: 'purpose',
+  status: SectionStatus.approved,
+  approvedBy: 'u1',
+  approvedAt: DateTime.utc(2026, 10, 12),
+);
 
 void main() {
   final schema = JsonSchema.create(
@@ -45,7 +48,9 @@ void main() {
     final a = section(id: 'a', order: 0);
     final b = section(id: 'b', order: 1, text: 'World');
     expect(computeFormHash([a, b]), computeFormHash([b, a]));
-    expect(computeFormHash([a, b]),
-        isNot(computeFormHash([a, section(id: 'b', order: 1, text: 'World!')])));
+    expect(
+      computeFormHash([a, b]),
+      isNot(computeFormHash([a, section(id: 'b', order: 1, text: 'World!')])),
+    );
   });
 }

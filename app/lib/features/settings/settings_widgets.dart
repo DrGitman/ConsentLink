@@ -18,10 +18,14 @@ class SettingsPage extends StatelessWidget {
     required this.title,
     required this.children,
     this.footer,
+    this.fallback = '/me',
   });
   final String title;
   final List<Widget> children;
   final Widget? footer;
+
+  /// Where Back goes when there is nothing to pop (opened directly).
+  final String fallback;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -43,7 +47,7 @@ class SettingsPage extends StatelessWidget {
                         leading: AppBackButton(
                           onPressed: () => context.canPop()
                               ? context.pop()
-                              : context.go('/me'),
+                              : context.go(fallback),
                         ),
                         title: title,
                       ),

@@ -41,3 +41,4 @@ Thumbs.db
 # Never commit real participant data
 fixtures/real/
 *.participant.*
+docs/

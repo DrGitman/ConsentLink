@@ -11,6 +11,12 @@ import '../../features/field_capture/done_screen.dart';
 import '../../features/field_capture/hand_over_screen.dart';
 import '../../features/field_capture/read_consent_screen.dart';
 import '../../features/field_capture/sign_screen.dart';
+import '../../features/minors/age_check_screen.dart';
+import '../../features/minors/assent_screen.dart';
+import '../../features/minors/assent_stopped_screen.dart';
+import '../../features/minors/guardian_consent_screen.dart';
+import '../../features/minors/guardian_details_screen.dart';
+import '../../features/minors/minors_settings_screen.dart';
 import '../../features/form_builder/form_builder_screen.dart';
 import '../../features/form_builder/template_style_screen.dart';
 import '../../features/new_consent/drafting_screen.dart';
@@ -381,7 +387,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             pageBuilder: (context, state) =>
                 projectPushPage(key: state.pageKey, child: const DoneScreen()),
           ),
+          // Minors (Figma 10.2–10.7): age check, guardian, assent, stop.
+          for (final (path, page) in <(String, Widget)>[
+            ('age', const AgeCheckScreen()),
+            ('guardian', const GuardianDetailsScreen()),
+            ('guardian-consent', const GuardianConsentScreen()),
+            ('assent', const AssentScreen()),
+            ('stopped', const AssentStoppedScreen()),
+          ])
+            GoRoute(
+              path: path,
+              pageBuilder: (context, state) =>
+                  projectPushPage(key: state.pageKey, child: page),
+            ),
         ],
+      ),
+      // Project setting — includes minors (Figma 10.1), full screen.
+      GoRoute(
+        path: '/participants/:id',
+        pageBuilder: (context, state) => projectPushPage(
+          key: state.pageKey,
+          child: MinorsSettingsScreen(projectId: state.pathParameters['id']!),
+        ),
       ),
       // Consent record (Figma 07.2 / 07.5): full screen, outside the tab shell.
       GoRoute(

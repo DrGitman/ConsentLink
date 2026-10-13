@@ -6,6 +6,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_back_button.dart';
 import '../../core/widgets/app_toggle.dart';
 import '../dashboard/dashboard_components.dart';
+import '../minors/minors_data.dart';
 import '../new_consent/consent_widgets.dart';
 import '../preferences/accessibility_preferences.dart';
 import '../projects/project_widgets.dart';
@@ -33,6 +34,7 @@ class _HandOverScreenState extends ConsumerState<HandOverScreen> {
       ref
           .read(captureSessionProvider.notifier)
           .start(projectId: widget.projectId);
+      ref.read(minorSessionProvider.notifier).clear();
     });
   }
 
@@ -53,6 +55,7 @@ class _HandOverScreenState extends ConsumerState<HandOverScreen> {
     final controller = ref.read(captureSessionProvider.notifier);
     final primary = Theme.of(context).colorScheme.primary;
     final tint = institutionTint(ref, context);
+    final minors = minorsFor(ref, widget.projectId);
 
     return CaptureScaffold(
       participant: false,
@@ -63,7 +66,15 @@ class _HandOverScreenState extends ConsumerState<HandOverScreen> {
         icon: 'capture/play',
         onPressed: participant == null
             ? null
-            : () => context.push('/field-capture/read'),
+            : () {
+                // Projects with minors (10.1) check the age first (10.2).
+                if (minors.includesMinors) {
+                  ref.read(minorSessionProvider.notifier).start();
+                  context.push('/field-capture/age');
+                } else {
+                  context.push('/field-capture/read');
+                }
+              },
       ),
       children: [
         ConsentTopBar(

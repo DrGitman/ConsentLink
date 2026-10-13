@@ -8,6 +8,8 @@ import '../../core/widgets/app_toast.dart';
 import '../../core/widgets/screen_skeletons.dart';
 import '../../core/widgets/skeleton.dart';
 import '../dashboard/dashboard_components.dart';
+import '../minors/minor_record_screen.dart';
+import '../minors/minors_data.dart';
 import '../new_consent/consent_widgets.dart';
 import '../preferences/accessibility_preferences.dart';
 import '../projects/project_widgets.dart';
@@ -48,6 +50,10 @@ class ConsentRecordScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Minors (Figma 10.8) have their own record: guardian + assent.
+    if (ref.watch(minorRecordsProvider).any((m) => m.code == code)) {
+      return MinorRecordScreen(code: code);
+    }
     final r = ref
         .watch(responsesProvider)
         .where((e) => e.code == code)
@@ -126,7 +132,7 @@ class ConsentRecordScreen extends ConsumerWidget {
                           milliseconds: reduceMotion(context) ? 150 : 250,
                         ),
                         child: r.status == ResponseStatus.agreed
-                            ? _WithdrawButton(
+                            ? WithdrawButton(
                                 key: const ValueKey('withdraw'),
                                 onPressed: () => _withdraw(context, ref, r),
                               )
@@ -360,8 +366,9 @@ class _AuditTrail extends StatelessWidget {
   }
 }
 
-class _WithdrawButton extends ConsumerWidget {
-  const _WithdrawButton({super.key, required this.onPressed});
+/// Figma "Record withdrawal" (pink, red ink). Also used by 10.8.
+class WithdrawButton extends ConsumerWidget {
+  const WithdrawButton({super.key, required this.onPressed});
   final VoidCallback onPressed;
   @override
   Widget build(BuildContext context, WidgetRef ref) {

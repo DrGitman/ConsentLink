@@ -6,9 +6,12 @@ import '../../core/widgets/app_back_button.dart';
 import '../../core/widgets/screen_skeletons.dart';
 import '../../core/widgets/skeleton.dart';
 import '../dashboard/dashboard_components.dart';
+import '../new_consent/review_draft_screen.dart' show sheetMotion;
 import '../preferences/accessibility_preferences.dart';
 import '../responses/export_sheet.dart';
 import '../responses/responses_data.dart';
+import '../settings/settings_widgets.dart' show SettingsRow;
+import '../templates/template_widgets.dart' show SheetHandle;
 import 'project_data.dart';
 import 'project_widgets.dart';
 
@@ -24,6 +27,61 @@ class ProjectDetailScreen extends ConsumerWidget {
       context.go('/projects');
     }
   }
+
+  /// More options: Participants (Figma 10.1, includes minors) and the
+  /// project actions that need the project data source.
+  Future<void> _more(
+    BuildContext context,
+    Project project,
+  ) => showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    useRootNavigator: true,
+    backgroundColor: Colors.white,
+    barrierColor: const Color(0xFF0B100E).withValues(alpha: .45),
+    sheetAnimationStyle: sheetMotion(context),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+    ),
+    builder: (sheet) => Padding(
+      padding: const EdgeInsets.fromLTRB(24, 10, 24, 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SheetHandle(),
+          const SizedBox(height: 19),
+          Text(
+            project.title,
+            style: dashboardText(20, weight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          SettingsRow(
+            icon: 'capture/users',
+            title: 'Participants',
+            subtitle: 'Age groups, guardians and assent',
+            onTap: () {
+              Navigator.pop(sheet);
+              context.push('/participants/${project.id}');
+            },
+          ),
+          SettingsRow(
+            icon: 'projects/dots',
+            title: 'Rename, duplicate or close',
+            subtitle: 'Needs the project data source',
+            onTap: () {
+              Navigator.pop(sheet);
+              showProjectNotice(
+                context,
+                project.title,
+                'Rename, duplicate and close will be connected with the project data source.',
+              );
+            },
+          ),
+        ],
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -53,11 +111,7 @@ class ProjectDetailScreen extends ConsumerWidget {
             icon: 'projects/dots',
             label: 'More project options',
             color: AppColors.subtle,
-            onPressed: () => showProjectNotice(
-              context,
-              project.title,
-              'Rename, duplicate and close will be connected with the project data source.',
-            ),
+            onPressed: () => _more(context, project),
           ),
         ],
       ],

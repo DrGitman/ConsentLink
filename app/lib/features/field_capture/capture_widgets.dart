@@ -499,24 +499,28 @@ class _WaveformState extends State<Waveform>
   Widget build(BuildContext context) => ExcludeSemantics(
     child: SizedBox(
       height: widget.maxHeight,
-      child: AnimatedBuilder(
-        animation: _c,
-        builder: (context, _) => Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            for (var i = 0; i < widget.count; i++) ...[
-              if (i > 0) const SizedBox(width: 5),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 120),
-                width: 5,
-                height: _height(i),
-                decoration: BoxDecoration(
-                  color: widget.color,
-                  borderRadius: BorderRadius.circular(3),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: AnimatedBuilder(
+          animation: _c,
+          builder: (context, _) => Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (var i = 0; i < widget.count; i++) ...[
+                if (i > 0) const SizedBox(width: 5),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 120),
+                  width: 5,
+                  height: _height(i),
+                  decoration: BoxDecoration(
+                    color: widget.color,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
                 ),
-              ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     ),
