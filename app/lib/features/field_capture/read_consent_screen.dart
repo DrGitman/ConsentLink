@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../dashboard/dashboard_components.dart';
 import '../institution/institution_preferences.dart';
+import '../minors/minors_data.dart';
 import '../new_consent/consent_widgets.dart';
 import '../new_consent/review_draft_screen.dart' show sheetMotion;
 import '../projects/project_widgets.dart';
@@ -140,7 +141,12 @@ class _ReadConsentScreenState extends ConsumerState<ReadConsentScreen>
           .goToSection(session.section + 1);
     } else {
       _player.stop();
-      context.push('/field-capture/answer');
+      // Minors (10.3 → 10.4): the guardian read the form; they consent next.
+      context.push(
+        ref.read(minorSessionProvider).guardianReading
+            ? '/field-capture/guardian-consent'
+            : '/field-capture/answer',
+      );
     }
   }
 

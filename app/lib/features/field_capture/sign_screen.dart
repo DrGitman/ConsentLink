@@ -307,18 +307,22 @@ class _SignaturePadState extends State<SignaturePad> {
               Positioned(
                 left: 30,
                 top: widget.height - 70,
-                child: Text(
-                  '×',
-                  style: dashboardText(20, color: AppColors.subtle),
+                child: ExcludeSemantics(
+                  child: Text(
+                    '×',
+                    style: dashboardText(20, color: AppColors.subtle),
+                  ),
                 ),
               ),
               if (_strokes.isEmpty)
                 Positioned.fill(
                   bottom: 44,
                   child: Center(
-                    child: Text(
-                      'Sign here with your finger',
-                      style: dashboardText(14, color: AppColors.subtle),
+                    child: ExcludeSemantics(
+                      child: Text(
+                        'Sign here with your finger',
+                        style: dashboardText(14, color: AppColors.subtle),
+                      ),
                     ),
                   ),
                 ),

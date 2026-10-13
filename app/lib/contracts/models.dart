@@ -11,12 +11,19 @@
 // - JSON keys are snake_case and match the database columns and /schemas.
 
 enum ConsentDecision { yes, no }
+
 enum ConsentMethod { signature, thumbprint, verbal }
+
 enum SectionStatus { draft, edited, approved }
+
 enum Confidence { low, medium, high }
+
 enum StudyStatus { draft, approved, active, closed }
+
 enum SignatureKind { signature, thumbprint, witness, audio }
+
 enum SyncStatus { offline, syncing, synced, error }
+
 enum AuditAction {
   studyCreated,
   sectionApproved,
@@ -42,7 +49,8 @@ T _enumFromJson<T extends Enum>(List<T> values, Object? v) {
 
 String _dt(DateTime d) => d.toUtc().toIso8601String();
 
-DateTime? _dtOrNull(Object? v) => v == null ? null : DateTime.parse(v as String);
+DateTime? _dtOrNull(Object? v) =>
+    v == null ? null : DateTime.parse(v as String);
 
 // ---- Models -------------------------------------------------------------
 
@@ -61,20 +69,20 @@ class Institution {
   });
 
   factory Institution.fromJson(Map<String, dynamic> j) => Institution(
-        id: j['id'] as String,
-        name: j['name'] as String,
-        colourHex: j['colour_hex'] as String?,
-        logoUrl: j['logo_url'] as String?,
-        templateUrl: j['template_url'] as String?,
-      );
+    id: j['id'] as String,
+    name: j['name'] as String,
+    colourHex: j['colour_hex'] as String?,
+    logoUrl: j['logo_url'] as String?,
+    templateUrl: j['template_url'] as String?,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'colour_hex': colourHex,
-        'logo_url': logoUrl,
-        'template_url': templateUrl,
-      };
+    'id': id,
+    'name': name,
+    'colour_hex': colourHex,
+    'logo_url': logoUrl,
+    'template_url': templateUrl,
+  };
 }
 
 class Researcher {
@@ -90,18 +98,18 @@ class Researcher {
   });
 
   factory Researcher.fromJson(Map<String, dynamic> j) => Researcher(
-        id: j['id'] as String,
-        institutionId: j['institution_id'] as String,
-        name: j['name'] as String,
-        email: j['email'] as String,
-      );
+    id: j['id'] as String,
+    institutionId: j['institution_id'] as String,
+    name: j['name'] as String,
+    email: j['email'] as String,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'institution_id': institutionId,
-        'name': name,
-        'email': email,
-      };
+    'id': id,
+    'institution_id': institutionId,
+    'name': name,
+    'email': email,
+  };
 }
 
 class Study {
@@ -129,26 +137,26 @@ class Study {
   });
 
   factory Study.fromJson(Map<String, dynamic> j) => Study(
-        id: j['id'] as String,
-        institutionId: j['institution_id'] as String,
-        researcherId: j['researcher_id'] as String,
-        title: j['title'] as String,
-        involvesMinors: j['involves_minors'] as bool,
-        status: _enumFromJson(StudyStatus.values, j['status']),
-        formVersion: (j['form_version'] as int?) ?? 0,
-        formHash: j['form_hash'] as String?,
-      );
+    id: j['id'] as String,
+    institutionId: j['institution_id'] as String,
+    researcherId: j['researcher_id'] as String,
+    title: j['title'] as String,
+    involvesMinors: j['involves_minors'] as bool,
+    status: _enumFromJson(StudyStatus.values, j['status']),
+    formVersion: (j['form_version'] as int?) ?? 0,
+    formHash: j['form_hash'] as String?,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'institution_id': institutionId,
-        'researcher_id': researcherId,
-        'title': title,
-        'involves_minors': involvesMinors,
-        'status': _enumToJson(status),
-        'form_version': formVersion,
-        'form_hash': formHash,
-      };
+    'id': id,
+    'institution_id': institutionId,
+    'researcher_id': researcherId,
+    'title': title,
+    'involves_minors': involvesMinors,
+    'status': _enumToJson(status),
+    'form_version': formVersion,
+    'form_hash': formHash,
+  };
 }
 
 class StudyDraft {
@@ -164,10 +172,12 @@ class ConsentSection {
   final String language; // 'en', 'af', 'de', 'herero', 'khoekhoegowab', ...
   final String text;
   final int? sourcePage; // page of the proposal the AI took this from
-  final String? sourceQuote; // exact text in the proposal (shown on "Why?" sheet)
+  final String?
+  sourceQuote; // exact text in the proposal (shown on "Why?" sheet)
   final List<String> changes; // what the AI changed, one entry per change
   final Confidence? confidence;
-  final String? requiredElement; // which required consent element this covers, e.g. 'purpose', 'risks'
+  final String?
+  requiredElement; // which required consent element this covers, e.g. 'purpose', 'risks'
   final SectionStatus status;
   final String? approvedBy;
   final DateTime? approvedAt;
@@ -188,38 +198,38 @@ class ConsentSection {
   });
 
   factory ConsentSection.fromJson(Map<String, dynamic> j) => ConsentSection(
-        id: j['id'] as String,
-        studyId: j['study_id'] as String,
-        order: j['order'] as int,
-        language: j['language'] as String,
-        text: j['text'] as String,
-        sourcePage: j['source_page'] as int?,
-        sourceQuote: j['source_quote'] as String?,
-        changes: ((j['changes'] as List?) ?? const []).cast<String>(),
-        confidence: j['confidence'] == null
-            ? null
-            : _enumFromJson(Confidence.values, j['confidence']),
-        requiredElement: j['required_element'] as String?,
-        status: _enumFromJson(SectionStatus.values, j['status']),
-        approvedBy: j['approved_by'] as String?,
-        approvedAt: _dtOrNull(j['approved_at']),
-      );
+    id: j['id'] as String,
+    studyId: j['study_id'] as String,
+    order: j['order'] as int,
+    language: j['language'] as String,
+    text: j['text'] as String,
+    sourcePage: j['source_page'] as int?,
+    sourceQuote: j['source_quote'] as String?,
+    changes: ((j['changes'] as List?) ?? const []).cast<String>(),
+    confidence: j['confidence'] == null
+        ? null
+        : _enumFromJson(Confidence.values, j['confidence']),
+    requiredElement: j['required_element'] as String?,
+    status: _enumFromJson(SectionStatus.values, j['status']),
+    approvedBy: j['approved_by'] as String?,
+    approvedAt: _dtOrNull(j['approved_at']),
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'study_id': studyId,
-        'order': order,
-        'language': language,
-        'text': text,
-        'source_page': sourcePage,
-        'source_quote': sourceQuote,
-        'changes': changes,
-        'confidence': confidence == null ? null : _enumToJson(confidence!),
-        'required_element': requiredElement,
-        'status': _enumToJson(status),
-        'approved_by': approvedBy,
-        'approved_at': approvedAt == null ? null : _dt(approvedAt!),
-      };
+    'id': id,
+    'study_id': studyId,
+    'order': order,
+    'language': language,
+    'text': text,
+    'source_page': sourcePage,
+    'source_quote': sourceQuote,
+    'changes': changes,
+    'confidence': confidence == null ? null : _enumToJson(confidence!),
+    'required_element': requiredElement,
+    'status': _enumToJson(status),
+    'approved_by': approvedBy,
+    'approved_at': approvedAt == null ? null : _dt(approvedAt!),
+  };
 }
 
 class Participant {
@@ -235,18 +245,18 @@ class Participant {
   });
 
   factory Participant.fromJson(Map<String, dynamic> j) => Participant(
-        id: j['id'] as String,
-        studyId: j['study_id'] as String,
-        language: j['language'] as String,
-        isMinor: j['is_minor'] as bool,
-      );
+    id: j['id'] as String,
+    studyId: j['study_id'] as String,
+    language: j['language'] as String,
+    isMinor: j['is_minor'] as bool,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'study_id': studyId,
-        'language': language,
-        'is_minor': isMinor,
-      };
+    'id': id,
+    'study_id': studyId,
+    'language': language,
+    'is_minor': isMinor,
+  };
 }
 
 class ParticipantDraft {
@@ -298,40 +308,40 @@ class Consent {
   });
 
   factory Consent.fromJson(Map<String, dynamic> j) => Consent(
-        id: j['id'] as String,
-        studyId: j['study_id'] as String,
-        participantId: j['participant_id'] as String,
-        language: j['language'] as String,
-        decision: _enumFromJson(ConsentDecision.values, j['decision']),
-        method: _enumFromJson(ConsentMethod.values, j['method']),
-        witnessName: j['witness_name'] as String?,
-        interpreterName: j['interpreter_name'] as String?,
-        guardianConsent: j['guardian_consent'] as bool?,
-        childAssent: j['child_assent'] as bool?,
-        formVersion: j['form_version'] as int,
-        formHash: j['form_hash'] as String,
-        signedAt: DateTime.parse(j['signed_at'] as String),
-        receivedAt: _dtOrNull(j['received_at']),
-        withdrawnAt: _dtOrNull(j['withdrawn_at']),
-      );
+    id: j['id'] as String,
+    studyId: j['study_id'] as String,
+    participantId: j['participant_id'] as String,
+    language: j['language'] as String,
+    decision: _enumFromJson(ConsentDecision.values, j['decision']),
+    method: _enumFromJson(ConsentMethod.values, j['method']),
+    witnessName: j['witness_name'] as String?,
+    interpreterName: j['interpreter_name'] as String?,
+    guardianConsent: j['guardian_consent'] as bool?,
+    childAssent: j['child_assent'] as bool?,
+    formVersion: j['form_version'] as int,
+    formHash: j['form_hash'] as String,
+    signedAt: DateTime.parse(j['signed_at'] as String),
+    receivedAt: _dtOrNull(j['received_at']),
+    withdrawnAt: _dtOrNull(j['withdrawn_at']),
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'study_id': studyId,
-        'participant_id': participantId,
-        'language': language,
-        'decision': _enumToJson(decision),
-        'method': _enumToJson(method),
-        'witness_name': witnessName,
-        'interpreter_name': interpreterName,
-        'guardian_consent': guardianConsent,
-        'child_assent': childAssent,
-        'form_version': formVersion,
-        'form_hash': formHash,
-        'signed_at': _dt(signedAt),
-        'received_at': receivedAt == null ? null : _dt(receivedAt!),
-        'withdrawn_at': withdrawnAt == null ? null : _dt(withdrawnAt!),
-      };
+    'id': id,
+    'study_id': studyId,
+    'participant_id': participantId,
+    'language': language,
+    'decision': _enumToJson(decision),
+    'method': _enumToJson(method),
+    'witness_name': witnessName,
+    'interpreter_name': interpreterName,
+    'guardian_consent': guardianConsent,
+    'child_assent': childAssent,
+    'form_version': formVersion,
+    'form_hash': formHash,
+    'signed_at': _dt(signedAt),
+    'received_at': receivedAt == null ? null : _dt(receivedAt!),
+    'withdrawn_at': withdrawnAt == null ? null : _dt(withdrawnAt!),
+  };
 }
 
 class ConsentDraft {
@@ -384,24 +394,24 @@ class AuditEntry {
   });
 
   factory AuditEntry.fromJson(Map<String, dynamic> j) => AuditEntry(
-        id: j['id'] as String,
-        institutionId: j['institution_id'] as String,
-        studyId: j['study_id'] as String,
-        actorId: j['actor_id'] as String,
-        action: _enumFromJson(AuditAction.values, j['action']),
-        entityId: j['entity_id'] as String,
-        createdAt: DateTime.parse(j['created_at'] as String),
-        receivedAt: _dtOrNull(j['received_at']),
-      );
+    id: j['id'] as String,
+    institutionId: j['institution_id'] as String,
+    studyId: j['study_id'] as String,
+    actorId: j['actor_id'] as String,
+    action: _enumFromJson(AuditAction.values, j['action']),
+    entityId: j['entity_id'] as String,
+    createdAt: DateTime.parse(j['created_at'] as String),
+    receivedAt: _dtOrNull(j['received_at']),
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'institution_id': institutionId,
-        'study_id': studyId,
-        'actor_id': actorId,
-        'action': _enumToJson(action),
-        'entity_id': entityId,
-        'created_at': _dt(createdAt),
-        'received_at': receivedAt == null ? null : _dt(receivedAt!),
-      };
+    'id': id,
+    'institution_id': institutionId,
+    'study_id': studyId,
+    'actor_id': actorId,
+    'action': _enumToJson(action),
+    'entity_id': entityId,
+    'created_at': _dt(createdAt),
+    'received_at': receivedAt == null ? null : _dt(receivedAt!),
+  };
 }

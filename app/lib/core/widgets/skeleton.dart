@@ -329,6 +329,13 @@ class _SkeletonSwitchState extends State<SkeletonSwitch> {
     return AnimatedSwitcher(
       duration: Duration(milliseconds: reduced ? 0 : 200),
       switchInCurve: Curves.easeOut,
+      // Keep the "Loading …" label readable from the first frame of the fade:
+      // a plain FadeTransition drops semantics while the opacity is still 0.
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        alwaysIncludeSemantics: true,
+        child: child,
+      ),
       layoutBuilder: (current, previous) => Stack(
         alignment: Alignment.topLeft,
         children: [...previous, ?current],
