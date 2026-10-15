@@ -6,9 +6,16 @@ template (`3:2714`), 05.5 Template detail (`79:121`), 05.6 Save & share
 (`79:209`). New icons in `assets/icons/templates/` (crop, copy) were exported
 from Figma.
 
+Lecturer feedback (15 Oct 2026), Figma row 13: a template's sections (its
+structure and wording) can be read on any template and changed in your own
+copy — 13.1 Template library — Shared tab (`174:42`), 13.2 Shared template —
+contents + Use as my template (`175:434`), 13.3 Customise a shared template
+(`174:153`), 13.6 Edit a section (`180:603`).
+
 Routes (full screen, outside the tab shell): `/templates` (from the Dashboard
 "Templates" quick action), `/templates/read`, `/templates/clip`,
-`/templates/describe`, `/templates/view/<id>`. 05.6 is a sheet.
+`/templates/describe`, `/templates/view/<id>`,
+`/templates/customise/<id>`. 05.6 is a sheet.
 
 ## Preview
 `TEMPLATES_PREVIEW=true` or any of the existing preview flags.
@@ -31,10 +38,20 @@ assistant is disabled.
   back to the logo; Remove white background changes the saved format.
 - 05.4: untick anything you don't want; sending a message adds a new proposal
   with the ticked items plus your request; Create template opens 05.6.
-- 05.5: official templates are locked (font, footer, logo); shared ones must be
-  duplicated to edit; your own can be edited, renamed or deleted (⋯).
-  Duplicate makes a private copy. Use for form opens Template & style (04.7)
-  for templates the form builder knows.
+- 05.5: official templates are locked (font, footer, logo); your own can be
+  edited, renamed or deleted (⋯). Duplicate makes a private copy. Use for
+  form opens Template & style (04.7) for templates the form builder knows.
+- 05.5 / 13.2: a shared template is read-only, so its one action is **Use as
+  my template**; official templates offer the same from ⋯.
+- 13.2: every template shows **What's inside** — its sections, with the
+  first line of each. Tapping one opens it; on a template that isn't yours
+  it opens read-only, and official wording stays locked.
+- 13.3: name the copy, reword or rename its sections (13.6), switch optional
+  ones off, add your own, change the style rules, then Save as my template.
+  The 10 required consent elements can't be switched off. The copy is
+  private, carries "Customised from <original>", and the shared original is
+  never changed.
+- Your own templates (05.5) edit their sections in place.
 - 05.6: name (type or speak) and who can use it: only me, institution
   researchers, or request Official status.
 

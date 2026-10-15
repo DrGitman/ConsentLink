@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/app_toggle.dart';
 import '../../core/widgets/dictation_sheet.dart';
 import '../dashboard/dashboard_components.dart';
 import '../institution/institution_preferences.dart';
@@ -9,6 +10,7 @@ import '../new_consent/consent_widgets.dart';
 import '../new_consent/review_draft_screen.dart' show sheetMotion;
 import '../preferences/accessibility_preferences.dart';
 import '../projects/project_widgets.dart';
+import '../responses/responses_widgets.dart' show WhiteCard;
 import 'template_data.dart';
 
 /// "NUST" (or the chosen institution's short name).
@@ -580,6 +582,393 @@ class _AccessOption extends ConsumerWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Figma 13.6 Edit a section. Returns the edited section, or null on
+/// Cancel. [readOnly] shows the wording of a shared or official template
+/// without letting it be changed.
+Future<TemplateSection?> showSectionEditor(
+  BuildContext context,
+  TemplateSection section, {
+  bool readOnly = false,
+}) => showModalBottomSheet<TemplateSection>(
+  context: context,
+  isScrollControlled: true,
+  useSafeArea: true,
+  useRootNavigator: true,
+  backgroundColor: Colors.white,
+  barrierColor: const Color(0xFF0B100E).withValues(alpha: .45),
+  sheetAnimationStyle: sheetMotion(context),
+  shape: const RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+  ),
+  builder: (_) => _SectionEditor(section: section, readOnly: readOnly),
+);
+
+class _SectionEditor extends StatefulWidget {
+  const _SectionEditor({required this.section, required this.readOnly});
+  final TemplateSection section;
+  final bool readOnly;
+  @override
+  State<_SectionEditor> createState() => _SectionEditorState();
+}
+
+class _SectionEditorState extends State<_SectionEditor> {
+  late final _title = TextEditingController(text: widget.section.title);
+  late final _text = TextEditingController(text: widget.section.text);
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _text.dispose();
+    super.dispose();
+  }
+
+  /// Rough plain-language check: the longer the sentences, the higher the
+  /// grade. The on-device model (P3) replaces this.
+  String get _grade {
+    final words = _text.text
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty);
+    final sentences = _text.text
+        .split(RegExp(r'[.!?]'))
+        .where((s) => s.trim().isNotEmpty)
+        .length;
+    if (words.isEmpty || sentences == 0) return '—';
+    final perSentence = words.length / sentences;
+    final grade = (perSentence / 2).clamp(3, 12).round();
+    return 'Grade $grade';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final locked = widget.readOnly || widget.section.locked;
+    final insets = MediaQuery.viewInsetsOf(context).bottom;
+    Widget label(String text) => Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 6),
+      child: Text(
+        text,
+        style: dashboardText(
+          13,
+          color: AppColors.muted,
+          weight: FontWeight.w500,
+        ),
+      ),
+    );
+    Widget field(TextEditingController c, {int maxLines = 1}) => Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.line, width: 1.2),
+      ),
+      child: TextField(
+        controller: c,
+        readOnly: locked,
+        maxLines: maxLines,
+        minLines: maxLines == 1 ? 1 : 4,
+        onChanged: (_) => setState(() {}),
+        style: dashboardText(15),
+        decoration: const InputDecoration(
+          isCollapsed: true,
+          border: InputBorder.none,
+        ),
+      ),
+    );
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: insets),
+      child: SingleChildScrollView(
+        primary: false,
+        padding: const EdgeInsets.fromLTRB(24, 10, 24, 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SheetHandle(),
+            const SizedBox(height: 19),
+            Text(
+              locked ? widget.section.title : 'Edit section',
+              style: dashboardText(22, weight: FontWeight.w600),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              locked
+                  ? 'Read-only. Make your own copy of the template to reword '
+                        'it.'
+                  : 'Plain language, short sentences. Participants read this.',
+              style: dashboardText(13, color: AppColors.subtle),
+            ),
+            const SizedBox(height: 14),
+            if (!locked) ...[
+              label('Section title'),
+              field(_title),
+              const SizedBox(height: 14),
+              label('Text'),
+            ],
+            field(_text, maxLines: 8),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ProjectBadge(
+                  label: 'Reading level: $_grade',
+                  fill: AppColors.brand50,
+                  ink: AppColors.brandDark,
+                ),
+                if (widget.section.required)
+                  const ProjectBadge(
+                    label: 'Required element',
+                    fill: AppColors.canvas,
+                    ink: AppColors.muted,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: ConsentPillButton(
+                    label: locked ? 'Close' : 'Cancel',
+                    filled: false,
+                    height: 56,
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+                if (!locked) ...[
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 2,
+                    child: ConsentPillButton(
+                      label: 'Save section',
+                      height: 56,
+                      onPressed: _title.text.trim().isEmpty
+                          ? null
+                          : () => Navigator.pop(
+                              context,
+                              widget.section.copyWith(
+                                title: _title.text.trim(),
+                                text: _text.text.trim(),
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Figma 13.2 "What's inside" / 13.3 Sections. Read-only on a template
+/// that isn't yours ([onToggle] null); your own copy can switch optional
+/// sections off and reword them.
+class TemplateSectionsCard extends ConsumerStatefulWidget {
+  const TemplateSectionsCard({
+    super.key,
+    required this.sections,
+    required this.onOpen,
+    this.onToggle,
+    this.onAdd,
+    this.collapseAfter = 3,
+  });
+  final List<TemplateSection> sections;
+  final ValueChanged<TemplateSection> onOpen;
+  final void Function(TemplateSection section, bool included)? onToggle;
+  final VoidCallback? onAdd;
+
+  /// Rows shown before "+ N more sections".
+  final int collapseAfter;
+
+  @override
+  ConsumerState<TemplateSectionsCard> createState() =>
+      _TemplateSectionsCardState();
+}
+
+class _TemplateSectionsCardState extends ConsumerState<TemplateSectionsCard> {
+  bool _all = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    final editable = widget.onToggle != null;
+    final all = widget.sections;
+    final shown = _all ? all : all.take(widget.collapseAfter).toList();
+    final hidden = all.length - shown.length;
+    final used = all.where((s) => s.included).length;
+
+    return WhiteCard(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Semantics(
+            header: true,
+            child: Text(
+              'What’s inside · $used sections',
+              style: dashboardText(14, weight: FontWeight.w600),
+            ),
+          ),
+          const SizedBox(height: 4),
+          AnimatedSize(
+            duration: Duration(milliseconds: reduceMotion(context) ? 0 : 250),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.topCenter,
+            child: Column(
+              children: [
+                for (final (i, s) in shown.indexed) ...[
+                  if (i > 0)
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: AppColors.line,
+                    ),
+                  _SectionRow(
+                    section: s,
+                    editable: editable,
+                    onOpen: () => widget.onOpen(s),
+                    onToggle: widget.onToggle == null
+                        ? null
+                        : (v) => widget.onToggle!(s, v),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (hidden > 0 || _all)
+            TextButton(
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(48, 44),
+                alignment: Alignment.centerLeft,
+                overlayColor: Colors.transparent,
+                splashFactory: NoSplash.splashFactory,
+              ),
+              onPressed: () => setState(() => _all = !_all),
+              child: Text(
+                _all ? 'Show fewer sections' : '+ $hidden more sections',
+                style: dashboardText(
+                  13,
+                  color: primary,
+                  weight: FontWeight.w600,
+                ),
+              ),
+            ),
+          if (widget.onAdd != null)
+            TextButton(
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(48, 44),
+                alignment: Alignment.centerLeft,
+                overlayColor: Colors.transparent,
+                splashFactory: NoSplash.splashFactory,
+              ),
+              onPressed: widget.onAdd,
+              child: Text(
+                '+ Add a section',
+                style: dashboardText(
+                  14,
+                  color: primary,
+                  weight: FontWeight.w600,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionRow extends StatelessWidget {
+  const _SectionRow({
+    required this.section,
+    required this.editable,
+    required this.onOpen,
+    required this.onToggle,
+  });
+  final TemplateSection section;
+  final bool editable;
+  final VoidCallback onOpen;
+  final ValueChanged<bool>? onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final off = !section.included;
+    final row = ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 52),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    section.title,
+                    style: dashboardText(
+                      15,
+                      color: off ? AppColors.subtle : AppColors.ink,
+                      weight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    off ? 'Left out of your copy' : section.preview,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: dashboardText(12, color: AppColors.subtle),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (editable && section.required)
+              const ProjectBadge(
+                label: 'Required',
+                fill: AppColors.canvas,
+                ink: AppColors.muted,
+              )
+            else if (editable)
+              GestureDetector(
+                onTap: () => onToggle?.call(!section.included),
+                child: AppToggle(value: section.included),
+              )
+            else if (section.locked)
+              const DashboardIcon(
+                'form/lock',
+                color: AppColors.subtle,
+                size: 18,
+              )
+            else
+              const DashboardIcon(
+                'chevron_right',
+                color: AppColors.subtle,
+                size: 20,
+              ),
+          ],
+        ),
+      ),
+    );
+    return Semantics(
+      label: section.title,
+      hint: editable ? 'Edit this section' : 'Read this section',
+      child: ExcludeSemantics(
+        child: DashboardAction(
+          label: section.title,
+          radius: 14,
+          color: Colors.transparent,
+          onPressed: onOpen,
+          child: row,
         ),
       ),
     );

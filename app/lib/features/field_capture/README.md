@@ -10,6 +10,12 @@ Routes (full screen, outside the tab shell): `/field-capture` (opened from a
 project's "Start field capture" as `/field-capture?project=<id>`), then
 `/read`, `/answer`, `/choices`, `/sign`, `/done`.
 
+The **Capture tab** (`/capture`) is Figma 13.7, added 15 Oct 2026: the flow
+needs a project, so the tab lists the projects that are collecting, with
+search, a language filter and a Start field capture button on each. It
+replaces the app-shell placeholder, and the dashboard's "Field capture"
+quick action lands here too. 13.7 is new — it has no earlier artboard.
+
 ## Preview
 `FIELD_CAPTURE_PREVIEW=true`, or any of `NEW_CONSENT_PREVIEW`,
 `DASHBOARD_PREVIEW`, `PROJECTS_PREVIEW`.

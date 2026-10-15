@@ -21,6 +21,7 @@ class OfflinePackScreen extends ConsumerWidget {
     'Silozi',
     'Oshiwambo',
     'Deutsch',
+    'Ju/\'hoansi',
   ];
 
   void _back(BuildContext context) {

@@ -216,6 +216,9 @@ void main() {
     await tapVisible(tester, find.text('Afrikaans').last);
     expect(container.read(selectedAppLanguageProvider), 'Afrikaans');
 
+    expect(find.text('Ju/\'hoansi'), findsOneWidget);
+    expect(find.text('Not downloaded · San'), findsOneWidget);
+
     await tester.ensureVisible(find.text('Silozi'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Silozi'));

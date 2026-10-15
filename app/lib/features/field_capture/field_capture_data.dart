@@ -70,7 +70,13 @@ class ConsentChoice {
   final String label;
 }
 
-const captureLanguages = ['Otjiherero', 'English', 'Afrikaans', 'Oshiwambo'];
+const captureLanguages = [
+  'Otjiherero',
+  'Ju/\'hoansi',
+  'English',
+  'Afrikaans',
+  'Oshiwambo',
+];
 
 const sampleParticipant = CaptureParticipant(
   code: 'P-065',
