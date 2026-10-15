@@ -190,7 +190,7 @@ def _pdf_styles(document: fitz.Document) -> tuple[dict[str, Any], dict[str, floa
     return style_spec, confidence
 
 
-def _docx_styles(content: bytes) -> tuple[dict[str, Any], dict[str, float]]:
+def _extract_docx_styles(content: bytes) -> tuple[dict[str, Any], dict[str, float]]:
     try:
         document = WordDocument(BytesIO(content))
     except (
@@ -289,6 +289,30 @@ def _docx_styles(content: bytes) -> tuple[dict[str, Any], dict[str, float]]:
         "columns": 0.75 if columns else 0.0,
     }
     return style_spec, confidence
+
+
+def _docx_styles(content: bytes) -> tuple[dict[str, Any], dict[str, float]]:
+    try:
+        return _extract_docx_styles(content)
+    except HTTPException:
+        raise
+    except (
+        AttributeError,
+        BadZipFile,
+        IndexError,
+        KeyError,
+        OSError,
+        TypeError,
+        XMLSyntaxError,
+    ) as error:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "code": "invalid_template",
+                "message": "The DOCX template could not be opened.",
+                "field": "storage_path",
+            },
+        ) from error
 
 
 def _box_iou(left: list[float], right: list[float]) -> float:
@@ -467,7 +491,16 @@ def extract_logo(
                     "field": "storage_path",
                 },
             )
-        if not 1 <= page_number <= min(document.page_count, MAX_DOCUMENT_PAGES):
+        if not 1 <= document.page_count <= MAX_DOCUMENT_PAGES:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": "invalid_page_count",
+                    "message": "PDF templates must contain between 1 and 60 pages.",
+                    "field": "storage_path",
+                },
+            )
+        if not 1 <= page_number <= document.page_count:
             raise HTTPException(
                 status_code=422,
                 detail={
