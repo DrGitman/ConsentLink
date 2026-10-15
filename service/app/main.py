@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Annotated
 from uuid import uuid4
@@ -11,6 +12,7 @@ from pydantic import BaseModel, Field
 
 from app import storage
 from app.file_safety import MAX_FILE_SIZE, scan_file
+from app.service_logging import log_service_event
 from app.template_analysis import analyse_template, extract_logo
 
 app = FastAPI(title="ConsentLink Service")
@@ -275,6 +277,16 @@ async def extract_logo_endpoint(
 
 @app.exception_handler(HTTPException)
 async def http_error_response(request: Request, error: HTTPException) -> JSONResponse:
+    if error.status_code >= 500:
+        route = request.scope.get("route")
+        log_service_event(
+            logging.ERROR,
+            "http_request_failed",
+            method=request.method,
+            route=getattr(route, "path", "unmatched"),
+            status_code=error.status_code,
+            error_type="HTTPException",
+        )
     if isinstance(error.detail, dict) and "code" in error.detail:
         body = error.detail
     else:
@@ -283,6 +295,26 @@ async def http_error_response(request: Request, error: HTTPException) -> JSONRes
         status_code=error.status_code,
         content=body,
         headers=error.headers,
+    )
+
+
+@app.exception_handler(Exception)
+async def unexpected_error_response(request: Request, error: Exception) -> JSONResponse:
+    route = request.scope.get("route")
+    log_service_event(
+        logging.ERROR,
+        "http_request_failed",
+        method=request.method,
+        route=getattr(route, "path", "unmatched"),
+        status_code=500,
+        error_type=type(error).__name__,
+    )
+    return JSONResponse(
+        status_code=500,
+        content={
+            "code": "internal_error",
+            "message": "The service could not complete the request.",
+        },
     )
 
 

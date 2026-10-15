@@ -1,3 +1,5 @@
+import json
+import logging
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from typing import Any
@@ -447,6 +449,54 @@ def test_upload_endpoint_scans_analyses_and_stores_with_caller_jwt(
     assert "confidence" in result
     assert uploaded["path"].startswith("/storage/v1/object/templates/uploads/")
     assert uploaded["content"] == contents
+
+
+def test_storage_failure_log_excludes_request_and_upstream_data(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    headers = auth_headers()
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            500,
+            text="sensitive upstream response",
+            request=request,
+        )
+
+    mock_storage_api(monkeypatch, handler)
+    caplog.set_level(logging.ERROR, logger="consentlink.service")
+    response = client.post(
+        "/v1/templates/upload",
+        files={"file": ("private-name.pdf", make_pdf())},
+        headers=headers,
+    )
+
+    assert response.status_code == 500
+    records = [
+        json.loads(record.message)
+        for record in caplog.records
+        if record.name == "consentlink.service"
+    ]
+    assert records == [
+        {
+            "error_type": "HTTPStatusError",
+            "event": "storage_request_failed",
+            "operation": "upload",
+            "upstream_status": 500,
+        },
+        {
+            "error_type": "HTTPException",
+            "event": "http_request_failed",
+            "method": "POST",
+            "route": "/v1/templates/upload",
+            "status_code": 500,
+        },
+    ]
+    logged_output = caplog.text
+    assert "private-name.pdf" not in logged_output
+    assert "sensitive upstream response" not in logged_output
+    assert headers["Authorization"] not in logged_output
 
 
 def test_upload_endpoint_rejects_unsafe_file_without_storage_write(

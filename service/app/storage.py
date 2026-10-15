@@ -1,3 +1,4 @@
+import logging
 import os
 from dataclasses import dataclass
 from urllib.parse import quote
@@ -6,6 +7,7 @@ import httpx
 from fastapi import HTTPException
 
 from app.file_safety import MAX_FILE_SIZE
+from app.service_logging import log_service_event
 
 STORAGE_TIMEOUT_SECONDS = 20
 
@@ -82,8 +84,15 @@ def template_upload_bucket() -> str:
     return bucket
 
 
-def _raise_storage_error(error: httpx.HTTPStatusError) -> None:
+def _raise_storage_error(error: httpx.HTTPStatusError, *, operation: str) -> None:
     status = error.response.status_code
+    log_service_event(
+        logging.ERROR,
+        "storage_request_failed",
+        operation=operation,
+        upstream_status=status,
+        error_type=type(error).__name__,
+    )
     if status == 404:
         code, message = "storage_object_not_found", "The requested storage object was not found."
     elif status in {401, 403}:
@@ -123,13 +132,25 @@ async def download_storage_object(
                         )
                 return stored_object, bytes(content)
     except httpx.HTTPStatusError as error:
-        _raise_storage_error(error)
+        _raise_storage_error(error, operation="download")
     except httpx.TimeoutException as error:
+        log_service_event(
+            logging.ERROR,
+            "storage_request_failed",
+            operation="download",
+            error_type=type(error).__name__,
+        )
         raise HTTPException(
             status_code=504,
             detail={"code": "storage_timeout", "message": "Supabase Storage timed out."},
         ) from error
     except httpx.RequestError as error:
+        log_service_event(
+            logging.ERROR,
+            "storage_request_failed",
+            operation="download",
+            error_type=type(error).__name__,
+        )
         raise HTTPException(
             status_code=502,
             detail={
@@ -163,13 +184,25 @@ async def upload_storage_object(
             response = await client.post(url, headers=headers, content=content)
             response.raise_for_status()
     except httpx.HTTPStatusError as error:
-        _raise_storage_error(error)
+        _raise_storage_error(error, operation="upload")
     except httpx.TimeoutException as error:
+        log_service_event(
+            logging.ERROR,
+            "storage_request_failed",
+            operation="upload",
+            error_type=type(error).__name__,
+        )
         raise HTTPException(
             status_code=504,
             detail={"code": "storage_timeout", "message": "Supabase Storage timed out."},
         ) from error
     except httpx.RequestError as error:
+        log_service_event(
+            logging.ERROR,
+            "storage_request_failed",
+            operation="upload",
+            error_type=type(error).__name__,
+        )
         raise HTTPException(
             status_code=502,
             detail={

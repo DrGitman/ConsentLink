@@ -142,6 +142,8 @@ $env:SUPABASE_TEMPLATE_BUCKET = "<private template bucket with caller upload per
 ```
 The service uses `SUPABASE_JWT_SECRET` to verify bearer tokens and `SUPABASE_URL` plus `SUPABASE_ANON_KEY` to access private Supabase Storage with the caller's JWT. `SUPABASE_TEMPLATE_BUCKET` must name a private bucket whose Storage policies allow the signed-in caller to upload. Never use a service-role key in client requests.
 
+All four variables are required for the complete service. Keep their values in the deployment platform's secret/environment configuration; do not commit them or include them in support logs. For local development, set them in the current PowerShell session as shown above. The development command uses `--reload`; for deployment, run Uvicorn without reload, bind to the platform-provided port, and terminate it through the platform's normal process manager.
+
 `POST /v1/files/scan` accepts one multipart `file` up to 25 MB. It checks PDF, DOCX, ODT, TXT and PNG/JPEG/TIFF signatures, rejecting unsupported types, executables, scripts and macro-enabled documents. Files are checked in memory and not saved.
 
 This endpoint is for templates (they are uploaded to Storage anyway). Research proposals are never uploaded: the app only checks their type and size on the phone before on-device drafting.
@@ -152,6 +154,8 @@ PDF and DOCX style extraction is supported. Logo candidate detection and extract
 ```bash
 .venv\Scripts\python.exe -m pytest
 ```
+
+Deployment health checks should use `GET /health` (or the versioned `GET /v1/health`) and require HTTP 200. Service error logs are JSON records with stable event names and limited diagnostic fields; they intentionally omit request bodies, filenames, storage paths, tokens, upstream response bodies, and exception messages. Treat application and platform logs as operational data and restrict access through the deployment provider.
 
 ### 5. Local Supabase (optional)
 ```bash
