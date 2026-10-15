@@ -66,6 +66,150 @@ class TemplateRule {
       );
 }
 
+/// One block of consent text inside a template (lecturer feedback,
+/// 15 Oct 2026): the structure and wording, not just the styling.
+class TemplateSection {
+  const TemplateSection({
+    required this.key,
+    required this.title,
+    required this.text,
+    this.required = false,
+    this.included = true,
+    this.locked = false,
+  });
+  final String key;
+  final String title;
+  final String text;
+
+  /// One of the 10 required consent elements (G): can't be switched off.
+  final bool required;
+
+  /// Optional sections can be left out of your own copy.
+  final bool included;
+
+  /// Official wording that a copy may read but not reword.
+  final bool locked;
+
+  /// First line for the list, shortened.
+  String get preview {
+    final one = text.replaceAll('\n', ' ').trim();
+    return one.length <= 60 ? one : '${one.substring(0, 57)}…';
+  }
+
+  TemplateSection copyWith({String? title, String? text, bool? included}) =>
+      TemplateSection(
+        key: key,
+        title: title ?? this.title,
+        text: text ?? this.text,
+        required: required,
+        included: included ?? this.included,
+        locked: locked,
+      );
+}
+
+/// The sections every consent form starts from: the 10 required elements
+/// (G) in plain language, plus two optional ones.
+const baseSections = [
+  TemplateSection(
+    key: 'purpose',
+    title: 'Purpose of the study',
+    text:
+        'We want to learn how families get clean water and how this '
+        'affects their health.',
+    required: true,
+  ),
+  TemplateSection(
+    key: 'procedures',
+    title: 'What you will do',
+    text: 'You will answer questions in one interview with the researcher.',
+    required: true,
+  ),
+  TemplateSection(
+    key: 'duration',
+    title: 'How long it takes',
+    text: 'The interview takes about 40 minutes.',
+    required: true,
+  ),
+  TemplateSection(
+    key: 'risks',
+    title: 'Risks and discomforts',
+    text:
+        'You may feel tired during the interview. You can rest or stop at '
+        'any time. Stopping will not cause you any problem.',
+    required: true,
+  ),
+  TemplateSection(
+    key: 'benefits',
+    title: 'Possible benefits',
+    text: 'Your answers may help improve water services in your area.',
+    required: true,
+  ),
+  TemplateSection(
+    key: 'compensation',
+    title: 'Payment',
+    text: 'You will not be paid for taking part.',
+    required: true,
+  ),
+  TemplateSection(
+    key: 'confidentiality',
+    title: 'Who will see my answers',
+    text:
+        'Only the research team. Your name is never written next to your '
+        'answers.',
+    required: true,
+  ),
+  TemplateSection(
+    key: 'voluntary_withdrawal',
+    title: 'Your choice',
+    text:
+        'Taking part is your choice. You can say no now or stop later '
+        'without giving a reason.',
+    required: true,
+  ),
+  TemplateSection(
+    key: 'contacts_researcher',
+    title: 'Who to contact',
+    text: 'You can ask the researcher any question at any time.',
+    required: true,
+  ),
+  TemplateSection(
+    key: 'contacts_ethics',
+    title: 'Complaints',
+    text:
+        'You can call the NUST ethics office. The number is on the paper '
+        'copy you will get.',
+    required: true,
+  ),
+  TemplateSection(
+    key: 'recording',
+    title: 'Audio recording',
+    text:
+        'We record the interview only if you say yes. Recordings are '
+        'deleted after the study.',
+  ),
+  TemplateSection(
+    key: 'photos',
+    title: 'Photographs',
+    text:
+        'We take photographs only if you say yes. Faces are blurred '
+        'before anything is shared.',
+    included: false,
+  ),
+];
+
+/// Official templates keep their key wording (Figma 05.5 "locked").
+List<TemplateSection> lockedSections() => [
+  for (final s in baseSections)
+    TemplateSection(
+      key: s.key,
+      title: s.title,
+      text: s.text,
+      required: s.required,
+      included: s.included,
+      locked: s.required,
+    ),
+];
+
 class StudioTemplate {
   const StudioTemplate({
     required this.id,
@@ -77,6 +221,8 @@ class StudioTemplate {
     this.mine = false,
     this.formId,
     this.verified,
+    this.customisedFrom,
+    this.sections = baseSections,
   });
   final String id;
   final String name;
@@ -93,6 +239,19 @@ class StudioTemplate {
 
   /// "Verified with NUST ethics office · v3 · 2 Oct 2026".
   final String? verified;
+
+  /// Name of the shared or official template this copy was customised
+  /// from (lecturer feedback, Figma 13.2–13.3). Null for originals.
+  final String? customisedFrom;
+
+  /// The consent text inside the template (Figma 13.2 "What's inside").
+  final List<TemplateSection> sections;
+
+  /// Sections that end up in the form.
+  List<TemplateSection> get usedSections => [
+    for (final s in sections)
+      if (s.included) s,
+  ];
 
   bool get locked => access == TemplateAccess.official;
 
@@ -115,6 +274,8 @@ class StudioTemplate {
     List<TemplateRule>? rules,
     bool? mine,
     String? Function()? verified,
+    String? customisedFrom,
+    List<TemplateSection>? sections,
   }) => StudioTemplate(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -125,6 +286,8 @@ class StudioTemplate {
     mine: mine ?? this.mine,
     formId: formId,
     verified: verified != null ? verified() : this.verified,
+    customisedFrom: customisedFrom ?? this.customisedFrom,
+    sections: sections ?? this.sections,
   );
 }
 
@@ -156,7 +319,10 @@ const _standardRules = [
 ];
 
 /// Figma 05.1 rows.
-const sampleStudioTemplates = [
+/// Official sample templates keep their wording locked.
+final officialSections = lockedSections();
+
+final sampleStudioTemplates = [
   StudioTemplate(
     id: 'my-opuwo',
     name: 'My Opuwo health consent',
@@ -200,6 +366,7 @@ const sampleStudioTemplates = [
     formId: 'health-v3',
     verified: 'Verified with NUST ethics office · v3 · 2 Oct 2026',
     rules: _standardRules,
+    sections: officialSections,
   ),
   StudioTemplate(
     id: 'interview-audio',
@@ -242,6 +409,7 @@ const sampleStudioTemplates = [
     access: TemplateAccess.official,
     formId: 'minors-v1',
     verified: 'Verified with NUST ethics office · v2 · 14 Aug 2026',
+    sections: officialSections,
     rules: [
       TemplateRule(
         key: 'font',
@@ -331,6 +499,36 @@ class TemplateLibrary extends StateNotifier<List<StudioTemplate>> {
       verified: () => null,
     ),
   );
+
+  /// Figma 13.2–13.3: an editable private copy of a shared or official
+  /// template, with a link back to where it came from.
+  StudioTemplate customise(
+    StudioTemplate source, {
+    required String name,
+    required List<TemplateRule> rules,
+    List<TemplateSection>? sections,
+  }) => add(
+    source.copyWith(
+      id: '${source.id}-mine-${DateTime.now().microsecondsSinceEpoch}',
+      name: name.trim().isEmpty ? 'My ${source.name}' : name.trim(),
+      owner: 'You',
+      meta: 'You · customised today',
+      access: TemplateAccess.private,
+      mine: true,
+      rules: rules,
+      sections: sections ?? source.sections,
+      verified: () => null,
+      customisedFrom: source.name,
+    ),
+  );
+
+  /// Replaces the sections of your own template (13.3 / 05.5).
+  void updateSections(String id, List<TemplateSection> sections) => state = [
+    for (final t in state)
+      t.id == id
+          ? t.copyWith(meta: 'You · edited today', sections: sections)
+          : t,
+  ];
 
   void updateRule(String id, String key, String value) => state = [
     for (final t in state)

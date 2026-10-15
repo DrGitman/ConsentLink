@@ -98,6 +98,7 @@ class PreferencePersistence extends ProviderObserver {
       'Rukwangali',
       'Silozi',
       'Oshiwambo',
+      'Ju/\'hoansi',
     };
 
     if (languages.contains(decoded['language'])) {

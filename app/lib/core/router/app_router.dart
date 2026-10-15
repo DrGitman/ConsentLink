@@ -6,6 +6,7 @@ import '../../features/preferences/language_accessibility_screen.dart';
 import '../../features/shell/app_shell.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/field_capture/answer_screen.dart';
+import '../../features/field_capture/capture_launcher_screen.dart';
 import '../../features/field_capture/choices_screen.dart';
 import '../../features/field_capture/done_screen.dart';
 import '../../features/field_capture/hand_over_screen.dart';
@@ -39,6 +40,7 @@ import '../../features/splash/splash_screen.dart';
 import '../../features/templates/clip_logo_screen.dart';
 import '../../features/templates/describe_template_screen.dart';
 import '../../features/templates/read_template_screen.dart';
+import '../../features/templates/customise_template_screen.dart';
 import '../../features/templates/template_detail_screen.dart';
 import '../../features/templates/template_library_screen.dart';
 import '../l10n/app_localizations.dart';
@@ -448,6 +450,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ),
           ),
           GoRoute(
+            path: 'customise/:id',
+            pageBuilder: (context, state) => projectPushPage(
+              key: state.pageKey,
+              child: CustomiseTemplateScreen(id: state.pathParameters['id']!),
+            ),
+          ),
+          GoRoute(
             path: 'view/:id',
             pageBuilder: (context, state) => projectPushPage(
               key: state.pageKey,
@@ -523,6 +532,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                       }
                       if (destination == ShellDestination.me) {
                         return const MeScreen();
+                      }
+                      // Figma 13.7: the Capture tab starts field capture.
+                      if (destination == ShellDestination.capture) {
+                        return const CaptureLauncherScreen();
                       }
                       return ShellPage(destination: destination);
                     },

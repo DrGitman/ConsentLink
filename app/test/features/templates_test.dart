@@ -5,6 +5,7 @@ import 'package:consentlink/features/new_consent/consent_draft_data.dart';
 import 'package:consentlink/features/preferences/accessibility_preferences.dart';
 import 'package:consentlink/features/projects/project_transition.dart';
 import 'package:consentlink/features/templates/clip_logo_screen.dart';
+import 'package:consentlink/features/templates/customise_template_screen.dart';
 import 'package:consentlink/features/templates/describe_template_screen.dart';
 import 'package:consentlink/features/templates/read_template_screen.dart';
 import 'package:consentlink/features/templates/template_data.dart';
@@ -57,6 +58,10 @@ Future<ProviderContainer> pumpTemplates(
           page(
             'view/:id',
             (s) => TemplateDetailScreen(id: s.pathParameters['id']!),
+          ),
+          page(
+            'customise/:id',
+            (s) => CustomiseTemplateScreen(id: s.pathParameters['id']!),
           ),
         ],
       ),
@@ -225,6 +230,81 @@ void main() {
     expectNoException(tester);
   });
 
+  testWidgets('13.2–13.3 a shared template is copied and customised', (
+    tester,
+  ) async {
+    final container = await pumpTemplates(
+      tester,
+      initial: '/templates/view/interview-audio',
+    );
+    expect(find.text('Interview + audio consent'), findsOneWidget);
+    expect(find.textContaining('read-only'), findsOneWidget);
+    expect(find.text('Duplicate'), findsNothing);
+
+    // Rules can't be changed on the shared original.
+    await tester.tap(find.text('Font'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('read-only'), findsWidgets);
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    // The contents of a shared template can be read, not changed.
+    expect(find.textContaining('What’s inside'), findsOneWidget);
+    await tapVisible(tester, find.text('Purpose of the study'));
+    expect(find.textContaining('Read-only'), findsOneWidget);
+    expect(find.text('Save section'), findsNothing);
+    await tapVisible(tester, find.text('Close'));
+
+    await tapVisible(tester, find.text('Use as my template'));
+    expect(find.text('Customise copy'), findsOneWidget);
+    expect(find.text('My Interview + audio consent'), findsWidgets);
+
+    // Reword a section of the copy.
+    await tapVisible(tester, find.textContaining('more sections'));
+    await tapVisible(tester, find.text('Risks and discomforts'));
+    expect(find.text('Edit section'), findsOneWidget);
+    await tester.enterText(
+      find.byType(TextField).last,
+      'You can stop whenever you want.',
+    );
+    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text('Save section'));
+    expect(find.textContaining('You can stop whenever'), findsOneWidget);
+
+    await tester.tap(find.text('Margins'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, '3 cm');
+    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text('Save'));
+    expect(find.text('3 cm'), findsOneWidget);
+
+    await tapVisible(tester, find.text('Save as my template'));
+    expect(container.read(templateLibraryProvider), hasLength(5));
+    final copy = container.read(templateLibraryProvider).first;
+    expect(copy.name, 'My Interview + audio consent');
+    expect(copy.customisedFrom, 'Interview + audio consent');
+    expect(copy.mine, isTrue);
+    expect(copy.access, TemplateAccess.private);
+    expect(copy.rule('margins'), '3 cm');
+    expect(
+      copy.sections.firstWhere((s) => s.key == 'risks').text,
+      'You can stop whenever you want.',
+    );
+    expect(copy.sections.where((s) => s.required), hasLength(10));
+    // The shared original is untouched.
+    final source = container
+        .read(templateLibraryProvider)
+        .firstWhere((t) => t.id == 'interview-audio');
+    expect(source.rule('margins'), '2 cm');
+    expect(
+      source.sections.firstWhere((s) => s.key == 'risks').text,
+      startsWith('You may feel tired'),
+    );
+    expect(find.textContaining('Customised from'), findsOneWidget);
+    await clearToast(tester);
+    expectNoException(tester);
+  });
+
   testWidgets('05.2 scans, edits a rule, clips the logo and saves (05.6)', (
     tester,
   ) async {
@@ -328,6 +408,8 @@ void main() {
       '/templates',
       '/templates/view/health-v3',
       '/templates/view/my-opuwo',
+      '/templates/view/interview-audio',
+      '/templates/customise/interview-audio',
       '/templates/clip',
       '/templates/describe',
     ]) {

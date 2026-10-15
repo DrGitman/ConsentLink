@@ -21,6 +21,10 @@ Profile photo: camera or gallery (`image_picker`), resized to 512 px, saved
 only on the phone (`consentlink.profilePhoto.v1`) and shown on the Me card.
 Never added to consent records.
 
+Ju/'hoansi (San) was added as a consent form and participant language after
+the lecturer's feedback (15 Oct 2026, Figma 13.4 / 13.5). It also appears in
+the app-language list, the first-run picker and the offline pack.
+
 ## Real, saved settings
 Text size (app-wide, applied when you let go of the slider), high contrast,
 read aloud + read-aloud speed (slider, 0.5–1.5×), larger targets, reduce

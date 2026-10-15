@@ -1,5 +1,6 @@
 import 'package:consentlink/core/theme/app_theme.dart';
 import 'package:consentlink/features/field_capture/answer_screen.dart';
+import 'package:consentlink/features/field_capture/capture_launcher_screen.dart';
 import 'package:consentlink/features/field_capture/choices_screen.dart';
 import 'package:consentlink/features/field_capture/done_screen.dart';
 import 'package:consentlink/features/field_capture/field_capture_data.dart';
@@ -8,6 +9,7 @@ import 'package:consentlink/features/field_capture/read_consent_screen.dart';
 import 'package:consentlink/features/field_capture/sign_screen.dart';
 import 'package:consentlink/features/field_capture/voice_input.dart';
 import 'package:consentlink/features/preferences/accessibility_preferences.dart';
+import 'package:consentlink/features/projects/project_data.dart';
 import 'package:consentlink/features/projects/project_transition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -67,6 +69,13 @@ Future<ProviderContainer> pumpCapture(
         builder: (context, state) => const Text('Home placeholder'),
       ),
       GoRoute(
+        path: '/capture',
+        builder: (context, state) => const Scaffold(
+          backgroundColor: AppColors.canvas,
+          body: SafeArea(child: CaptureLauncherScreen()),
+        ),
+      ),
+      GoRoute(
         path: '/projects/:id',
         builder: (context, state) =>
             Text('Project ${state.pathParameters['id']}'),
@@ -93,6 +102,7 @@ Future<ProviderContainer> pumpCapture(
   final container = ProviderContainer(
     overrides: [
       fieldCapturePreviewProvider.overrideWithValue(preview),
+      projectsPreviewProvider.overrideWithValue(preview),
       largerTouchTargetsProvider.overrideWith((ref) => large),
       voiceInputProvider.overrideWithValue(voice ?? FakeVoiceInput()),
       if (participant != null)
@@ -176,8 +186,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.text('English'));
-    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text('English'));
     expect(find.text('Recorded English voice'), findsOneWidget);
 
     await tester.tap(find.text('Interpreter present'));
@@ -187,6 +196,45 @@ void main() {
     await tester.tap(find.text('Start for participant'));
     await tester.pumpAndSettle();
     expect(find.text('Section 1 of 8'), findsOneWidget);
+    expectNoException(tester);
+  });
+
+  testWidgets('13.7 Capture tab lists collecting projects and starts one', (
+    tester,
+  ) async {
+    await pumpCapture(tester, initial: '/capture');
+    expect(find.text('Field capture'), findsOneWidget);
+    expect(find.text('Water access & health in Opuwo'), findsOneWidget);
+    expect(find.text('Youth & mobile banking'), findsOneWidget);
+    // Only projects that can collect.
+    expect(find.text('Rundu market traders'), findsNothing);
+
+    await tapVisible(tester, find.bySemanticsLabel('Search projects'));
+    await tester.enterText(find.byType(TextField).first, 'youth');
+    await tester.pumpAndSettle();
+    expect(find.text('Water access & health in Opuwo'), findsNothing);
+    expect(find.text('Youth & mobile banking'), findsOneWidget);
+
+    await tapVisible(tester, find.text('Start field capture'));
+    expect(find.text('P-065'), findsOneWidget);
+    expectNoException(tester);
+  });
+
+  testWidgets('13.7 Capture tab filters by language', (tester) async {
+    await pumpCapture(tester, initial: '/capture');
+    await tapVisible(tester, find.bySemanticsLabel('Filter by language'));
+    await tapVisible(tester, find.text('Otjiherero').last);
+    expect(find.text('Water access & health in Opuwo'), findsOneWidget);
+    expect(find.text('Youth & mobile banking'), findsNothing);
+    expectNoException(tester);
+  });
+
+  testWidgets('06.1 Ju/\'hoansi (San) can be picked for a participant', (
+    tester,
+  ) async {
+    final container = await pumpCapture(tester);
+    await tapVisible(tester, find.text('Ju/\'hoansi'));
+    expect(container.read(captureSessionProvider).language, 'Ju/\'hoansi');
     expectNoException(tester);
   });
 
