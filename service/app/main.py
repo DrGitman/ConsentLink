@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from app import storage
 from app.file_safety import MAX_FILE_SIZE, scan_file
 from app.service_logging import log_service_event
-from app.template_analysis import analyse_template, extract_logo
+from app.template_analysis import TemplateSection, analyse_template, extract_logo
 
 app = FastAPI(title="ConsentLink Service")
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -61,9 +61,15 @@ class LogoCandidateResponse(BaseModel):
     confidence: float
 
 
+class TemplateSectionResponse(BaseModel):
+    title: str
+    text: str
+
+
 class TemplateAnalyseResponse(StyleSpec):
     confidence: dict[str, float]
     logo_candidates: list[LogoCandidateResponse]
+    sections: list[TemplateSectionResponse]
 
 
 class TemplateUploadResponse(TemplateAnalyseResponse):
@@ -124,6 +130,15 @@ def require_supabase_user(
             detail={"code": "forbidden", "message": "An authenticated user is required."},
         )
     return credentials
+
+
+def _section_responses(
+    sections: list[TemplateSection],
+) -> list[TemplateSectionResponse]:
+    return [
+        TemplateSectionResponse(title=section.title, text=section.text)
+        for section in sections
+    ]
 
 
 @app.get("/health")
@@ -224,6 +239,7 @@ async def upload_and_analyse_template(
             )
             for candidate in analysis.logo_candidates
         ],
+        sections=_section_responses(analysis.sections),
         storage_path=stored_path,
         detected_type=scan.detected_type,
         size_mb=round(len(content) / (1024 * 1024), 3),
@@ -250,6 +266,7 @@ async def analyse_template_endpoint(
             )
             for candidate in analysis.logo_candidates
         ],
+        sections=_section_responses(analysis.sections),
     )
 
 
