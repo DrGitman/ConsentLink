@@ -11,6 +11,8 @@ import fitz
 import numpy as np
 from docx import Document as WordDocument
 from docx.opc.exceptions import PackageNotFoundError
+from docx.table import Table
+from docx.text.paragraph import Paragraph
 from fastapi import HTTPException
 from lxml.etree import XMLSyntaxError
 
@@ -28,10 +30,17 @@ class LogoCandidate:
 
 
 @dataclass(frozen=True)
+class TemplateSection:
+    title: str
+    text: str
+
+
+@dataclass(frozen=True)
 class TemplateAnalysis:
     style_spec: dict[str, Any]
     confidence: dict[str, float]
     logo_candidates: list[LogoCandidate]
+    sections: list[TemplateSection]
 
 
 @dataclass(frozen=True)
@@ -78,9 +87,12 @@ def _round(value: float, digits: int = 2) -> float:
     return round(float(value), digits)
 
 
-def _pdf_styles(document: fitz.Document) -> tuple[dict[str, Any], dict[str, float]]:
+def _pdf_styles(
+    document: fitz.Document,
+) -> tuple[dict[str, Any], dict[str, float], list[TemplateSection]]:
     font_counts: Counter[tuple[str, float]] = Counter()
     span_rows: list[tuple[str, float, bool, str, tuple[float, ...], float]] = []
+    content_lines: list[tuple[str, float, bool]] = []
     page_margins: list[list[float]] = []
     headers: list[str] = []
     footers: list[str] = []
@@ -93,6 +105,10 @@ def _pdf_styles(document: fitz.Document) -> tuple[dict[str, Any], dict[str, floa
                 continue
             for line in block.get("lines", []):
                 line_height = float(line["bbox"][3] - line["bbox"][1])
+                line_text: list[str] = []
+                emphasized_characters = 0
+                total_characters = 0
+                line_size = 0.0
                 for span in line.get("spans", []):
                     text = span.get("text", "").strip()
                     if not text:
@@ -101,6 +117,11 @@ def _pdf_styles(document: fitz.Document) -> tuple[dict[str, Any], dict[str, floa
                     size = float(span.get("size", 0))
                     bold = "bold" in font.lower() or "black" in font.lower()
                     bbox = tuple(float(value) for value in span["bbox"])
+                    line_text.append(text)
+                    total_characters += len(text)
+                    if bold:
+                        emphasized_characters += len(text)
+                    line_size = max(line_size, size)
                     page_spans.append(span)
                     span_rows.append((font, size, bold, text, bbox, line_height))
                     font_counts[(font, round(size, 1))] += max(1, len(text))
@@ -108,6 +129,21 @@ def _pdf_styles(document: fitz.Document) -> tuple[dict[str, Any], dict[str, floa
                         headers.append(text)
                     if bbox[3] > page.rect.height * 0.88:
                         footers.append(text)
+
+                text = " ".join(line_text).strip()
+                if (
+                    text
+                    and line["bbox"][1] >= page.rect.height * 0.12
+                    and line["bbox"][3] <= page.rect.height * 0.88
+                ):
+                    content_lines.append(
+                        (
+                            text,
+                            line_size,
+                            bool(total_characters)
+                            and emphasized_characters / total_characters >= 0.5,
+                        )
+                    )
 
         if page_spans:
             boxes = [
@@ -134,6 +170,21 @@ def _pdf_styles(document: fitz.Document) -> tuple[dict[str, Any], dict[str, floa
         )
 
     body_font, body_size = font_counts.most_common(1)[0][0]
+    sections: list[TemplateSection] = []
+    section_title: str | None = None
+    section_lines: list[str] = []
+    for text, size, bold in content_lines:
+        is_heading = bold or size >= body_size + 1
+        if is_heading:
+            if section_title is not None:
+                sections.append(TemplateSection(section_title, "\n".join(section_lines).strip()))
+            section_title = text
+            section_lines = []
+        elif section_title is not None:
+            section_lines.append(text)
+    if section_title is not None:
+        sections.append(TemplateSection(section_title, "\n".join(section_lines).strip()))
+
     body_rows = [row for row in span_rows if row[0] == body_font and row[1] == body_size]
     heading_rows = [
         row for row in span_rows if row[2] or row[1] >= body_size + 1
@@ -187,10 +238,12 @@ def _pdf_styles(document: fitz.Document) -> tuple[dict[str, Any], dict[str, floa
         "footer": 0.8 if footers else 0.0,
         "columns": 0.0,
     }
-    return style_spec, confidence
+    return style_spec, confidence, sections
 
 
-def _extract_docx_styles(content: bytes) -> tuple[dict[str, Any], dict[str, float]]:
+def _extract_docx_styles(
+    content: bytes,
+) -> tuple[dict[str, Any], dict[str, float], list[TemplateSection]]:
     try:
         document = WordDocument(BytesIO(content))
     except (
@@ -229,6 +282,35 @@ def _extract_docx_styles(content: bytes) -> tuple[dict[str, Any], dict[str, floa
     )
 
     line_spacing_values = []
+    sections: list[TemplateSection] = []
+    section_title: str | None = None
+    section_paragraphs: list[str] = []
+    def add_section_text(text: str, *, is_heading: bool = False) -> None:
+        nonlocal section_title, section_paragraphs
+        text = text.strip()
+        if is_heading and text:
+            if section_title is not None:
+                sections.append(
+                    TemplateSection(section_title, "\n".join(section_paragraphs).strip())
+                )
+            section_title = text
+            section_paragraphs = []
+        elif text and section_title is not None:
+            section_paragraphs.append(text)
+
+    for item in document.iter_inner_content():
+        if isinstance(item, Paragraph):
+            add_section_text(
+                item.text,
+                is_heading=item.style.name.startswith("Heading "),
+            )
+        elif isinstance(item, Table):
+            for row in item.rows:
+                row_text = " | ".join(
+                    cell.text.strip() for cell in row.cells if cell.text.strip()
+                )
+                add_section_text(row_text)
+
     for paragraph in document.paragraphs:
         line_spacing = paragraph.paragraph_format.line_spacing
         if isinstance(line_spacing, float):
@@ -288,10 +370,14 @@ def _extract_docx_styles(content: bytes) -> tuple[dict[str, Any], dict[str, floa
         "footer": 0.9 if footer else 0.0,
         "columns": 0.75 if columns else 0.0,
     }
-    return style_spec, confidence
+    if section_title is not None:
+        sections.append(TemplateSection(section_title, "\n".join(section_paragraphs).strip()))
+    return style_spec, confidence, sections
 
 
-def _docx_styles(content: bytes) -> tuple[dict[str, Any], dict[str, float]]:
+def _docx_styles(
+    content: bytes,
+) -> tuple[dict[str, Any], dict[str, float], list[TemplateSection]]:
     try:
         return _extract_docx_styles(content)
     except HTTPException:
@@ -410,8 +496,8 @@ def _detect_page_logos(page: fitz.Page, page_number: int) -> list[LogoCandidate]
 def analyse_template(filename: str, content: bytes) -> TemplateAnalysis:
     suffix = _validate_template_file(filename, content)
     if suffix == ".docx":
-        style_spec, confidence = _docx_styles(content)
-        return TemplateAnalysis(style_spec, confidence, [])
+        style_spec, confidence, sections = _docx_styles(content)
+        return TemplateAnalysis(style_spec, confidence, [], sections)
 
     try:
         document = fitz.open(stream=content, filetype="pdf")
@@ -443,14 +529,14 @@ def analyse_template(filename: str, content: bytes) -> TemplateAnalysis:
                     "field": "storage_path",
                 },
             )
-        style_spec, confidence = _pdf_styles(document)
+        style_spec, confidence, sections = _pdf_styles(document)
         candidates = [
             candidate
             for index in range(min(document.page_count, 10))
             for candidate in _detect_page_logos(document[index], index + 1)
         ]
         candidates.sort(key=lambda item: item.confidence, reverse=True)
-        return TemplateAnalysis(style_spec, confidence, candidates[:20])
+        return TemplateAnalysis(style_spec, confidence, candidates[:20], sections)
 
 
 def extract_logo(
