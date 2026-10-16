@@ -46,6 +46,7 @@ dependencies:
   zxcvbn: 1.0.0
   speech_to_text: ^7.4.0
   image_picker: ^1.1.2
+  unorm_dart: 0.3.2
 
 dev_dependencies:
   json_schema: ^5.1.7
