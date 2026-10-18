@@ -1,3 +1,5 @@
+import json
+import logging
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from typing import Any
@@ -47,6 +49,8 @@ def make_pdf() -> bytes:
     page.insert_text((56, 74), "NUST", fontsize=24, fontname="hebo", color=(1, 1, 1))
     page.insert_text((50, 150), "Research Template", fontsize=18, fontname="hebo")
     page.insert_text((50, 205), "Study information and participant procedures.", fontsize=11)
+    page.insert_text((50, 260), "Consent", fontsize=14, fontname="hebo")
+    page.insert_text((50, 285), "Participation is voluntary.", fontsize=11)
     page.insert_text((50, 750), "Ethics reference: TEST-001", fontsize=9)
     output = document.tobytes()
     document.close()
@@ -118,6 +122,8 @@ def make_docx() -> bytes:
     document.styles["Heading 1"].font.size = 14 * 12700
     document.add_heading("Research Template", level=1)
     document.add_paragraph("Study information and participant procedures.")
+    document.add_heading("Consent", level=1)
+    document.add_paragraph("Participation is voluntary.")
     document.sections[0].header.paragraphs[0].text = "Test Institution"
     document.sections[0].footer.paragraphs[0].text = "Ethics reference"
     output = BytesIO()
@@ -186,6 +192,16 @@ def test_analyse_pdf_extracts_styles_and_logo_candidate() -> None:
     assert analysis.logo_candidates
     assert analysis.logo_candidates[0].page == 1
     assert len(analysis.logo_candidates[0].bbox) == 4
+    assert [
+        {"title": section.title, "text": section.text}
+        for section in analysis.sections
+    ] == [
+        {
+            "title": "Research Template",
+            "text": "Study information and participant procedures.",
+        },
+        {"title": "Consent", "text": "Participation is voluntary."},
+    ]
 
 
 def test_analyse_docx_extracts_styles_header_footer_and_margins() -> None:
@@ -198,6 +214,16 @@ def test_analyse_docx_extracts_styles_header_footer_and_margins() -> None:
     assert analysis.style_spec["header"] == "Test Institution"
     assert analysis.style_spec["footer"] == "Ethics reference"
     assert analysis.logo_candidates == []
+    assert [
+        {"title": section.title, "text": section.text}
+        for section in analysis.sections
+    ] == [
+        {
+            "title": "Research Template",
+            "text": "Study information and participant procedures.",
+        },
+        {"title": "Consent", "text": "Participation is voluntary."},
+    ]
 
 
 def test_analyse_rejects_malformed_docx() -> None:
@@ -257,6 +283,7 @@ def test_analyse_accepts_pdf_at_page_limit() -> None:
     )
 
     assert analysis.style_spec["font"] is not None
+    assert analysis.sections == []
 
 
 def test_analyse_rejects_pdf_over_page_limit() -> None:
@@ -400,6 +427,39 @@ def test_analyse_endpoint_uses_caller_jwt_for_storage(
     assert response.json()["font"]
     assert response.json()["confidence"]["font"] > 0
     assert response.json()["logo_candidates"]
+    assert response.json()["sections"] == [
+        {
+            "title": "Research Template",
+            "text": "Study information and participant procedures.",
+        },
+        {"title": "Consent", "text": "Participation is voluntary."},
+    ]
+
+
+def test_analyse_docx_endpoint_returns_extracted_sections(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    headers = auth_headers()
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.method == "GET"
+        return httpx.Response(200, content=make_docx(), request=request)
+
+    mock_storage_api(monkeypatch, handler)
+    response = client.post(
+        "/v1/templates/analyse",
+        json={"storage_path": "templates/research/sample.docx"},
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["sections"] == [
+        {
+            "title": "Research Template",
+            "text": "Study information and participant procedures.",
+        },
+        {"title": "Consent", "text": "Participation is voluntary."},
+    ]
 
 
 @pytest.mark.parametrize(
@@ -445,8 +505,63 @@ def test_upload_endpoint_scans_analyses_and_stores_with_caller_jwt(
     assert result["storage_path"].startswith("templates/uploads/")
     assert result["font"]
     assert "confidence" in result
+    assert result["sections"] == [
+        {
+            "title": "Research Template",
+            "text": "Study information and participant procedures.",
+        },
+        {"title": "Consent", "text": "Participation is voluntary."},
+    ]
     assert uploaded["path"].startswith("/storage/v1/object/templates/uploads/")
     assert uploaded["content"] == contents
+
+
+def test_storage_failure_log_excludes_request_and_upstream_data(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    headers = auth_headers()
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            500,
+            text="sensitive upstream response",
+            request=request,
+        )
+
+    mock_storage_api(monkeypatch, handler)
+    caplog.set_level(logging.ERROR, logger="consentlink.service")
+    response = client.post(
+        "/v1/templates/upload",
+        files={"file": ("private-name.pdf", make_pdf())},
+        headers=headers,
+    )
+
+    assert response.status_code == 500
+    records = [
+        json.loads(record.message)
+        for record in caplog.records
+        if record.name == "consentlink.service"
+    ]
+    assert records == [
+        {
+            "error_type": "HTTPStatusError",
+            "event": "storage_request_failed",
+            "operation": "upload",
+            "upstream_status": 500,
+        },
+        {
+            "error_type": "HTTPException",
+            "event": "http_request_failed",
+            "method": "POST",
+            "route": "/v1/templates/upload",
+            "status_code": 500,
+        },
+    ]
+    logged_output = caplog.text
+    assert "private-name.pdf" not in logged_output
+    assert "sensitive upstream response" not in logged_output
+    assert headers["Authorization"] not in logged_output
 
 
 def test_upload_endpoint_rejects_unsafe_file_without_storage_write(
