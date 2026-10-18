@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,11 +10,10 @@ import '../new_consent/consent_widgets.dart';
 import '../projects/project_widgets.dart';
 import '../responses/responses_widgets.dart';
 import 'template_data.dart';
+import 'template_upload_service.dart';
 import 'template_widgets.dart';
 
-/// Figma 05.2 Detected template styles (3:2571). The uploaded file is
-/// scanned first ("Upload & file scan": scanning, then "Safe · macros
-/// removed" pops), then the detected rules rise in one after another.
+/// Figma 05.2 reviews the real style and section analysis from the service.
 class ReadTemplateScreen extends ConsumerStatefulWidget {
   const ReadTemplateScreen({super.key});
   @override
@@ -24,23 +21,6 @@ class ReadTemplateScreen extends ConsumerStatefulWidget {
 }
 
 class _ReadTemplateScreenState extends ConsumerState<ReadTemplateScreen> {
-  bool _scanned = false;
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer(const Duration(milliseconds: 1200), () {
-      if (mounted) setState(() => _scanned = true);
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
   void _back() => context.canPop() ? context.pop() : context.go('/templates');
 
   Future<void> _edit(TemplateRule rule) async {
@@ -55,14 +35,17 @@ class _ReadTemplateScreenState extends ConsumerState<ReadTemplateScreen> {
   }
 
   Future<void> _save() async {
+    final analysis = ref.read(uploadedTemplateProvider);
+    if (analysis == null) return;
     final result = await showSaveTemplateSheet(
       context,
-      suggestedName: 'Opuwo health consent',
+      suggestedName: analysis.fileName.replaceFirst(
+        RegExp(r'\.[^.]+$'),
+        '',
+      ),
     );
     if (result == null || !mounted) return;
     final rules = ref.read(detectedRulesProvider);
-    String value(String key) =>
-        rules.where((r) => r.key == key).firstOrNull?.value ?? '—';
     ref
         .read(templateLibraryProvider.notifier)
         .add(
@@ -73,32 +56,9 @@ class _ReadTemplateScreenState extends ConsumerState<ReadTemplateScreen> {
             meta: 'You · edited today',
             access: result.$2,
             mine: true,
-            rules: [
-              TemplateRule(
-                key: 'font',
-                title: 'Font',
-                value: value('body'),
-                icon: 'form/type',
-              ),
-              TemplateRule(
-                key: 'margins',
-                title: 'Margins',
-                value: value('margins'),
-                icon: 'layers',
-              ),
-              TemplateRule(
-                key: 'footer',
-                title: 'Footer',
-                value: value('footer'),
-                icon: 'responses/file',
-              ),
-              const TemplateRule(
-                key: 'languages',
-                title: 'Languages',
-                value: 'EN | AF',
-                icon: 'form/globe',
-              ),
-            ],
+            rules: rules,
+            sourceStoragePath: analysis.storagePath,
+            sections: [...baseSections, ...analysis.sections],
           ),
         );
     ref.read(templateFilterProvider.notifier).state = TemplateFilter.all;
@@ -116,12 +76,38 @@ class _ReadTemplateScreenState extends ConsumerState<ReadTemplateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final analysis = ref.watch(uploadedTemplateProvider);
+    if (analysis == null) {
+      return Scaffold(
+        backgroundColor: AppColors.canvas,
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const EmptyCard(
+                    title: 'No template analysis',
+                    message:
+                        'Choose a PDF or DOCX file to start template analysis.',
+                  ),
+                  TextButton(
+                    onPressed: _back,
+                    child: const Text('Back to templates'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     final rules = ref.watch(detectedRulesProvider);
     final crop = ref.watch(logoCropProvider);
+    final sections = analysis.sections;
     final tint = institutionTint(ref, context);
     final primary = Theme.of(context).colorScheme.primary;
-    final reduced = reduceMotion(context);
-
     return Scaffold(
       backgroundColor: AppColors.canvas,
       body: SafeArea(
@@ -142,43 +128,76 @@ class _ReadTemplateScreenState extends ConsumerState<ReadTemplateScreen> {
                           title: 'Read from template',
                         ),
                         const SizedBox(height: 10),
-                        _UploadedCard(scanned: _scanned),
+                        _UploadedCard(analysis: analysis),
                         const SizedBox(height: 16),
-                        AnimatedOpacity(
-                          opacity: _scanned ? 1 : 0,
-                          duration: Duration(milliseconds: reduced ? 150 : 250),
-                          child: Text(
-                            'We found these rules — tap to change',
-                            style: dashboardText(
-                              14,
-                              color: AppColors.muted,
-                              weight: FontWeight.w600,
-                            ),
+                        Text(
+                          'Detected style — tap to change',
+                          style: dashboardText(
+                            14,
+                            color: AppColors.muted,
+                            weight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 9),
-                        if (_scanned) ...[
-                          WhiteCard(
-                            padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
-                            child: Column(
-                              children: [
-                                for (final (i, rule) in rules.indexed)
-                                  StaggerIn(
-                                    index: i,
-                                    child: _DetectedRow(
-                                      rule: rule,
-                                      tint: tint,
-                                      onTap: () => _edit(rule),
-                                    ),
+                        WhiteCard(
+                          padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+                          child: Column(
+                            children: [
+                              for (final (i, rule) in rules.indexed)
+                                StaggerIn(
+                                  index: i,
+                                  child: _DetectedRow(
+                                    rule: rule,
+                                    tint: tint,
+                                    onTap: () => _edit(rule),
                                   ),
-                              ],
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Detected sections',
+                          style: dashboardText(
+                            14,
+                            color: AppColors.muted,
+                            weight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Best-effort extraction. Review this text; required '
+                          'consent elements and official wording are not verified.',
+                          style: dashboardText(12, color: AppColors.subtle),
+                        ),
+                        const SizedBox(height: 9),
+                        if (sections.isEmpty)
+                          const EmptyCard(
+                            title: 'No headings detected',
+                            message:
+                                'The file was analyzed, but no text sections '
+                                'could be identified. You can add content after '
+                                'saving the template.',
+                          )
+                        else
+                          TemplateSectionsCard(
+                            sections: sections,
+                            collapseAfter: 3,
+                            onOpen: (section) => showSectionEditor(
+                              context,
+                              section,
+                              readOnly: true,
                             ),
                           ),
+                        if (analysis.logoCandidates.isNotEmpty) ...[
                           const SizedBox(height: 12),
                           StaggerIn(
                             index: rules.length,
                             child: DashboardAction(
-                              label: 'Logo found on page 1. Adjust the crop',
+                              label:
+                                  'Logo candidate found on page '
+                                  '${analysis.logoCandidates.first['page']}. '
+                                  'Adjust the crop',
                               onPressed: () => context.push('/templates/clip'),
                               child: ConstrainedBox(
                                 constraints: const BoxConstraints(
@@ -220,7 +239,8 @@ class _ReadTemplateScreenState extends ConsumerState<ReadTemplateScreen> {
                                           children: [
                                             Text(
                                               crop == null
-                                                  ? 'Logo found on page 1'
+                                                  ? 'Logo candidate found on page '
+                                                        '${analysis.logoCandidates.first['page']}'
                                                   : 'Logo clipped',
                                               style: dashboardText(
                                                 15,
@@ -260,7 +280,7 @@ class _ReadTemplateScreenState extends ConsumerState<ReadTemplateScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
                   child: ConsentPillButton(
                     label: 'Save template',
-                    onPressed: _scanned ? _save : null,
+                      onPressed: _save,
                   ),
                 ),
               ],
@@ -273,8 +293,8 @@ class _ReadTemplateScreenState extends ConsumerState<ReadTemplateScreen> {
 }
 
 class _UploadedCard extends StatelessWidget {
-  const _UploadedCard({required this.scanned});
-  final bool scanned;
+  const _UploadedCard({required this.analysis});
+  final TemplateUploadResult analysis;
   @override
   Widget build(BuildContext context) => WhiteCard(
     padding: const EdgeInsets.all(12),
@@ -289,7 +309,7 @@ class _UploadedCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
-            'DOCX',
+            analysis.detectedType == 'application/pdf' ? 'PDF' : 'DOCX',
             style: dashboardText(
               11,
               color: AppColors.info,
@@ -303,7 +323,7 @@ class _UploadedCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                uploadedTemplateFile,
+                analysis.fileName,
                 style: dashboardText(14, weight: FontWeight.w600),
               ),
               const SizedBox(height: 5),
@@ -313,57 +333,18 @@ class _UploadedCard extends StatelessWidget {
                   duration: Duration(
                     milliseconds: reduceMotion(context) ? 150 : 250,
                   ),
-                  child: scanned
-                      ? const PopIn(
-                          key: ValueKey('safe'),
-                          child: ProjectBadge(
-                            label: 'Safe · macros removed',
-                            icon: 'projects/shield',
-                            fill: AppColors.brand50,
-                            ink: AppColors.brandDark,
-                          ),
-                        )
-                      : const _Scanning(key: ValueKey('scanning')),
+                  child: const PopIn(
+                    key: ValueKey('safe'),
+                    child: ProjectBadge(
+                      label: 'Safety scan passed',
+                      icon: 'projects/shield',
+                      fill: AppColors.brand50,
+                      ink: AppColors.brandDark,
+                    ),
+                  ),
                 ),
               ),
             ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _Scanning extends StatelessWidget {
-  const _Scanning({super.key});
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-    decoration: BoxDecoration(
-      color: AppColors.canvas,
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox.square(
-          dimension: 12,
-          child: reduceMotion(context)
-              ? const DashboardIcon('sync', color: AppColors.muted, size: 12)
-              : const CircularProgressIndicator(
-                  strokeWidth: 1.6,
-                  color: AppColors.muted,
-                ),
-        ),
-        const SizedBox(width: 6),
-        Flexible(
-          child: Text(
-            'Scanning for macros…',
-            style: dashboardText(
-              12,
-              color: AppColors.muted,
-              weight: FontWeight.w600,
-            ),
           ),
         ),
       ],

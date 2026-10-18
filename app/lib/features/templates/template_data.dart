@@ -3,9 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../new_consent/consent_draft_data.dart';
 
 /// Sample templates appear only with TEMPLATES_PREVIEW=true or the existing
-/// preview flags. Upload, scanning, logo clipping and the template assistant
-/// are simulated: the scan service (P4), the on-device model (P3) and template
-/// storage (P2) aren't connected yet.
+/// preview flags. Template uploads use the P4 document service; the template
+/// assistant remains simulated until its P3 model and P2 storage are connected.
 final templatesPreviewProvider = Provider<bool>(
   (ref) =>
       const bool.fromEnvironment('TEMPLATES_PREVIEW') ||
@@ -222,6 +221,7 @@ class StudioTemplate {
     this.formId,
     this.verified,
     this.customisedFrom,
+    this.sourceStoragePath,
     this.sections = baseSections,
   });
   final String id;
@@ -243,6 +243,9 @@ class StudioTemplate {
   /// Name of the shared or official template this copy was customised
   /// from (lecturer feedback, Figma 13.2–13.3). Null for originals.
   final String? customisedFrom;
+
+  /// Storage object created by the template upload service, when available.
+  final String? sourceStoragePath;
 
   /// The consent text inside the template (Figma 13.2 "What's inside").
   final List<TemplateSection> sections;
@@ -275,6 +278,7 @@ class StudioTemplate {
     bool? mine,
     String? Function()? verified,
     String? customisedFrom,
+    String? Function()? sourceStoragePath,
     List<TemplateSection>? sections,
   }) => StudioTemplate(
     id: id ?? this.id,
@@ -287,6 +291,9 @@ class StudioTemplate {
     formId: formId,
     verified: verified != null ? verified() : this.verified,
     customisedFrom: customisedFrom ?? this.customisedFrom,
+    sourceStoragePath: sourceStoragePath != null
+        ? sourceStoragePath()
+        : this.sourceStoragePath,
     sections: sections ?? this.sections,
   );
 }
@@ -477,8 +484,6 @@ const detectedRules = [
     confidence: 'Medium',
   ),
 ];
-
-const uploadedTemplateFile = 'NUST_HREC_consent_2026.docx';
 
 class TemplateLibrary extends StateNotifier<List<StudioTemplate>> {
   TemplateLibrary(super.state);
