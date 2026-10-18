@@ -129,6 +129,14 @@ flutter run -t lib/main_demo.dart \
 ```
 Any service can be switched back to its fake by setting its flag to `false`.
 
+The template upload screen can be pointed at the Python service with
+`--dart-define=TEMPLATE_SERVICE_URL=http://10.0.2.2:8000` for the Android
+emulator (use a reachable host address on a physical device). Upload also
+requires an authenticated user's Supabase access token through
+`templateAccessTokenProvider`; this build leaves that provider unconfigured
+until the P2 auth integration is connected. Do not pass bearer tokens or
+service-role keys with `--dart-define`.
+
 ### 4. Run the Python service
 ```powershell
 cd service
