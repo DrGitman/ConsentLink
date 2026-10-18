@@ -108,12 +108,12 @@ const sampleProjects = [
   ),
   Project(
     id: 'juhoan-histories',
-    title: 'Juǀ’hoan oral histories',
-    languages: 'Juǀ’hoansi via interpreter',
+    title: 'Ju/\'hoan oral histories',
+    languages: 'Ju/\'hoansi via interpreter',
     status: ProjectStatus.awaitingEthics,
     target: 25,
     formTitle: 'Participant consent v1',
-    formSource: 'NUST template · Juǀ’hoansi + English',
+    formSource: 'NUST template · Ju/\'hoansi + English',
   ),
   Project(
     id: 'rundu-traders',

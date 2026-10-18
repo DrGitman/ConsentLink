@@ -175,7 +175,7 @@ class _ChoiceCard extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: _YesNo(
+                  child: CaptureYesNo(
                     yes: true,
                     selected: value == true,
                     onTap: () => onChanged(true),
@@ -183,7 +183,7 @@ class _ChoiceCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: _YesNo(
+                  child: CaptureYesNo(
                     yes: false,
                     selected: value == false,
                     onTap: () => onChanged(false),
@@ -198,8 +198,11 @@ class _ChoiceCard extends StatelessWidget {
   );
 }
 
-class _YesNo extends ConsumerWidget {
-  const _YesNo({
+/// Equal-weight Yes / No pill (no nudging). Also used by guardian consent
+/// (10.4).
+class CaptureYesNo extends ConsumerWidget {
+  const CaptureYesNo({
+    super.key,
     required this.yes,
     required this.selected,
     required this.onTap,

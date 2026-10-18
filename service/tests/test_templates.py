@@ -1,3 +1,5 @@
+import json
+import logging
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from typing import Any
@@ -6,14 +8,16 @@ from zipfile import ZipFile
 import fitz
 import httpx
 import jwt
+import numpy as np
 import pytest
+import cv2
 from docx import Document
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from app import storage
 from app.main import app
-from app.template_analysis import analyse_template, extract_logo
+from app.template_analysis import MAX_DOCUMENT_PAGES, analyse_template, extract_logo
 
 client = TestClient(app)
 JWT_SECRET = "template-test-secret-with-at-least-thirty-two-bytes"
@@ -45,8 +49,66 @@ def make_pdf() -> bytes:
     page.insert_text((56, 74), "NUST", fontsize=24, fontname="hebo", color=(1, 1, 1))
     page.insert_text((50, 150), "Research Template", fontsize=18, fontname="hebo")
     page.insert_text((50, 205), "Study information and participant procedures.", fontsize=11)
+    page.insert_text((50, 260), "Consent", fontsize=14, fontname="hebo")
+    page.insert_text((50, 285), "Participation is voluntary.", fontsize=11)
     page.insert_text((50, 750), "Ethics reference: TEST-001", fontsize=9)
     output = document.tobytes()
+    document.close()
+    return output
+
+
+def make_pdf_pages(page_count: int, *, include_text: bool = True) -> bytes:
+    document = fitz.open()
+    image, encoded_image = cv2.imencode(
+        ".png",
+        np.full((32, 32, 3), 255, dtype=np.uint8),
+    )
+    assert image
+    for page_number in range(page_count):
+        page = document.new_page(width=612, height=792)
+        if include_text:
+            page.insert_text((50, 150), f"Template page {page_number + 1}")
+        else:
+            page.insert_image(
+                fitz.Rect(40, 40, 300, 300),
+                stream=encoded_image.tobytes(),
+            )
+    output = document.tobytes()
+    document.close()
+    return output
+
+
+def make_zero_page_pdf() -> bytes:
+    content = bytearray(b"%PDF-1.4\n")
+    offsets = [0]
+    for object_number, body in [
+        (1, b"<< /Type /Catalog /Pages 2 0 R >>"),
+        (2, b"<< /Type /Pages /Kids [] /Count 0 >>"),
+    ]:
+        offsets.append(len(content))
+        content.extend(f"{object_number} 0 obj\n".encode())
+        content.extend(body)
+        content.extend(b"\nendobj\n")
+
+    xref_offset = len(content)
+    content.extend(b"xref\n0 3\n0000000000 65535 f \n")
+    content.extend(
+        b"".join(f"{offset:010d} 00000 n \n".encode() for offset in offsets[1:])
+    )
+    content.extend(
+        f"trailer\n<< /Size 3 /Root 1 0 R >>\nstartxref\n{xref_offset}\n%%EOF\n".encode()
+    )
+    return bytes(content)
+
+
+def make_encrypted_pdf() -> bytes:
+    document = fitz.open()
+    document.new_page()
+    output = document.tobytes(
+        encryption=fitz.PDF_ENCRYPT_AES_256,
+        owner_pw="test-owner",
+        user_pw="test-user",
+    )
     document.close()
     return output
 
@@ -60,10 +122,21 @@ def make_docx() -> bytes:
     document.styles["Heading 1"].font.size = 14 * 12700
     document.add_heading("Research Template", level=1)
     document.add_paragraph("Study information and participant procedures.")
+    document.add_heading("Consent", level=1)
+    document.add_paragraph("Participation is voluntary.")
     document.sections[0].header.paragraphs[0].text = "Test Institution"
     document.sections[0].footer.paragraphs[0].text = "Ethics reference"
     output = BytesIO()
     document.save(output)
+    return output.getvalue()
+
+
+def make_docx_without_part(part_name: str) -> bytes:
+    output = BytesIO()
+    with ZipFile(BytesIO(make_docx())) as source, ZipFile(output, "w") as target:
+        for item in source.infolist():
+            if item.filename != part_name:
+                target.writestr(item, source.read(item.filename))
     return output.getvalue()
 
 
@@ -119,6 +192,16 @@ def test_analyse_pdf_extracts_styles_and_logo_candidate() -> None:
     assert analysis.logo_candidates
     assert analysis.logo_candidates[0].page == 1
     assert len(analysis.logo_candidates[0].bbox) == 4
+    assert [
+        {"title": section.title, "text": section.text}
+        for section in analysis.sections
+    ] == [
+        {
+            "title": "Research Template",
+            "text": "Study information and participant procedures.",
+        },
+        {"title": "Consent", "text": "Participation is voluntary."},
+    ]
 
 
 def test_analyse_docx_extracts_styles_header_footer_and_margins() -> None:
@@ -131,6 +214,16 @@ def test_analyse_docx_extracts_styles_header_footer_and_margins() -> None:
     assert analysis.style_spec["header"] == "Test Institution"
     assert analysis.style_spec["footer"] == "Ethics reference"
     assert analysis.logo_candidates == []
+    assert [
+        {"title": section.title, "text": section.text}
+        for section in analysis.sections
+    ] == [
+        {
+            "title": "Research Template",
+            "text": "Study information and participant procedures.",
+        },
+        {"title": "Consent", "text": "Participation is voluntary."},
+    ]
 
 
 def test_analyse_rejects_malformed_docx() -> None:
@@ -144,6 +237,147 @@ def test_analyse_rejects_malformed_docx() -> None:
 
     assert error.value.status_code == 422
     assert error.value.detail["code"] == "invalid_template"
+
+
+def test_analyse_rejects_docx_missing_required_styles_part() -> None:
+    with pytest.raises(HTTPException) as error:
+        analyse_template("missing-styles.docx", make_docx_without_part("word/styles.xml"))
+
+    assert error.value.status_code == 422
+    assert error.value.detail == {
+        "code": "invalid_template",
+        "message": "The DOCX template could not be opened.",
+        "field": "storage_path",
+    }
+
+
+@pytest.mark.parametrize(
+    ("filename", "content", "error_code"),
+    [
+        ("encrypted.pdf", make_encrypted_pdf(), "encrypted_template"),
+        ("corrupt.pdf", b"%PDF-1.7\nthis is not a valid PDF", "invalid_template"),
+        (
+            "scanned.pdf",
+            make_pdf_pages(1, include_text=False),
+            "template_has_no_text",
+        ),
+    ],
+    ids=["encrypted-pdf", "corrupt-pdf", "image-only-pdf"],
+)
+def test_analyse_returns_documented_errors_for_pdf_edge_cases(
+    filename: str,
+    content: bytes,
+    error_code: str,
+) -> None:
+    with pytest.raises(HTTPException) as error:
+        analyse_template(filename, content)
+
+    assert error.value.status_code == 422
+    assert error.value.detail["code"] == error_code
+    assert error.value.detail["field"] == "storage_path"
+
+
+def test_analyse_accepts_pdf_at_page_limit() -> None:
+    analysis = analyse_template(
+        "limit.pdf", make_pdf_pages(MAX_DOCUMENT_PAGES)
+    )
+
+    assert analysis.style_spec["font"] is not None
+    assert analysis.sections == []
+
+
+def test_analyse_rejects_pdf_over_page_limit() -> None:
+    with pytest.raises(HTTPException) as error:
+        analyse_template(
+            "over-limit.pdf", make_pdf_pages(MAX_DOCUMENT_PAGES + 1)
+        )
+
+    assert error.value.status_code == 422
+    assert error.value.detail == {
+        "code": "invalid_page_count",
+        "message": "PDF templates must contain between 1 and 60 pages.",
+        "field": "storage_path",
+    }
+
+
+def test_analyse_rejects_zero_page_pdf() -> None:
+    with pytest.raises(HTTPException) as error:
+        analyse_template("zero-pages.pdf", make_zero_page_pdf())
+
+    assert error.value.status_code == 422
+    assert error.value.detail["code"] == "invalid_page_count"
+
+
+@pytest.mark.parametrize(
+    ("filename", "signature"),
+    [("oversized.pdf", b"%PDF-"), ("oversized.docx", b"PK")],
+    ids=["pdf", "docx"],
+)
+def test_analyse_rejects_document_over_size_limit(
+    filename: str, signature: bytes
+) -> None:
+    with pytest.raises(HTTPException) as error:
+        analyse_template(filename, signature + b"x" * (25 * 1024 * 1024))
+
+    assert error.value.status_code == 413
+    assert error.value.detail["code"] == "file_too_large"
+
+
+def test_extract_logo_rejects_pdf_over_page_limit() -> None:
+    with pytest.raises(HTTPException) as error:
+        extract_logo(
+            "over-limit.pdf",
+            make_pdf_pages(MAX_DOCUMENT_PAGES + 1),
+            page_number=1,
+            crop=[0, 0, 100, 100],
+        )
+
+    assert error.value.status_code == 422
+    assert error.value.detail["code"] == "invalid_page_count"
+
+
+@pytest.mark.parametrize(
+    ("filename", "content", "error_code"),
+    [
+        ("encrypted.pdf", make_encrypted_pdf(), "encrypted_template"),
+        ("corrupt.pdf", b"%PDF-1.7\nthis is not a valid PDF", "invalid_template"),
+        (
+            "scanned.pdf",
+            make_pdf_pages(1, include_text=False),
+            "template_has_no_text",
+        ),
+        (
+            "over-limit.pdf",
+            make_pdf_pages(MAX_DOCUMENT_PAGES + 1),
+            "invalid_page_count",
+        ),
+        (
+            "missing-styles.docx",
+            make_docx_without_part("word/styles.xml"),
+            "invalid_template",
+        ),
+    ],
+    ids=["encrypted-pdf", "corrupt-pdf", "image-only-pdf", "too-many-pages", "malformed-docx"],
+)
+def test_upload_endpoint_returns_edge_case_errors_without_storage_write(
+    monkeypatch: pytest.MonkeyPatch,
+    filename: str,
+    content: bytes,
+    error_code: str,
+) -> None:
+    def fail_if_storage_called(*args: Any, **kwargs: Any) -> str:
+        pytest.fail("Invalid templates must not be sent to Storage.")
+
+    monkeypatch.setattr(storage, "upload_storage_object", fail_if_storage_called)
+    response = client.post(
+        "/v1/templates/upload",
+        files={"file": (filename, content)},
+        headers=auth_headers(),
+    )
+
+    assert response.status_code == 422
+    assert response.json()["code"] == error_code
+    assert response.json()["field"] == "storage_path"
 
 
 def test_extract_logo_returns_png_with_requested_bbox() -> None:
@@ -193,6 +427,39 @@ def test_analyse_endpoint_uses_caller_jwt_for_storage(
     assert response.json()["font"]
     assert response.json()["confidence"]["font"] > 0
     assert response.json()["logo_candidates"]
+    assert response.json()["sections"] == [
+        {
+            "title": "Research Template",
+            "text": "Study information and participant procedures.",
+        },
+        {"title": "Consent", "text": "Participation is voluntary."},
+    ]
+
+
+def test_analyse_docx_endpoint_returns_extracted_sections(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    headers = auth_headers()
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.method == "GET"
+        return httpx.Response(200, content=make_docx(), request=request)
+
+    mock_storage_api(monkeypatch, handler)
+    response = client.post(
+        "/v1/templates/analyse",
+        json={"storage_path": "templates/research/sample.docx"},
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json()["sections"] == [
+        {
+            "title": "Research Template",
+            "text": "Study information and participant procedures.",
+        },
+        {"title": "Consent", "text": "Participation is voluntary."},
+    ]
 
 
 @pytest.mark.parametrize(
@@ -238,8 +505,63 @@ def test_upload_endpoint_scans_analyses_and_stores_with_caller_jwt(
     assert result["storage_path"].startswith("templates/uploads/")
     assert result["font"]
     assert "confidence" in result
+    assert result["sections"] == [
+        {
+            "title": "Research Template",
+            "text": "Study information and participant procedures.",
+        },
+        {"title": "Consent", "text": "Participation is voluntary."},
+    ]
     assert uploaded["path"].startswith("/storage/v1/object/templates/uploads/")
     assert uploaded["content"] == contents
+
+
+def test_storage_failure_log_excludes_request_and_upstream_data(
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    headers = auth_headers()
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            500,
+            text="sensitive upstream response",
+            request=request,
+        )
+
+    mock_storage_api(monkeypatch, handler)
+    caplog.set_level(logging.ERROR, logger="consentlink.service")
+    response = client.post(
+        "/v1/templates/upload",
+        files={"file": ("private-name.pdf", make_pdf())},
+        headers=headers,
+    )
+
+    assert response.status_code == 500
+    records = [
+        json.loads(record.message)
+        for record in caplog.records
+        if record.name == "consentlink.service"
+    ]
+    assert records == [
+        {
+            "error_type": "HTTPStatusError",
+            "event": "storage_request_failed",
+            "operation": "upload",
+            "upstream_status": 500,
+        },
+        {
+            "error_type": "HTTPException",
+            "event": "http_request_failed",
+            "method": "POST",
+            "route": "/v1/templates/upload",
+            "status_code": 500,
+        },
+    ]
+    logged_output = caplog.text
+    assert "private-name.pdf" not in logged_output
+    assert "sensitive upstream response" not in logged_output
+    assert headers["Authorization"] not in logged_output
 
 
 def test_upload_endpoint_rejects_unsafe_file_without_storage_write(

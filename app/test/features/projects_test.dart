@@ -75,7 +75,7 @@ void main() {
     await tester.tap(find.text('Drafts'));
     await tester.pumpAndSettle();
     expect(find.text('Rundu market traders'), findsOneWidget);
-    expect(find.text('Juǀ’hoan oral histories'), findsOneWidget);
+    expect(find.text('Ju/\'hoan oral histories'), findsOneWidget);
     expect(find.text('Water access & health in Opuwo'), findsNothing);
     expect(tester.takeException(), isNull);
   });

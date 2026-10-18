@@ -5,11 +5,13 @@ import 'package:consentlink/features/new_consent/consent_draft_data.dart';
 import 'package:consentlink/features/preferences/accessibility_preferences.dart';
 import 'package:consentlink/features/projects/project_transition.dart';
 import 'package:consentlink/features/templates/clip_logo_screen.dart';
+import 'package:consentlink/features/templates/customise_template_screen.dart';
 import 'package:consentlink/features/templates/describe_template_screen.dart';
 import 'package:consentlink/features/templates/read_template_screen.dart';
 import 'package:consentlink/features/templates/template_data.dart';
 import 'package:consentlink/features/templates/template_detail_screen.dart';
 import 'package:consentlink/features/templates/template_library_screen.dart';
+import 'package:consentlink/features/templates/template_upload_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,6 +23,9 @@ Future<ProviderContainer> pumpTemplates(
   bool preview = true,
   bool large = false,
   double textScale = 1,
+  TemplateFilePicker? pickTemplateFile,
+  TemplateUpload? uploadTemplate,
+  TemplateUploadResult? currentAnalysis,
 }) async {
   tester.view.physicalSize = const Size(390, 844);
   tester.view.devicePixelRatio = 1;
@@ -58,6 +63,10 @@ Future<ProviderContainer> pumpTemplates(
             'view/:id',
             (s) => TemplateDetailScreen(id: s.pathParameters['id']!),
           ),
+          page(
+            'customise/:id',
+            (s) => CustomiseTemplateScreen(id: s.pathParameters['id']!),
+          ),
         ],
       ),
     ],
@@ -68,6 +77,16 @@ Future<ProviderContainer> pumpTemplates(
       templatesPreviewProvider.overrideWithValue(preview),
       newConsentPreviewProvider.overrideWithValue(preview),
       largerTouchTargetsProvider.overrideWith((ref) => large),
+      templateFilePickerProvider.overrideWithValue(
+        pickTemplateFile ?? () async => null,
+      ),
+      templateUploadProvider.overrideWithValue(
+        uploadTemplate ??
+            (file) async => _analysis(fileName: file.name),
+      ),
+      uploadedTemplateProvider.overrideWith(
+        (ref) => currentAnalysis ?? _analysis(),
+      ),
     ],
   );
   addTearDown(container.dispose);
@@ -89,6 +108,46 @@ Future<ProviderContainer> pumpTemplates(
   await tester.pumpAndSettle();
   return container;
 }
+
+TemplateUploadResult _analysis({
+  String fileName = 'consent.docx',
+  List<TemplateSection>? sections,
+}) => TemplateUploadResult(
+  fileName: fileName,
+  storagePath: 'templates/uploads/consent.docx',
+  detectedType:
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  styleSpec: {
+    'font': 'Arial',
+    'size_pt': 11,
+    'heading': {'font': 'Arial', 'size_pt': 13, 'bold': true},
+    'line_spacing': 1.15,
+    'margins_cm': [2.5, 2.5, 2.5, 2.5],
+    'header': 'NUST Research',
+    'footer': 'Page x of y',
+    'logo_path': null,
+    'columns': <String>[],
+  },
+  confidence: const {
+    'font': 0.95,
+    'heading': 0.85,
+    'line_spacing': 0.8,
+    'margins_cm': 0.95,
+    'footer': 0.9,
+  },
+  sections:
+      sections ??
+      [
+        const TemplateSection(
+          key: 'uploaded-purpose',
+          title: 'Uploaded purpose',
+          text: 'The imported purpose text.',
+        ),
+      ],
+  logoCandidates: const [
+    {'page': 1, 'bbox': [20, 30, 80, 90], 'confidence': 0.9},
+  ],
+);
 
 void expectNoException(WidgetTester tester) {
   final error = tester.takeException();
@@ -124,7 +183,8 @@ void main() {
     await tester.tap(find.text('Upload'));
     await tester.pumpAndSettle();
     expect(find.text('Upload a template'), findsOneWidget);
-    await tester.tap(find.text('OK'));
+    expect(find.text('Browse files on this phone'), findsOneWidget);
+    await tester.pageBack();
     await tester.pumpAndSettle();
     expectNoException(tester);
   });
@@ -225,21 +285,105 @@ void main() {
     expectNoException(tester);
   });
 
+  testWidgets('13.2–13.3 a shared template is copied and customised', (
+    tester,
+  ) async {
+    final container = await pumpTemplates(
+      tester,
+      initial: '/templates/view/interview-audio',
+    );
+    expect(find.text('Interview + audio consent'), findsOneWidget);
+    expect(find.textContaining('read-only'), findsOneWidget);
+    expect(find.text('Duplicate'), findsNothing);
+
+    // Rules can't be changed on the shared original.
+    await tester.tap(find.text('Font'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('read-only'), findsWidgets);
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    // The contents of a shared template can be read, not changed.
+    expect(find.textContaining('What’s inside'), findsOneWidget);
+    await tapVisible(tester, find.text('Purpose of the study'));
+    expect(find.textContaining('Read-only'), findsOneWidget);
+    expect(find.text('Save section'), findsNothing);
+    await tapVisible(tester, find.text('Close'));
+
+    await tapVisible(tester, find.text('Use as my template'));
+    expect(find.text('Customise copy'), findsOneWidget);
+    expect(find.text('My Interview + audio consent'), findsWidgets);
+
+    // Reword a section of the copy.
+    await tapVisible(tester, find.textContaining('more sections'));
+    await tapVisible(tester, find.text('Risks and discomforts'));
+    expect(find.text('Edit section'), findsOneWidget);
+    await tester.enterText(
+      find.byType(TextField).last,
+      'You can stop whenever you want.',
+    );
+    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text('Save section'));
+    expect(find.textContaining('You can stop whenever'), findsOneWidget);
+
+    await tester.tap(find.text('Margins'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, '3 cm');
+    await tester.pumpAndSettle();
+    await tapVisible(tester, find.text('Save'));
+    expect(find.text('3 cm'), findsOneWidget);
+
+    await tapVisible(tester, find.text('Save as my template'));
+    expect(container.read(templateLibraryProvider), hasLength(5));
+    final copy = container.read(templateLibraryProvider).first;
+    expect(copy.name, 'My Interview + audio consent');
+    expect(copy.customisedFrom, 'Interview + audio consent');
+    expect(copy.mine, isTrue);
+    expect(copy.access, TemplateAccess.private);
+    expect(copy.rule('margins'), '3 cm');
+    expect(
+      copy.sections.firstWhere((s) => s.key == 'risks').text,
+      'You can stop whenever you want.',
+    );
+    expect(copy.sections.where((s) => s.required), hasLength(10));
+    // The shared original is untouched.
+    final source = container
+        .read(templateLibraryProvider)
+        .firstWhere((t) => t.id == 'interview-audio');
+    expect(source.rule('margins'), '2 cm');
+    expect(
+      source.sections.firstWhere((s) => s.key == 'risks').text,
+      startsWith('You may feel tired'),
+    );
+    expect(find.textContaining('Customised from'), findsOneWidget);
+    await clearToast(tester);
+    expectNoException(tester);
+  });
+
   testWidgets('05.2 scans, edits a rule, clips the logo and saves (05.6)', (
     tester,
   ) async {
-    final container = await pumpTemplates(tester);
+    final container = await pumpTemplates(
+      tester,
+      pickTemplateFile: () async => const TemplateUploadFile(
+        name: 'sample-consent.docx',
+        bytes: [80, 75, 3, 4],
+      ),
+      uploadTemplate: (file) async {
+        expect(file.name, 'sample-consent.docx');
+        return _analysis(fileName: file.name);
+      },
+    );
     await tester.tap(find.text('Upload'));
     await tester.pumpAndSettle();
     expect(find.text('Upload a template'), findsOneWidget);
-    await tester.tap(find.text(uploadedTemplateFile));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(find.text('Scanning for macros…'), findsOneWidget);
-    await waitForScan(tester);
-    expect(find.text('Safe · macros removed'), findsOneWidget);
-    expect(find.text('Arial Bold 13 pt'), findsOneWidget);
-    expect(find.text('Medium'), findsNWidgets(2));
+    await tester.tap(find.text('Browse files on this phone'));
+    await tester.pumpAndSettle();
+    expect(find.text('Safety scan passed'), findsOneWidget);
+    expect(find.text('Arial 13 pt Bold'), findsOneWidget);
+    expect(find.text('Detected sections'), findsOneWidget);
+    expect(find.text('Uploaded purpose'), findsOneWidget);
+    expect(find.textContaining('required consent elements'), findsOneWidget);
 
     await tapVisible(tester, find.text('Margins'));
     await tester.enterText(find.byType(TextField), '2 cm all sides');
@@ -248,7 +392,7 @@ void main() {
     expect(find.text('2 cm all sides'), findsOneWidget);
     expect(find.text('Edited'), findsOneWidget);
 
-    await tapVisible(tester, find.text('Logo found on page 1'));
+    await tapVisible(tester, find.textContaining('Logo candidate found on page 1'));
     expect(find.text('Clip logo'), findsOneWidget);
     expect(find.text('Auto-detect edges (contour)'), findsOneWidget);
     await tester.tap(find.text('Remove white background'));
@@ -266,10 +410,50 @@ void main() {
     await tester.pumpAndSettle();
     await tapVisible(tester, find.text('Save template').last);
     // The card and the toast subtitle.
-    expect(find.text('Opuwo health consent'), findsWidgets);
+    expect(find.text('sample-consent'), findsWidgets);
     expect(find.text('Shared · NUST'), findsNWidgets(2));
     expect(find.text('Template saved'), findsOneWidget);
+    final saved = container.read(templateLibraryProvider).first;
+    expect(saved.sourceStoragePath, 'templates/uploads/consent.docx');
+    expect(saved.sections.where((section) => section.required), hasLength(10));
+    expect(
+      saved.sections.firstWhere((section) => section.key == 'uploaded-0').text,
+      'The imported purpose text.',
+    );
     await clearToast(tester);
+    expectNoException(tester);
+  });
+
+  testWidgets('05.2 shows a service error and stays out of review', (
+    tester,
+  ) async {
+    await pumpTemplates(
+      tester,
+      pickTemplateFile: () async => const TemplateUploadFile(
+        name: 'rejected.pdf',
+        bytes: [37, 80, 68, 70],
+      ),
+      uploadTemplate: (_) async {
+        throw const TemplateUploadException(
+          'No extractable text was found in the PDF.',
+        );
+      },
+    );
+
+    await tester.tap(find.text('Upload'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Browse files on this phone'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Template upload failed'), findsOneWidget);
+    expect(
+      find.text('No extractable text was found in the PDF.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(find.text('Templates'), findsOneWidget);
+    expect(find.text('Read from template'), findsNothing);
     expectNoException(tester);
   });
 
@@ -328,6 +512,8 @@ void main() {
       '/templates',
       '/templates/view/health-v3',
       '/templates/view/my-opuwo',
+      '/templates/view/interview-audio',
+      '/templates/customise/interview-audio',
       '/templates/clip',
       '/templates/describe',
     ]) {
@@ -361,7 +547,7 @@ void main() {
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
     await pumpTemplates(tester, initial: '/templates/read');
     await waitForScan(tester);
-    expect(find.text('Safe · macros removed'), findsOneWidget);
+    expect(find.text('Safety scan passed'), findsOneWidget);
     expect(tester.binding.hasScheduledFrame, isFalse);
     expectNoException(tester);
   });

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RuleReport",
+  "description": "Result of the on-device rule checker for one consent draft (Figma G). Items link to sections by key.",
+  "type": "object",
+  "required": [
+    "found",
+    "required",
+    "items"
+  ],
+  "properties": {
+    "found": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of items with status ok"
+    },
+    "required": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of required elements: 10, or 14 for studies with minors"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/item"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "element_key": {
+      "enum": [
+        "purpose",
+        "procedures",
+        "duration",
+        "risks",
+        "benefits",
+        "compensation",
+        "confidentiality",
+        "voluntary_withdrawal",
+        "contacts_researcher",
+        "contacts_ethics",
+        "guardian_permission",
+        "child_assent",
+        "child_dissent_respected",
+        "safeguarding_contact"
+      ]
+    },
+    "item": {
+      "type": "object",
+      "required": [
+        "key",
+        "status"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/element_key"
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "missing",
+            "uncertain"
+          ],
+          "description": "uncertain is shown in amber like missing, so the researcher checks it"
+        },
+        "fix_hint": {
+          "type": "string",
+          "minLength": 1,
+          "description": "What the researcher should add or check"
+        }
+      },
+      "additionalProperties": false,
+      "if": {
+        "properties": {
+          "status": {
+            "const": "ok"
+          }
+        }
+      },
+      "else": {
+        "required": [
+          "fix_hint"
+        ]
+      }
+    }
+  }
+}

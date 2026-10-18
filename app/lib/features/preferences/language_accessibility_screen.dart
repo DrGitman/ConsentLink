@@ -27,6 +27,7 @@ class _LanguageAccessibilityScreenState
     ['English', 'Afrikaans', 'Deutsch'],
     ['Otjiherero', 'Khoekhoegowab'],
     ['Rukwangali', 'Silozi', 'Oshiwambo'],
+    ['Ju/\'hoansi'],
   ];
 
   @override

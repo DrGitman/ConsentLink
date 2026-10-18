@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/l10n/app_localizations.dart';
-import '../../core/motion/app_motion.dart';
 import '../../core/widgets/app_icon.dart';
 import 'animated_navigation_bar.dart';
 
@@ -26,8 +25,6 @@ class AppShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
-    final reduceMotion = MediaQuery.disableAnimationsOf(context);
-
     final destinations = [
       (strings.home, AppIconType.home),
       (strings.projects, AppIconType.folder),
@@ -43,28 +40,7 @@ class AppShell extends StatelessWidget {
         final useSideRail = constraints.maxWidth >= 900;
 
         return Scaffold(
-          // Home, Projects, Insights and Me draw their own Figma headers.
-          appBar: selectedIndex <= 1 || selectedIndex >= 3
-              ? null
-              : AppBar(
-                  title: AnimatedSwitcher(
-                    duration: reduceMotion ? AppMotion.reduced : AppMotion.base,
-                    layoutBuilder: (currentChild, previousChildren) {
-                      return Stack(
-                        alignment: AlignmentDirectional.centerStart,
-                        children: [
-                          for (final child in previousChildren)
-                            ExcludeSemantics(child: child),
-                          if (currentChild != null) currentChild,
-                        ],
-                      );
-                    },
-                    child: Text(
-                      destinations[selectedIndex].$1,
-                      key: ValueKey('shell-title-$selectedIndex'),
-                    ),
-                  ),
-                ),
+          // Every tab draws its own Figma header (Capture since 13.7).
           body: SafeArea(
             child: Row(
               children: [

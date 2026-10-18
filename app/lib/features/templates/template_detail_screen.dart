@@ -42,7 +42,8 @@ class TemplateDetailScreen extends ConsumerWidget {
       await showProjectNotice(
         context,
         rule.title,
-        'Shared by ${t.owner}. Duplicate it to change the rules.',
+        'Shared by ${t.owner} and read-only. Use as my template makes a copy '
+        'you can change.',
       );
       return;
     }
@@ -62,6 +63,24 @@ class TemplateDetailScreen extends ConsumerWidget {
       subtitle: '${copy.name} · private',
     );
     context.pushReplacement('/templates/view/${copy.id}');
+  }
+
+  void _customise(BuildContext context, StudioTemplate t) =>
+      context.push('/templates/customise/${t.id}');
+
+  /// Figma 13.2: the sections can be read on any template; only your own
+  /// can be reworded here.
+  Future<void> _openSection(
+    BuildContext context,
+    WidgetRef ref,
+    StudioTemplate t,
+    TemplateSection section,
+  ) async {
+    final edited = await showSectionEditor(context, section, readOnly: !t.mine);
+    if (edited == null) return;
+    ref.read(templateLibraryProvider.notifier).updateSections(t.id, [
+      for (final s in t.sections) s.key == edited.key ? edited : s,
+    ]);
   }
 
   void _useForForm(BuildContext context, WidgetRef ref, StudioTemplate t) {
@@ -145,6 +164,11 @@ class TemplateDetailScreen extends ConsumerWidget {
                     _back(context);
                   }, color: AppColors.error),
                 ] else ...[
+                  item(
+                    'templates/copy',
+                    'Use as my template',
+                    () => _customise(context, t),
+                  ),
                   item(
                     'templates/copy',
                     'Duplicate',
@@ -236,7 +260,7 @@ class TemplateDetailScreen extends ConsumerWidget {
                             child: WhiteCard(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               child: Center(
-                                child: _PagePreview(
+                                child: TemplatePagePreview(
                                   initials: initials,
                                   primary: primary,
                                 ),
@@ -258,7 +282,31 @@ class TemplateDetailScreen extends ConsumerWidget {
                             t.verified ?? t.meta,
                             style: dashboardText(13, color: AppColors.subtle),
                           ),
+                          if (t.customisedFrom != null) ...[
+                            const SizedBox(height: 7),
+                            ProjectBadge(
+                              label: 'Customised from “${t.customisedFrom}”',
+                              icon: 'templates/copy',
+                              fill: tint,
+                              ink: primary,
+                            ),
+                          ],
                           const SizedBox(height: 14),
+                          TemplateSectionsCard(
+                            sections: t.sections,
+                            onOpen: (s) => _openSection(context, ref, t, s),
+                            onToggle: t.mine
+                                ? (s, included) => ref
+                                      .read(templateLibraryProvider.notifier)
+                                      .updateSections(t.id, [
+                                        for (final x in t.sections)
+                                          x.key == s.key
+                                              ? x.copyWith(included: included)
+                                              : x,
+                                      ])
+                                : null,
+                          ),
+                          const SizedBox(height: 12),
                           WhiteCard(
                             padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
                             child: Column(
@@ -273,6 +321,36 @@ class TemplateDetailScreen extends ConsumerWidget {
                               ],
                             ),
                           ),
+                          if (!t.mine && !t.locked) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.fromLTRB(
+                                14,
+                                10,
+                                14,
+                                10,
+                              ),
+                              constraints: const BoxConstraints(minHeight: 56),
+                              decoration: BoxDecoration(
+                                color: Color.lerp(Colors.white, primary, .08),
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: Row(
+                                children: [
+                                  DashboardIcon('form/lock', color: primary),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      'Shared templates are read-only. Make '
+                                      'your own copy to change the name, '
+                                      'sections, font or languages.',
+                                      style: dashboardText(12, color: primary),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                           if (t.locked) ...[
                             const SizedBox(height: 12),
                             Container(
@@ -310,25 +388,34 @@ class TemplateDetailScreen extends ConsumerWidget {
                 if (t != null)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: ConsentPillButton(
-                            label: 'Duplicate',
+                    // Figma 13.2: a shared template is read-only, so the one
+                    // action is making your own copy. Your own and official
+                    // templates keep both buttons.
+                    child: t.access == TemplateAccess.shared && !t.mine
+                        ? ConsentPillButton(
+                            label: 'Use as my template',
                             icon: 'templates/copy',
-                            filled: false,
-                            onPressed: () => _duplicate(context, ref, t),
+                            onPressed: () => _customise(context, t),
+                          )
+                        : Row(
+                            children: [
+                              Expanded(
+                                child: ConsentPillButton(
+                                  label: 'Duplicate',
+                                  icon: 'templates/copy',
+                                  filled: false,
+                                  onPressed: () => _duplicate(context, ref, t),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: ConsentPillButton(
+                                  label: 'Use for form',
+                                  onPressed: () => _useForForm(context, ref, t),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: ConsentPillButton(
-                            label: 'Use for form',
-                            onPressed: () => _useForForm(context, ref, t),
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
               ],
             ),
@@ -339,9 +426,13 @@ class TemplateDetailScreen extends ConsumerWidget {
   }
 }
 
-/// 160 × 168 page preview (Figma "page").
-class _PagePreview extends StatelessWidget {
-  const _PagePreview({required this.initials, required this.primary});
+/// 160 × 168 page preview (Figma "page"), shared with 13.3 Customise.
+class TemplatePagePreview extends StatelessWidget {
+  const TemplatePagePreview({
+    super.key,
+    required this.initials,
+    required this.primary,
+  });
   final String initials;
   final Color primary;
   @override

@@ -283,6 +283,13 @@ class ResponsesController extends StateNotifier<List<ConsentResponse>> {
 
   void withdraw(String code, DateTime when) =>
       state = [for (final r in state) r.code == code ? r.withdraw(when) : r];
+
+  /// A new record from field capture, newest first (replaces the same code).
+  void add(ConsentResponse r) => state = [
+    r,
+    for (final x in state)
+      if (x.code != r.code) x,
+  ];
 }
 
 final responsesProvider =

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/dictation_sheet.dart';
 import '../dashboard/dashboard_components.dart';
+import '../minors/minors_data.dart';
 import '../new_consent/consent_widgets.dart';
 import '../preferences/accessibility_preferences.dart';
 import 'capture_widgets.dart';
@@ -54,6 +55,8 @@ class _DoneScreenState extends ConsumerState<DoneScreen> {
 
   Future<void> _askFeedback() async {
     if (!shouldAskFeedback(ref.read(captureParticipantProvider))) return;
+    // Never shown to participants under 18 (08.4, 10.7).
+    if (ref.read(minorSessionProvider).minorCapture) return;
     // Settings 08.4: on/off and how often.
     final count = ref.read(completedFormsProvider) + 1;
     ref.read(completedFormsProvider.notifier).state = count;
@@ -82,9 +85,12 @@ class _DoneScreenState extends ConsumerState<DoneScreen> {
   Widget build(BuildContext context) {
     final participant = ref.watch(captureParticipantProvider);
     final session = ref.watch(captureSessionProvider);
-    final name = participant?.firstName;
+    final minor = ref.watch(minorSessionProvider).minorCapture;
+    final name = minor ? null : participant?.firstName;
     final message = session.declined
         ? 'Your answer is saved. You are not part of the study, and that is OK.'
+        : minor
+        ? 'Your choice and your guardian’s consent are saved on this phone.'
         : 'Your consent is saved on this phone.';
 
     return PopScope(

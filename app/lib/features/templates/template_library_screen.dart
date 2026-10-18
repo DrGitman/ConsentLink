@@ -12,6 +12,7 @@ import '../new_consent/review_draft_screen.dart' show sheetMotion;
 import '../projects/project_widgets.dart';
 import '../responses/responses_widgets.dart';
 import 'template_data.dart';
+import 'template_upload_service.dart';
 import 'template_widgets.dart';
 
 /// Figma 05.1 Template library (79:2).
@@ -26,6 +27,7 @@ class _TemplateLibraryScreenState extends ConsumerState<TemplateLibraryScreen> {
   late final _search = TextEditingController(
     text: ref.read(templateSearchProvider),
   );
+  bool _uploading = false;
 
   @override
   void dispose() {
@@ -35,17 +37,9 @@ class _TemplateLibraryScreenState extends ConsumerState<TemplateLibraryScreen> {
 
   void _back() => context.canPop() ? context.pop() : context.go('/home');
 
-  /// Upload starts with choosing a file (sheet), then 05.2 reads it.
+  /// Selects a template file and loads its service analysis for review.
   Future<void> _upload() async {
-    if (!ref.read(templatesPreviewProvider)) {
-      await showProjectNotice(
-        context,
-        'Upload a template',
-        'Template upload and the file scan aren\'t connected yet.',
-      );
-      return;
-    }
-    final picked = await showModalBottomSheet<bool>(
+    final file = await showModalBottomSheet<TemplateUploadFile>(
       context: context,
       useSafeArea: true,
       useRootNavigator: true,
@@ -55,12 +49,26 @@ class _TemplateLibraryScreenState extends ConsumerState<TemplateLibraryScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (_) => const _UploadSheet(),
+      builder: (_) => _UploadSheet(
+        pickFile: ref.read(templateFilePickerProvider),
+      ),
     );
-    if (picked != true || !mounted) return;
-    ref.read(detectedRulesProvider.notifier).state = detectedRules;
-    ref.read(logoCropProvider.notifier).state = null;
-    context.push('/templates/read');
+    if (file == null || !mounted) return;
+    setState(() => _uploading = true);
+    try {
+      final analysis = await ref.read(templateUploadProvider)(file);
+      if (!mounted) return;
+      ref.read(uploadedTemplateProvider.notifier).state = analysis;
+      ref.read(detectedRulesProvider.notifier).state = analysis.rules;
+      ref.read(logoCropProvider.notifier).state = null;
+      context.push('/templates/read');
+    } on TemplateUploadException catch (error) {
+      if (mounted) {
+        await showProjectNotice(context, 'Template upload failed', error.message);
+      }
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
   }
 
   /// The + button: a blank template with the usual defaults, which you then
@@ -263,10 +271,10 @@ class _TemplateLibraryScreenState extends ConsumerState<TemplateLibraryScreen> {
                     children: [
                       Expanded(
                         child: ConsentPillButton(
-                          label: 'Upload',
+                          label: _uploading ? 'Uploading…' : 'Upload',
                           icon: 'consent/upload',
                           filled: false,
-                          onPressed: _upload,
+                          onPressed: _uploading ? null : _upload,
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -336,75 +344,14 @@ class _TemplateCard extends StatelessWidget {
   );
 }
 
-/// Choose the file to read. Phone file browsing isn't connected yet, so the
-/// preview offers the sample NUST template.
+/// Lets the user select a PDF or DOCX for service analysis.
 class _UploadSheet extends StatelessWidget {
-  const _UploadSheet();
+  const _UploadSheet({required this.pickFile});
+
+  final TemplateFilePicker pickFile;
+
   @override
   Widget build(BuildContext context) {
-    Widget option({
-      required Widget leading,
-      required String title,
-      required String subtitle,
-      required VoidCallback onTap,
-      bool muted = false,
-    }) => Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: DashboardAction(
-        label: '$title. $subtitle',
-        radius: 18,
-        color: AppColors.canvas,
-        onPressed: onTap,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 68),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 14, 10),
-            child: Row(
-              children: [
-                leading,
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: dashboardText(
-                          14,
-                          color: muted ? AppColors.muted : AppColors.ink,
-                          weight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        subtitle,
-                        style: dashboardText(12, color: AppColors.subtle),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const DashboardIcon(
-                  'chevron_right',
-                  color: AppColors.subtle,
-                  size: 20,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-    Widget tile(Widget child, Color fill) => Container(
-      width: 44,
-      height: 44,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: fill,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: child,
-    );
     return SingleChildScrollView(
       primary: false,
       padding: const EdgeInsets.fromLTRB(24, 10, 24, 16),
@@ -423,40 +370,76 @@ class _UploadSheet extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           Text(
-            'Word (.docx) or PDF. It\'s scanned on this phone first and any '
-            'macros are removed.',
+            'Choose a PDF or DOCX. The service checks the file and extracts '
+            'style information and text sections.',
             style: dashboardText(14, color: AppColors.subtle),
           ),
           const SizedBox(height: 16),
-          option(
-            leading: tile(
-              Text(
-                'DOCX',
-                textScaler: TextScaler.noScaling,
-                style: dashboardText(
-                  11,
-                  color: AppColors.info,
-                  weight: FontWeight.w700,
+          DashboardAction(
+            label: 'Browse files on this phone. PDF or DOCX, maximum 25 MB.',
+            radius: 18,
+            color: AppColors.canvas,
+            onPressed: () async {
+              try {
+                final file = await pickFile();
+                if (context.mounted && file != null) {
+                  Navigator.pop(context, file);
+                }
+              } on TemplateUploadException catch (error) {
+                if (context.mounted) {
+                  await showProjectNotice(
+                    context,
+                    'Could not select file',
+                    error.message,
+                  );
+                }
+              }
+            },
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 68),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 10, 14, 10),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const DashboardIcon(
+                        'consent/upload',
+                        color: AppColors.muted,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Browse files on this phone',
+                            style: dashboardText(14, weight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            'PDF or DOCX · maximum 25 MB',
+                            style: dashboardText(12, color: AppColors.subtle),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const DashboardIcon(
+                      'chevron_right',
+                      color: AppColors.subtle,
+                      size: 20,
+                    ),
+                  ],
                 ),
               ),
-              const Color(0xFFEAF1FF),
-            ),
-            title: uploadedTemplateFile,
-            subtitle: 'Sample from the NUST ethics office · 42 KB',
-            onTap: () => Navigator.pop(context, true),
-          ),
-          option(
-            leading: tile(
-              const DashboardIcon('consent/upload', color: AppColors.muted),
-              Colors.white,
-            ),
-            title: 'Browse files on this phone',
-            subtitle: 'Not connected yet',
-            muted: true,
-            onTap: () => showProjectNotice(
-              context,
-              'Browse files',
-              'Picking files from the phone comes with the file service.',
             ),
           ),
         ],

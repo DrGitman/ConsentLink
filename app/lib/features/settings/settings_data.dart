@@ -135,6 +135,12 @@ const sampleFormLanguages = [
   FormLanguage('Rukwangali', FormLanguageStatus.review),
   FormLanguage('Silozi', FormLanguageStatus.notDownloaded),
   FormLanguage('Oshiwambo', FormLanguageStatus.notDownloaded),
+  // Ju/'hoansi (San), added after the lecturer's feedback (Figma 13.4).
+  FormLanguage(
+    'Ju/\'hoansi',
+    FormLanguageStatus.notDownloaded,
+    note: 'Not downloaded · San',
+  ),
 ];
 
 /// Without the preview only English is ready; the rest still have to be
@@ -148,6 +154,11 @@ const defaultFormLanguages = [
   FormLanguage('Rukwangali', FormLanguageStatus.notDownloaded),
   FormLanguage('Silozi', FormLanguageStatus.notDownloaded),
   FormLanguage('Oshiwambo', FormLanguageStatus.notDownloaded),
+  FormLanguage(
+    'Ju/\'hoansi',
+    FormLanguageStatus.notDownloaded,
+    note: 'Not downloaded · San',
+  ),
 ];
 
 class FormLanguages extends StateNotifier<List<FormLanguage>> {
@@ -178,4 +189,5 @@ const appLanguages = [
   'Rukwangali',
   'Silozi',
   'Oshiwambo',
+  'Ju/\'hoansi',
 ];
