@@ -20,22 +20,16 @@ String normaliseLanguageText(String text, Orthography orthography) {
   }
   final withClicks = withoutUnambiguous.replaceAllMapped(
     _beforeLetterPattern(orthography),
-    (match) => match[1] ?? orthography.convertedBeforeLetter[match[2]]!,
+    (match) => orthography.convertedBeforeLetter[match[0]]!,
   );
   return unorm.nfc(withClicks);
 }
 
-// A protected word matches first (group 1), so it is kept as written.
 // A click is followed by a letter, or by an apostrophe then a letter.
 RegExp _beforeLetterPattern(Orthography orthography) {
-  final protected = orthography.protectedWords.isEmpty
-      ? _neverMatches
-      : orthography.protectedWords.map(RegExp.escape).join('|');
   final standIns = _longestFirst(orthography.convertedBeforeLetter.keys);
-  return RegExp("($protected)|($standIns)(?=\\p{L}|'\\p{L})", unicode: true);
+  return RegExp("(?:$standIns)(?=\\p{L}|'\\p{L})", unicode: true);
 }
-
-const _neverMatches = '(?!)';
 
 // Longest first, so '||' is tried before '|'.
 String _longestFirst(Iterable<String> keys) =>

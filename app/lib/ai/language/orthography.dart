@@ -12,7 +12,6 @@ final class Orthography {
     required this.name,
     required this.alwaysConverted,
     required this.convertedBeforeLetter,
-    this.protectedWords = const [],
   });
 
   final String name;
@@ -22,9 +21,6 @@ final class Orthography {
 
   /// Stand-ins that are also punctuation, converted only before a letter.
   final Map<String, String> convertedBeforeLetter;
-
-  /// Words kept exactly as written, such as the language's own name.
-  final List<String> protectedWords;
 }
 
 const _ambiguousClickStandIns = {
@@ -43,12 +39,10 @@ const khoekhoegowab = Orthography(
   convertedBeforeLetter: _ambiguousClickStandIns,
 );
 
-const juHoansiName = "Ju/'hoansi";
+const juHoansiName = "Ju$dentalClick'hoansi";
 
 const juHoansi = Orthography(
   name: juHoansiName,
   alwaysConverted: {'‡': palatalClick, '≠': palatalClick, '’': "'"},
   convertedBeforeLetter: _ambiguousClickStandIns,
-  // The team spells the language name in ASCII (decision of 16 Oct).
-  protectedWords: [juHoansiName],
 );

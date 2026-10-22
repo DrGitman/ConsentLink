@@ -39,14 +39,17 @@ void main() {
     expect(normaliseLanguageText(text, khoekhoegowab), text);
   });
 
-  test('keeps the Ju/\'hoansi name in ASCII', () {
-    expect(
-      normaliseLanguageText("We speak Ju/'hoansi and !ha.", juHoansi),
-      "We speak Ju/'hoansi and ${alveolarClick}ha.",
-    );
+  test('spells the language name with the dental click letter', () {
+    for (final typed in ["Ju/'hoansi", 'Ju/’hoansi', juHoansiName]) {
+      expect(
+        normaliseLanguageText('We speak $typed and !ha.', juHoansi),
+        'We speak $juHoansiName and ${alveolarClick}ha.',
+      );
+    }
+    expect(juHoansiName, 'Ju\u01C0\'hoansi');
   });
 
-  test('replaces the curly apostrophe in Ju/\'hoansi', () {
+  test('replaces the curly apostrophe in $juHoansiName', () {
     expect(normaliseLanguageText('!’han', juHoansi), "$alveolarClick'han");
   });
 
