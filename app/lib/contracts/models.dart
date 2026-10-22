@@ -8,6 +8,11 @@
 //   set by Supabase on arrival. The app never sets receivedAt.
 // - actor_id and institution_id on audit entries are set by the server from the
 //   logged-in user. Anything the app sends for them is ignored.
+// - language is a CODE from contracts/languages.dart and the languages table
+//   (en, af, de, hz, naq, ktz, ...), never a display name. Display names and
+//   spelling such as Juǀ'hoansi (U+01C0) live in languages.dart only.
+// - The server writes the audit entries for study created, section approved, form
+//   published, consent signed and consent withdrawn. The app only records exports.
 // - JSON keys are snake_case and match the database columns and /schemas.
 
 enum ConsentDecision { yes, no }
@@ -23,6 +28,8 @@ enum StudyStatus { draft, approved, active, closed }
 enum SignatureKind { signature, thumbprint, witness, audio }
 
 enum SyncStatus { offline, syncing, synced, error }
+
+enum ResearcherRole { researcher, admin }
 
 enum AuditAction {
   studyCreated,
@@ -90,11 +97,13 @@ class Researcher {
   final String institutionId;
   final String name;
   final String email;
+  final ResearcherRole role;
   const Researcher({
     required this.id,
     required this.institutionId,
     required this.name,
     required this.email,
+    this.role = ResearcherRole.researcher,
   });
 
   factory Researcher.fromJson(Map<String, dynamic> j) => Researcher(
@@ -102,6 +111,9 @@ class Researcher {
     institutionId: j['institution_id'] as String,
     name: j['name'] as String,
     email: j['email'] as String,
+    role: j['role'] == null
+        ? ResearcherRole.researcher
+        : _enumFromJson(ResearcherRole.values, j['role']),
   );
 
   Map<String, dynamic> toJson() => {
@@ -109,6 +121,7 @@ class Researcher {
     'institution_id': institutionId,
     'name': name,
     'email': email,
+    'role': _enumToJson(role),
   };
 }
 
@@ -169,7 +182,7 @@ class ConsentSection {
   final String id;
   final String studyId;
   final int order;
-  final String language; // 'en', 'af', 'de', 'herero', 'khoekhoegowab', ...
+  final String language; // code from languages.dart: 'en', 'hz', 'naq', 'ktz', ...
   final String text;
   final int? sourcePage; // page of the proposal the AI took this from
   final String?
@@ -289,6 +302,7 @@ class Consent {
   final DateTime signedAt; // device time
   final DateTime? receivedAt; // server time, null until synced
   final DateTime? withdrawnAt;
+  final String? withdrawalReason;
   const Consent({
     required this.id,
     required this.studyId,
@@ -305,6 +319,7 @@ class Consent {
     required this.signedAt,
     this.receivedAt,
     this.withdrawnAt,
+    this.withdrawalReason,
   });
 
   factory Consent.fromJson(Map<String, dynamic> j) => Consent(
@@ -323,6 +338,7 @@ class Consent {
     signedAt: DateTime.parse(j['signed_at'] as String),
     receivedAt: _dtOrNull(j['received_at']),
     withdrawnAt: _dtOrNull(j['withdrawn_at']),
+    withdrawalReason: j['withdrawal_reason'] as String?,
   );
 
   Map<String, dynamic> toJson() => {
@@ -341,6 +357,7 @@ class Consent {
     'signed_at': _dt(signedAt),
     'received_at': receivedAt == null ? null : _dt(receivedAt!),
     'withdrawn_at': withdrawnAt == null ? null : _dt(withdrawnAt!),
+    'withdrawal_reason': withdrawalReason,
   };
 }
 
