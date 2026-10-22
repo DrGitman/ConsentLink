@@ -15,22 +15,26 @@ create extension if not exists pgcrypto with schema extensions;
 -- Must match app/lib/contracts/languages.dart. Adding a language = one INSERT.
 -- Codes are plain a-z so sorting is identical here (collate "C") and in Dart
 -- (compareTo), which keeps compute_form_hash in step with form_hash.dart.
+-- iso639_3 is the code language packs use (forms/consent-form.<code>.json has
+-- an "iso639_3" field). It differs from code only where a 2-letter code exists
+-- (hz/her, en/eng, ...). Packs keep their ISO 639-3 code; we map it here.
 create table public.languages (
-  code text primary key check (code ~ '^[a-z]{2,3}$'),
-  name text not null
+  code     text primary key check (code ~ '^[a-z]{2,3}$'),
+  iso639_3 text not null unique check (iso639_3 ~ '^[a-z]{3}$'),
+  name     text not null
 );
 
-insert into public.languages (code, name) values
-  ('en',  'English'),
-  ('af',  'Afrikaans'),
-  ('de',  'Deutsch'),
-  ('hz',  'Otjiherero'),
-  ('naq', 'Khoekhoegowab'),
-  ('ktz', 'Juǀ''hoansi'),     -- U+01C0, not ASCII
-  ('kwn', 'Rukwangali'),
-  ('loz', 'Silozi'),
-  ('ng',  'Oshindonga'),     -- Oshiwambo, Ndonga standard
-  ('kj',  'Oshikwanyama');   -- Oshiwambo, Kwanyama standard
+insert into public.languages (code, iso639_3, name) values
+  ('en',  'eng', 'English'),
+  ('af',  'afr', 'Afrikaans'),
+  ('de',  'deu', 'Deutsch'),
+  ('hz',  'her', 'Otjiherero'),
+  ('naq', 'naq', 'Khoekhoegowab'),
+  ('ktz', 'ktz', 'Juǀ''hoansi'),   -- U+01C0, not ASCII
+  ('kwn', 'kwn', 'Rukwangali'),
+  ('loz', 'loz', 'Silozi'),
+  ('ng',  'ndo', 'Oshindonga'),    -- Oshiwambo, Ndonga standard
+  ('kj',  'kua', 'Oshikwanyama');  -- Oshiwambo, Kwanyama standard
 
 create table public.institutions (
   id           uuid primary key default gen_random_uuid(),
