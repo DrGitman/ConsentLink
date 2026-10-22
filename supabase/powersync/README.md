@@ -4,27 +4,25 @@ PowerSync sits between Supabase and the phones. Phones download through it
 (only what `sync-rules.yaml` allows) and upload straight to Supabase with the
 researcher's login, so RLS and the triggers check every upload.
 
-## One-time setup
-Do these after `migrations/20261016000001_init.sql` is applied.
+## One-time setup (done on the live project)
+1. **PowerSync instance** (dashboard.powersync.com), connected with the
+   dashboard's **guided Supabase setup**. It creates PowerSync's own database
+   user and the `powersync` publication, so nothing here needs running for that.
+2. **Client auth:** Supabase Auth turned on, so PowerSync accepts the
+   researchers' Supabase logins.
+3. **Sync rules:** `sync-rules.yaml` pasted, validated and deployed.
+   Redeploy it from the dashboard whenever this file changes.
+4. **App:** the instance URL is `POWERSYNC_URL` (`app/lib/data/sync`).
 
-1. **Database user for PowerSync.** In the Supabase SQL Editor, choose a long
-   random password (keep it in a password manager, never in Git or chat):
-   ```sql
-   create role powersync_role with replication bypassrls login password '<password>';
-   grant select on public.institutions, public.profiles, public.studies,
-     public.consent_sections, public.form_versions, public.participants,
-     public.consents, public.consent_files, public.audit_log to powersync_role;
-   ```
-   PowerSync needs `bypassrls` to read changes. Phones still only get what the
-   sync rules allow.
-2. **Publication.** Run `migrations/20261022000002_powersync_publication.sql`.
-3. **PowerSync instance** (dashboard.powersync.com): create an instance and
-   connect it to Supabase with `powersync_role`, the password above and SSL on.
-   Turn on **Supabase Auth** for client authentication so PowerSync accepts
-   the researchers' Supabase logins.
-4. **Sync rules.** Paste `sync-rules.yaml`, validate, deploy.
-5. **App.** Copy the instance URL. The app takes it as `POWERSYNC_URL`
-   (`app/lib/data/sync`, separate PR).
+`migrations/20261022000002_powersync_publication.sql` does not replace the
+guided setup. It makes sure the publication exists and includes our tables,
+for a new or reset database (e.g. `supabase db reset`), and on a project
+where the guided setup already ran it only adds tables that are missing. It
+never drops or narrows PowerSync's publication, and it is safe to run again.
+
+Without the guided setup, PowerSync needs a database user with
+`replication bypassrls login` and `select` on the synced tables. Give it a
+long random password kept only in a password manager, never in Git or chat.
 
 ## Not synced yet
 Language packs (`language_packs`, #72): phones should only get reviewed
