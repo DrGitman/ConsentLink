@@ -1,0 +1,33 @@
+# What each phone downloads. Paste into the PowerSync dashboard (Sync Rules)
+# and deploy. Uploads don't use this file: they go to Supabase with the
+# researcher's login, so RLS and the triggers check them.
+#
+# A phone only holds the studies its researcher runs and what was recorded for
+# them. A lost phone exposes as little as possible: never a colleague's
+# participants or consents. (RLS allows reading the whole institution; this is
+# deliberately narrower.)
+#
+# Classic sync rules: the client pinned in app/pubspec.yaml needs its
+# experimental engine for Sync Streams. Move to Streams together with the
+# upgrade to powersync 2.x.
+bucket_definitions:
+  me:
+    parameters: SELECT request.user_id() AS user_id
+    data:
+      - SELECT id, institution_id, name, email, role, created_at FROM profiles WHERE id = bucket.user_id
+
+  my_institution:
+    parameters: SELECT institution_id FROM profiles WHERE id = request.user_id()
+    data:
+      - SELECT id, name, colour_hex, logo_url, template_url, created_at FROM institutions WHERE id = bucket.institution_id
+
+  study:
+    parameters: SELECT id AS study_id FROM studies WHERE researcher_id = request.user_id()
+    data:
+      - SELECT * FROM studies WHERE id = bucket.study_id
+      - SELECT * FROM consent_sections WHERE study_id = bucket.study_id
+      - SELECT * FROM form_versions WHERE study_id = bucket.study_id
+      - SELECT * FROM participants WHERE study_id = bucket.study_id
+      - SELECT * FROM consents WHERE study_id = bucket.study_id
+      - SELECT * FROM consent_files WHERE study_id = bucket.study_id
+      - SELECT * FROM audit_log WHERE study_id = bucket.study_id
