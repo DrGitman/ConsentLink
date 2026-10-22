@@ -1,7 +1,8 @@
 # data/ (P2)
 
 The phone's own database: everything is saved here first, so the app works
-with no internet. Sync to Supabase is added in `data/sync` (next step).
+with no internet. `sync/` connects it to Supabase through PowerSync when there
+is signal (setup: `supabase/powersync/README.md`).
 
 ## Files
 - `local/tables.dart`: the tables kept on the phone, mirroring
@@ -11,6 +12,11 @@ with no internet. Sync to Supabase is added in `data/sync` (next step).
 - `local/app_database.dart`: the drift database.
 - `local/database_key.dart`: the encryption key (see below).
 - `local/open_local_database.dart`: `openLocalDatabase()` opens it all.
+- `sync/supabase_connector.dart`: uploads queued changes. A change the server
+  refuses for good (wrong form hash, a minor's Yes without assent, no
+  permission) is kept in `upload_failures` with its data and the reason, and
+  the queue moves on. No signal, an expired login or a busy server: retried.
+- `sync/start_sync.dart`: `startSync()` after sign-in (off unless `USE_REAL_SYNC`).
 
 ## Encryption
 The file is encrypted with SQLCipher. The key is made on the phone and kept in
