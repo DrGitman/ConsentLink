@@ -29,7 +29,7 @@ class _ReadTemplateScreenState extends ConsumerState<ReadTemplateScreen> {
     ref.read(detectedRulesProvider.notifier).state = [
       for (final r in ref.read(detectedRulesProvider))
         r.key == rule.key
-            ? r.copyWith(value: value, confidence: () => null)
+            ? r.copyWith(value: value, confidence: () => null, edited: true)
             : r,
     ];
   }
@@ -39,10 +39,7 @@ class _ReadTemplateScreenState extends ConsumerState<ReadTemplateScreen> {
     if (analysis == null) return;
     final result = await showSaveTemplateSheet(
       context,
-      suggestedName: analysis.fileName.replaceFirst(
-        RegExp(r'\.[^.]+$'),
-        '',
-      ),
+      suggestedName: analysis.fileName.replaceFirst(RegExp(r'\.[^.]+$'), ''),
     );
     if (result == null || !mounted) return;
     final rules = ref.read(detectedRulesProvider);
@@ -280,7 +277,7 @@ class _ReadTemplateScreenState extends ConsumerState<ReadTemplateScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
                   child: ConsentPillButton(
                     label: 'Save template',
-                      onPressed: _save,
+                    onPressed: _save,
                   ),
                 ),
               ],
@@ -364,12 +361,20 @@ class _DetectedRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
-    final (fill, ink, label) = switch (rule.confidence) {
-      'High' => (AppColors.brand50, AppColors.brandDark, 'High'),
-      'Medium' => (const Color(0xFFFEF4E2), const Color(0xFF9A5B00), 'Medium'),
-      'Low' => (const Color(0xFFFDECEC), AppColors.error, 'Low'),
-      _ => (AppColors.canvas, AppColors.muted, 'Edited'),
-    };
+    final (fill, ink, label) = rule.edited
+        ? (AppColors.canvas, AppColors.muted, 'Edited')
+        : switch (rule.confidence) {
+            'High' => (AppColors.brand50, AppColors.brandDark, 'High'),
+            'Medium' => (
+              const Color(0xFFFEF4E2),
+              const Color(0xFF9A5B00),
+              'Medium',
+            ),
+            'Low' => (const Color(0xFFFDECEC), AppColors.error, 'Low'),
+            // Nothing detected and nothing changed yet: the researcher
+            // sets this one after review, so it claims neither.
+            _ => (AppColors.canvas, AppColors.muted, 'To set'),
+          };
     return DashboardAction(
       label: '${rule.title}, ${rule.value}, confidence $label. Tap to change',
       radius: 16,

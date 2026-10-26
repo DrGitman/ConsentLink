@@ -81,8 +81,7 @@ Future<ProviderContainer> pumpTemplates(
         pickTemplateFile ?? () async => null,
       ),
       templateUploadProvider.overrideWithValue(
-        uploadTemplate ??
-            (file) async => _analysis(fileName: file.name),
+        uploadTemplate ?? (file) async => _analysis(fileName: file.name),
       ),
       uploadedTemplateProvider.overrideWith(
         (ref) => currentAnalysis ?? _analysis(),
@@ -138,14 +137,20 @@ TemplateUploadResult _analysis({
   sections:
       sections ??
       [
+        // The service keys imported sections by position, so the fixture
+        // has to use the same shape the app will really see.
         const TemplateSection(
-          key: 'uploaded-purpose',
+          key: 'uploaded-0',
           title: 'Uploaded purpose',
           text: 'The imported purpose text.',
         ),
       ],
   logoCandidates: const [
-    {'page': 1, 'bbox': [20, 30, 80, 90], 'confidence': 0.9},
+    {
+      'page': 1,
+      'bbox': [20, 30, 80, 90],
+      'confidence': 0.9,
+    },
   ],
 );
 
@@ -392,7 +397,10 @@ void main() {
     expect(find.text('2 cm all sides'), findsOneWidget);
     expect(find.text('Edited'), findsOneWidget);
 
-    await tapVisible(tester, find.textContaining('Logo candidate found on page 1'));
+    await tapVisible(
+      tester,
+      find.textContaining('Logo candidate found on page 1'),
+    );
     expect(find.text('Clip logo'), findsOneWidget);
     expect(find.text('Auto-detect edges (contour)'), findsOneWidget);
     await tester.tap(find.text('Remove white background'));

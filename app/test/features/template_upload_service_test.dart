@@ -40,7 +40,11 @@ const _analysisResponse = {
     'footer': 0.9,
   },
   'logo_candidates': [
-    {'page': 2, 'bbox': [20, 30, 80, 90], 'confidence': 0.9},
+    {
+      'page': 2,
+      'bbox': [20, 30, 80, 90],
+      'confidence': 0.9,
+    },
   ],
   'sections': [
     {'title': 'Purpose', 'text': 'This is extracted consent text.'},
@@ -61,58 +65,64 @@ TemplateUploadService _service({
 );
 
 void main() {
-  test('uploads the file with caller auth and parses style and sections', () async {
-    var requestSeen = false;
-    final client = _TestClient((request) async {
-      requestSeen = true;
-      expect(request.method, 'POST');
-      expect(request.url.path, '/v1/templates/upload');
-      expect(request, isA<http.MultipartRequest>());
-      final multipart = request as http.MultipartRequest;
-      expect(multipart.headers['Authorization'], 'Bearer test-user-token');
-      expect(multipart.files.single.field, 'file');
-      expect(multipart.files.single.filename, 'consent.pdf');
-      expect(multipart.files.single.length, 4);
-      return _response(jsonEncode(_analysisResponse), 200);
-    });
+  test(
+    'uploads the file with caller auth and parses style and sections',
+    () async {
+      var requestSeen = false;
+      final client = _TestClient((request) async {
+        requestSeen = true;
+        expect(request.method, 'POST');
+        expect(request.url.path, '/v1/templates/upload');
+        expect(request, isA<http.MultipartRequest>());
+        final multipart = request as http.MultipartRequest;
+        expect(multipart.headers['Authorization'], 'Bearer test-user-token');
+        expect(multipart.files.single.field, 'file');
+        expect(multipart.files.single.filename, 'consent.pdf');
+        expect(multipart.files.single.length, 4);
+        return _response(jsonEncode(_analysisResponse), 200);
+      });
 
-    final result = await _service(client: client).upload(
-      const TemplateUploadFile(name: 'consent.pdf', bytes: [37, 80, 68, 70]),
-    );
+      final result = await _service(client: client).upload(
+        const TemplateUploadFile(name: 'consent.pdf', bytes: [37, 80, 68, 70]),
+      );
 
-    expect(requestSeen, isTrue);
-    expect(result.storagePath, 'templates/uploads/generated.pdf');
-    expect(result.fileName, 'consent.pdf');
-    expect(result.rules.first.value, 'Arial 11 pt');
-    expect(result.sections.single.title, 'Purpose');
-    expect(result.sections.single.text, 'This is extracted consent text.');
-    expect(result.logoCandidates.single['page'], 2);
-  });
+      expect(requestSeen, isTrue);
+      expect(result.storagePath, 'templates/uploads/generated.pdf');
+      expect(result.fileName, 'consent.pdf');
+      expect(result.rules.first.value, 'Arial 11 pt');
+      expect(result.sections.single.title, 'Purpose');
+      expect(result.sections.single.text, 'This is extracted consent text.');
+      expect(result.logoCandidates.single['page'], 2);
+    },
+  );
 
-  test('reports the service validation error without losing its message', () async {
-    final client = _TestClient(
-      (_) async => _response(
-        jsonEncode({
-          'code': 'template_has_no_text',
-          'message': 'No extractable text was found in the PDF.',
-        }),
-        422,
-      ),
-    );
-
-    await expectLater(
-      _service(client: client).upload(
-        const TemplateUploadFile(name: 'scan.pdf', bytes: [37, 80, 68, 70]),
-      ),
-      throwsA(
-        isA<TemplateUploadException>().having(
-          (error) => error.message,
-          'message',
-          'No extractable text was found in the PDF.',
+  test(
+    'reports the service validation error without losing its message',
+    () async {
+      final client = _TestClient(
+        (_) async => _response(
+          jsonEncode({
+            'code': 'template_has_no_text',
+            'message': 'No extractable text was found in the PDF.',
+          }),
+          422,
         ),
-      ),
-    );
-  });
+      );
+
+      await expectLater(
+        _service(client: client).upload(
+          const TemplateUploadFile(name: 'scan.pdf', bytes: [37, 80, 68, 70]),
+        ),
+        throwsA(
+          isA<TemplateUploadException>().having(
+            (error) => error.message,
+            'message',
+            'No extractable text was found in the PDF.',
+          ),
+        ),
+      );
+    },
+  );
 
   test('does not send when no caller token is available', () async {
     var requestSeen = false;
@@ -139,9 +149,7 @@ void main() {
     final service = _service(client: client);
 
     await expectLater(
-      service.upload(
-        const TemplateUploadFile(name: 'consent.txt', bytes: [1]),
-      ),
+      service.upload(const TemplateUploadFile(name: 'consent.txt', bytes: [1])),
       throwsA(isA<TemplateUploadException>()),
     );
     await expectLater(

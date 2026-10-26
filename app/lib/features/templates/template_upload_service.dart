@@ -148,7 +148,10 @@ class TemplateUploadResult {
 
     final marginsValue = styleSpec['margins_cm'];
     final margins = marginsValue is List
-        ? marginsValue.whereType<num>().map((value) => value.toDouble()).toList()
+        ? marginsValue
+              .whereType<num>()
+              .map((value) => value.toDouble())
+              .toList()
         : <double>[];
     final marginText = margins.isEmpty
         ? 'Not detected'
@@ -175,7 +178,8 @@ class TemplateUploadResult {
       TemplateRule(
         key: 'headings',
         title: 'Headings',
-        value: fontSize(heading['font'], heading['size_pt']) +
+        value:
+            fontSize(heading['font'], heading['size_pt']) +
             (heading['bold'] == true ? ' Bold' : ''),
         icon: 'form/type',
         confidence: confidenceLabel('heading'),
@@ -226,16 +230,16 @@ class TemplateUploadResult {
 
 typedef TemplateAccessTokenProvider = Future<String?> Function();
 typedef TemplateFilePicker = Future<TemplateUploadFile?> Function();
-typedef TemplateUpload = Future<TemplateUploadResult> Function(
-  TemplateUploadFile file,
-);
+typedef TemplateUpload =
+    Future<TemplateUploadResult> Function(TemplateUploadFile file);
 
 final templateServiceUrlProvider = Provider<String>(
   (ref) => const String.fromEnvironment('TEMPLATE_SERVICE_URL'),
 );
 
 final templateAccessTokenProvider = Provider<TemplateAccessTokenProvider>(
-  (ref) => () async => null,
+  (ref) =>
+      () async => null,
 );
 
 final templateHttpClientProvider = Provider<http.Client>((ref) {
@@ -307,7 +311,8 @@ class TemplateUploadService {
     }
 
     final endpoint = serviceUri.replace(
-      path: '${serviceUri.path.replaceFirst(RegExp(r'/+$'), '')}'
+      path:
+          '${serviceUri.path.replaceFirst(RegExp(r'/+$'), '')}'
           '/v1/templates/upload',
       query: null,
       fragment: null,
@@ -315,11 +320,7 @@ class TemplateUploadService {
     final request = http.MultipartRequest('POST', endpoint)
       ..headers['Authorization'] = 'Bearer $token'
       ..files.add(
-        http.MultipartFile.fromBytes(
-          'file',
-          file.bytes,
-          filename: file.name,
-        ),
+        http.MultipartFile.fromBytes('file', file.bytes, filename: file.name),
       );
 
     try {
