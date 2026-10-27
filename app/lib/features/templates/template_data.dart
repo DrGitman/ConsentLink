@@ -46,23 +46,34 @@ class TemplateRule {
     required this.value,
     required this.icon,
     this.confidence,
+    this.edited = false,
   });
   final String key;
   final String title;
   final String value;
   final String icon;
 
-  /// 'High' / 'Medium' when detected from an upload, null when set by hand.
+  /// 'High' / 'Medium' / 'Low' when the scan detected this rule.
+  /// Null when the scan had nothing to report for it, e.g. a rule the
+  /// researcher still has to set after review.
   final String? confidence;
 
-  TemplateRule copyWith({String? value, String? Function()? confidence}) =>
-      TemplateRule(
-        key: key,
-        title: title,
-        value: value ?? this.value,
-        icon: icon,
-        confidence: confidence != null ? confidence() : this.confidence,
-      );
+  /// True once the researcher has changed the value by hand. Kept separate
+  /// from [confidence] so an undetected rule is never shown as edited.
+  final bool edited;
+
+  TemplateRule copyWith({
+    String? value,
+    String? Function()? confidence,
+    bool? edited,
+  }) => TemplateRule(
+    key: key,
+    title: title,
+    value: value ?? this.value,
+    icon: icon,
+    confidence: confidence != null ? confidence() : this.confidence,
+    edited: edited ?? this.edited,
+  );
 }
 
 /// One block of consent text inside a template (lecturer feedback,

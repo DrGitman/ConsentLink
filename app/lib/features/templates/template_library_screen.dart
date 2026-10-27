@@ -49,9 +49,8 @@ class _TemplateLibraryScreenState extends ConsumerState<TemplateLibraryScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (_) => _UploadSheet(
-        pickFile: ref.read(templateFilePickerProvider),
-      ),
+      builder: (_) =>
+          _UploadSheet(pickFile: ref.read(templateFilePickerProvider)),
     );
     if (file == null || !mounted) return;
     setState(() => _uploading = true);
@@ -64,7 +63,11 @@ class _TemplateLibraryScreenState extends ConsumerState<TemplateLibraryScreen> {
       context.push('/templates/read');
     } on TemplateUploadException catch (error) {
       if (mounted) {
-        await showProjectNotice(context, 'Template upload failed', error.message);
+        await showProjectNotice(
+          context,
+          'Template upload failed',
+          error.message,
+        );
       }
     } finally {
       if (mounted) setState(() => _uploading = false);

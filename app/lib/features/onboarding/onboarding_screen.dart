@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_back_button.dart';
+import '../settings/settings_data.dart' show appLanguages;
 import 'onboarding_artwork.dart';
 import 'onboarding_motion.dart';
 
@@ -168,6 +169,35 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     );
   }
 
+  Widget _languageRow() {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final name in appLanguages)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: AppColors.line),
+            ),
+            child: Text(
+              name,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                height: 1.2,
+                color: AppColors.muted,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   @override
   void dispose() {
     _controller
@@ -284,6 +314,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                   color: AppColors.muted,
                                 ),
                               ),
+                              if (_page == 0) ...[
+                                const SizedBox(height: 20),
+                                _languageRow(),
+                              ],
                               const SizedBox(height: 24),
                             ],
                           );
