@@ -18,12 +18,21 @@ void main() {
   test('PowerSync gets every drift table and column, typed for SQLite', () {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
+    final schema = powerSyncSchemaFor(db).tables;
     final tables = {
-      for (final t in powerSyncSchemaFor(db).tables)
+      for (final t in schema)
         t.name: {for (final c in t.columns) c.name: c.type},
     };
+    expect(
+      [
+        for (final t in schema)
+          if (t.localOnly) t.name,
+      ],
+      ['upload_failures'],
+      reason: 'only the failure log stays on the phone',
+    );
     expect(tables.keys, containsAll(['studies', 'consents', 'audit_log']));
-    expect(tables.length, 9);
+    expect(tables.length, 10);
     expect(tables['consents']!['child_assent'], ps.ColumnType.integer);
     expect(tables['consents']!['withdrawal_reason'], ps.ColumnType.text);
     expect(tables['consent_sections']!['text'], ps.ColumnType.text);
