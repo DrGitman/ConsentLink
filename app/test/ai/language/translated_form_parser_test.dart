@@ -34,9 +34,10 @@ String _formJson({
     'date': null,
   },
   String? iso = 'ktz',
+  String language = "Ju/'hoansi",
 }) => jsonEncode({
   'id': 'consent-master-v1',
-  'language': "Ju/'hoansi",
+  'language': language,
   'iso639_3': ?iso,
   'version': '0.1.0',
   'status': 'awaiting_translation',
@@ -69,10 +70,18 @@ void main() {
       expect(parseTranslatedForm(_formJson(sections: {})).sections, isEmpty);
     });
 
-    test('the language code when there is no ISO code', () {
+    test('an ISO 639-3 code into the app language code', () {
+      expect(parseTranslatedForm(_formJson(iso: 'her')).languageCode, 'hz');
+    });
+
+    test('an app language code written as the ISO code', () {
+      expect(parseTranslatedForm(_formJson(iso: 'de')).languageCode, 'de');
+    });
+
+    test('the language field when there is no ISO code', () {
       expect(
-        parseTranslatedForm(_formJson(iso: null)).languageCode,
-        "Ju/'hoansi",
+        parseTranslatedForm(_formJson(iso: null, language: 'en')).languageCode,
+        'en',
       );
     });
 
@@ -99,6 +108,20 @@ void main() {
   group('rejects', () {
     test('invalid JSON', () {
       expect(() => parseTranslatedForm('{'), _formatError('Invalid JSON'));
+    });
+
+    test('an unknown language code', () {
+      expect(
+        () => parseTranslatedForm(_formJson(iso: 'xyz')),
+        _formatError('Unknown language "xyz"'),
+      );
+    });
+
+    test('a display name instead of a language code', () {
+      expect(
+        () => parseTranslatedForm(_formJson(iso: null)),
+        _formatError('Unknown language'),
+      );
     });
 
     test('a missing field', () {

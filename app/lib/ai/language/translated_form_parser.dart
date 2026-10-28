@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:consentlink/contracts/languages.dart';
+
 import '../domain/consent_element.dart';
 import 'review_status.dart';
 import 'translated_form.dart';
@@ -29,8 +31,7 @@ TranslatedForm parseTranslatedForm(String source) {
     final formReviewer = _reviewerOrNull(json['reviewer']);
     return TranslatedForm(
       id: _string(json, 'id'),
-      languageCode:
-          _stringOrNull(json, 'iso639_3') ?? _string(json, 'language'),
+      languageCode: _languageCode(json),
       version: _string(json, 'version'),
       sections: [
         for (final section in _sectionList(json['sections']))
@@ -40,6 +41,17 @@ TranslatedForm parseTranslatedForm(String source) {
   } on ArgumentError catch (error) {
     throw LanguagePackFormatException('Invalid form: ${error.message}');
   }
+}
+
+// Some packs put the app code (`de`) in `iso639_3`, and the master file only
+// has `"language": "en"`, so both lookups are tried.
+String _languageCode(Map<String, Object?> json) {
+  final raw = _stringOrNull(json, 'iso639_3') ?? _string(json, 'language');
+  final language = languageByIso6393(raw) ?? languageByCode(raw);
+  if (language == null) {
+    throw LanguagePackFormatException('Unknown language "$raw"');
+  }
+  return language.code;
 }
 
 // An untranslated shell has `"sections": {}`.
