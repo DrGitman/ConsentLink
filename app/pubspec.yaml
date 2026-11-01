@@ -63,6 +63,14 @@ dependencies:
   supabase: ^2.13.4
   uuid: ^4.6.0
   pdf: ^3.11.3
+  # On-device LLM (app/lib/ai/llm). Pinned: dev.11+ needs Dart 3.10. The
+  # native libraries come from android/app/libs/llama-cpp-dart.aar.
+  llama_cpp_dart: 0.9.0-dev.10
+
+# llama_cpp_dart asks for image ^4.7.2 but never imports it; pdf 3.11.3 needs
+# image <4.6.0. Keep the version pdf already uses. Remove once both allow it.
+dependency_overrides:
+  image: 4.5.4
 
 dev_dependencies:
   json_schema: ^5.1.7
