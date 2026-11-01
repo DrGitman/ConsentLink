@@ -13,7 +13,8 @@
     "form_language": {
       "type": "string",
       "minLength": 1,
-      "description": "en, af, de, herero, khoekhoegowab, rukwangali, silozi, oshiwambo"
+      "enum": ["en", "af", "de", "hz", "naq", "ktz", "kwn", "loz", "ng", "kj"],
+      "description": "BCP 47 code from app/lib/contracts/languages.dart, never a display name: en, af, de, hz, naq, ktz, kwn, loz, ng, kj"
     },
     "reading_grade": {
       "type": "number",

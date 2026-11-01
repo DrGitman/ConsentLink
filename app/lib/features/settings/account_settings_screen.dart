@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../data/auth/auth_providers.dart';
 import '../dashboard/dashboard_components.dart';
 import '../new_consent/consent_widgets.dart';
 import '../projects/project_widgets.dart';
@@ -18,7 +19,7 @@ import 'settings_widgets.dart';
 class AccountSettingsScreen extends ConsumerWidget {
   const AccountSettingsScreen({super.key});
 
-  Future<void> _signOut(BuildContext context) async {
+  Future<void> _signOut(BuildContext context, WidgetRef ref) async {
     final ok = await showConfirmDialog(
       context,
       title: 'Sign out?',
@@ -28,7 +29,10 @@ class AccountSettingsScreen extends ConsumerWidget {
       confirm: 'Sign out',
       icon: 'responses/logout',
     );
-    if (ok == true && context.mounted) context.go('/login');
+    if (ok != true || !context.mounted) return;
+    // Stops sync, then ends the session. Unsynced records stay on the phone.
+    await ref.read(authServiceProvider)?.signOut().catchError((_) {});
+    if (context.mounted) context.go('/login');
   }
 
   Future<void> _delete(BuildContext context) async {
@@ -71,7 +75,7 @@ class AccountSettingsScreen extends ConsumerWidget {
             icon: 'responses/logout',
             filled: false,
             height: 56,
-            onPressed: () => _signOut(context),
+            onPressed: () => _signOut(context, ref),
           ),
           const SizedBox(height: 4),
           TextButton(

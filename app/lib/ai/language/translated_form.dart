@@ -87,7 +87,7 @@ final class TranslatedForm {
 
   final String id;
 
-  // As written in the pack until the team picks one code system.
+  /// The app language code (BCP 47, see `contracts/languages.dart`).
   final String languageCode;
   final String version;
   final List<TranslatedSection> sections;

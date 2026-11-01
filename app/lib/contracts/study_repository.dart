@@ -14,13 +14,14 @@ abstract class StudyRepository {
   Future<void> saveSection(ConsentSection section);
 
   /// Marks a section approved by the current researcher.
-  /// Implementation must also write an AuditAction.sectionApproved entry.
+  /// The server records AuditAction.sectionApproved.
   Future<void> approveSection(String sectionId);
 
   /// Locks the approved sections as the next form version.
   /// Fails unless EVERY section is approved. Stores a frozen snapshot,
-  /// sets Study.formHash = computeFormHash(...), increases Study.formVersion
-  /// and writes an AuditAction.formPublished entry.
+  /// sets Study.formHash = computeFormHash(...) and increases Study.formVersion
+  /// by exactly 1. The server recomputes the hash, rejects a wrong one and
+  /// records AuditAction.formPublished.
   Future<Study> publishForm(String studyId);
 
   /// The frozen snapshot of the current published version. This is what a
