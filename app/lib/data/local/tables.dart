@@ -116,3 +116,16 @@ class AuditLog extends Table with _Id {
   TextColumn get createdAt => text().nullable()();
   TextColumn get receivedAt => text().nullable()();
 }
+
+/// Phone-only (never synced). A change the server refused for good, kept with
+/// its full data and the server's reason so nothing recorded in the field is
+/// lost. See data/sync/supabase_connector.dart.
+class UploadFailures extends Table with _Id {
+  TextColumn get sourceTable => text()();
+  TextColumn get rowId => text()();
+  TextColumn get op => text()(); // PUT, PATCH or DELETE
+  TextColumn get data => text().nullable()(); // JSON, as it was sent
+  TextColumn get errorCode => text().nullable()();
+  TextColumn get errorMessage => text()();
+  TextColumn get failedAt => text()();
+}
