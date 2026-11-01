@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase/supabase.dart';
 
 import '../local/database_key.dart';
-import '../local/open_local_database.dart';
+import '../local/local_database_provider.dart';
 import '../sync/start_sync.dart';
 import 'auth_service.dart';
 
@@ -24,13 +24,6 @@ final supabaseClientProvider = Provider<SupabaseClient?>((ref) {
   );
   ref.onDispose(client.dispose);
   return client;
-});
-
-/// The encrypted database on this phone, opened once.
-final localDatabaseProvider = FutureProvider<LocalDatabase>((ref) async {
-  final db = await openLocalDatabase();
-  ref.onDispose(db.close);
-  return db;
 });
 
 /// Null when the app is built without the Supabase project.
