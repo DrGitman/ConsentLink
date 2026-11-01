@@ -12,3 +12,13 @@ class ConsentAiException implements Exception {
 final class InvalidDraftingRequestException extends ConsentAiException {
   const InvalidDraftingRequestException(super.message);
 }
+
+/// The model file is not on the device.
+final class ModelNotFoundException extends ConsentAiException {
+  const ModelNotFoundException(super.message);
+}
+
+/// The on-device model failed to load or to generate.
+final class LlmException extends ConsentAiException {
+  const LlmException(super.message);
+}
