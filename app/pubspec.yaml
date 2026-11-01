@@ -63,6 +63,8 @@ dependencies:
   supabase: ^2.13.4
   uuid: ^4.6.0
   pdf: ^3.11.3
+  # Read-aloud (app/lib/ai/tts). Pinned: 4.2.4+ needs minSdk 24 and AGP 8.13.
+  flutter_tts: 4.2.3
 
 dev_dependencies:
   json_schema: ^5.1.7
