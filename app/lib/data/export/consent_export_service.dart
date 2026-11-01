@@ -17,6 +17,7 @@ import '../../contracts/export_service.dart';
 import '../../contracts/languages.dart';
 import '../../contracts/models.dart';
 import '../../contracts/study_repository.dart';
+import '../repositories/drift_consent_repository.dart';
 import '../repositories/repository_providers.dart';
 
 /// Signature, thumbprint, witness and audio files of a consent (#80).
@@ -187,5 +188,8 @@ final exportServiceProvider = FutureProvider<ExportService>(
     consents: await ref.watch(consentRepositoryProvider.future),
     audit: await ref.watch(auditRepositoryProvider.future),
     fonts: _appFonts,
+    signatures: DriftParticipantRepository(
+      await ref.watch(appDatabaseProvider.future),
+    ).signatureFiles,
   ),
 );

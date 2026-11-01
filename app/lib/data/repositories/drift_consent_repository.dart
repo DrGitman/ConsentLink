@@ -2,6 +2,9 @@
 // Consent, participant and audit repositories on the local database. Sync
 // uploads the records and the server checks them again.
 
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:drift/drift.dart';
 import 'package:powersync_sqlcipher/powersync.dart' as ps;
 import 'package:uuid/uuid.dart';
@@ -165,12 +168,67 @@ class DriftParticipantRepository implements ParticipantRepository {
     );
   }
 
+  /// Kept in the encrypted database and listed in consent_files with its
+  /// SHA-256. Sync uploads the file to Storage (bucket consent-files, under
+  /// study/consent/) before the row, so the row never points at nothing.
   @override
   Future<void> storeSignature(
     String consentId,
     SignatureKind kind,
     Uint8List data,
-  ) => throw UnimplementedError('Signature files arrive with #80.');
+  ) async {
+    final consent = await (_db.select(
+      _db.consents,
+    )..where((c) => c.id.equals(consentId))).getSingleOrNull();
+    if (consent == null) throw StateError('No consent $consentId');
+    final id = const Uuid().v4();
+    final audio = kind == SignatureKind.audio;
+    final path = '${consent.studyId}/$consentId/$id.${audio ? 'audio' : 'png'}';
+    await _db.transaction(() async {
+      await _db
+          .into(_db.localFiles)
+          .insert(
+            db.LocalFilesCompanion.insert(
+              id: id,
+              storagePath: path,
+              contentType: audio ? 'application/octet-stream' : 'image/png',
+              data: base64Encode(data),
+            ),
+          );
+      await _db
+          .into(_db.consentFiles)
+          .insert(
+            db.ConsentFilesCompanion.insert(
+              id: id,
+              consentId: consentId,
+              studyId: consent.studyId,
+              kind: kind.name,
+              storagePath: path,
+              sha256: sha256.convert(data).toString(),
+              createdAt: Value(DateTime.now().toUtc().toIso8601String()),
+            ),
+          );
+    });
+  }
+
+  /// The files of a consent that are on this phone (for the PDF export).
+  Future<List<(SignatureKind, Uint8List)>> signatureFiles(
+    String consentId,
+  ) async {
+    final query = _db.select(_db.consentFiles).join([
+      innerJoin(
+        _db.localFiles,
+        _db.localFiles.id.equalsExp(_db.consentFiles.id),
+      ),
+    ])..where(_db.consentFiles.consentId.equals(consentId));
+    return [
+      for (final row in await query.get())
+        (
+          SignatureKind.values.byName(row.readTable(_db.consentFiles).kind),
+          base64Decode(row.readTable(_db.localFiles).data),
+        ),
+    ];
+  }
 }
 
 class DriftAuditRepository implements AuditRepository {

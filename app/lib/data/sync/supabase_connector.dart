@@ -2,6 +2,7 @@
 // PowerSync downloads what supabase/powersync/sync-rules.yaml allows. Uploads
 // go to Supabase with the researcher's login, so RLS and the triggers decide.
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:drift/drift.dart' show DriftSqlType, Value;
 import 'package:powersync_sqlcipher/powersync.dart';
@@ -18,6 +19,7 @@ abstract interface class SyncRemote {
   Future<void> update(String table, String id, Map<String, dynamic> changes);
   Future<void> delete(String table, String id);
   Future<bool> exists(String table, String id);
+  Future<void> uploadFile(String path, Uint8List bytes, String contentType);
 }
 
 class SupabaseRemote implements SyncRemote {
@@ -44,6 +46,16 @@ class SupabaseRemote implements SyncRemote {
   @override
   Future<void> delete(String table, String id) =>
       client.from(table).delete().eq('id', id);
+
+  @override
+  Future<void> uploadFile(String path, Uint8List bytes, String contentType) =>
+      client.storage
+          .from('consent-files')
+          .uploadBinary(
+            path,
+            bytes,
+            fileOptions: FileOptions(contentType: contentType),
+          );
 
   @override
   Future<bool> exists(String table, String id) async =>
@@ -108,6 +120,9 @@ class SupabaseConnector extends PowerSyncBackendConnector {
   Future<void> upload(CrudEntry entry) async {
     final data = toServerRow(entry.table, entry.opData);
     try {
+      if (entry.op == UpdateType.put && entry.table == 'consent_files') {
+        if (!await _uploadFile(entry, data)) return;
+      }
       switch (entry.op) {
         case UpdateType.put:
           await remote.insert(entry.table, {...data, 'id': entry.id});
@@ -124,8 +139,40 @@ class SupabaseConnector extends PowerSyncBackendConnector {
         return;
       }
       if (!isPermanentUploadError(e)) rethrow;
-      await _keep(entry, data, e);
+      await _keep(entry, data, e.code, e.message);
     }
+  }
+
+  /// Uploads a consent file before its row. False if it was refused for good
+  /// (kept in upload_failures) and the row must not be sent.
+  Future<bool> _uploadFile(CrudEntry entry, Map<String, dynamic> data) async {
+    final file = await (local.select(
+      local.localFiles,
+    )..where((f) => f.id.equals(entry.id))).getSingleOrNull();
+    if (file == null) {
+      await _keep(
+        entry,
+        data,
+        'file_missing',
+        'The file is not on this phone.',
+      );
+      return false;
+    }
+    try {
+      await remote.uploadFile(
+        file.storagePath,
+        base64Decode(file.data),
+        file.contentType,
+      );
+    } on StorageException catch (e) {
+      final status = int.tryParse(e.statusCode ?? '') ?? 0;
+      if (status == 409) return true; // uploaded before; reply was lost
+      // An expired login (401), no signal or a busy server: try again later.
+      if (status < 400 || status >= 500 || status == 401) rethrow;
+      await _keep(entry, data, 'storage_$status', e.message);
+      return false;
+    }
+    return true;
   }
 
   /// SQLite stores booleans as 1 / 0 and JSON as text; Supabase wants real ones.
@@ -144,7 +191,8 @@ class SupabaseConnector extends PowerSyncBackendConnector {
   Future<void> _keep(
     CrudEntry entry,
     Map<String, dynamic> data,
-    PostgrestException e,
+    String? code,
+    String message,
   ) => local
       .into(local.uploadFailures)
       .insertOnConflictUpdate(
@@ -154,8 +202,8 @@ class SupabaseConnector extends PowerSyncBackendConnector {
           rowId: entry.id,
           op: entry.op.json,
           data: Value(entry.opData == null ? null : jsonEncode(data)),
-          errorCode: Value(e.code),
-          errorMessage: e.message,
+          errorCode: Value(code),
+          errorMessage: message,
           failedAt: DateTime.now().toUtc().toIso8601String(),
         ),
       );

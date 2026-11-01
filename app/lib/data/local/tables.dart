@@ -117,6 +117,15 @@ class AuditLog extends Table with _Id {
   TextColumn get receivedAt => text().nullable()();
 }
 
+/// Phone-only (never synced): the bytes of a signature, thumbprint, witness
+/// mark or recording, kept in the encrypted database until (and after) sync
+/// uploads them to Storage at [storagePath]. Same id as its consent_files row.
+class LocalFiles extends Table with _Id {
+  TextColumn get storagePath => text()();
+  TextColumn get contentType => text()();
+  TextColumn get data => text()(); // base64
+}
+
 /// Phone-only (never synced). A change the server refused for good, kept with
 /// its full data and the server's reason so nothing recorded in the field is
 /// lost. See data/sync/supabase_connector.dart.
