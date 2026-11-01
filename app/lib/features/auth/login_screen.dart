@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../data/auth/auth_providers.dart';
+import '../../data/auth/auth_service.dart';
 import '../preferences/accessibility_preferences.dart';
+import '../settings/settings_data.dart' show researcherEmailProvider;
 import 'widgets/auth_button.dart';
 import 'widgets/password_visibility_icon.dart';
 
@@ -21,6 +24,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   bool _hidePassword = true;
   bool _submitted = false;
+  bool _busy = false;
   String? _notice;
 
   @override
@@ -34,7 +38,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _notice = message);
   }
 
-  void _submit() {
+  Future<void> _submit() async {
+    if (_busy) return;
     setState(() {
       _submitted = true;
       _notice = null;
@@ -43,9 +48,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     FocusScope.of(context).unfocus();
-    _showNotice(
-      'The login form is ready. Authentication is not connected yet.',
-    );
+    final auth = ref.read(authServiceProvider);
+    if (auth == null) {
+      _showNotice(
+        'The login form is ready. Authentication is not connected yet.',
+      );
+      return;
+    }
+
+    final email = _email.text.trim();
+    setState(() => _busy = true);
+    try {
+      await auth.signIn(email, _password.text);
+      ref.read(researcherEmailProvider.notifier).state = email;
+      if (mounted) context.go('/home');
+    } on AuthFailure catch (failure) {
+      if (!mounted) return;
+      if (!failure.needsConfirmation) return _showNotice(failure.message);
+      await auth.resendCode(email).catchError((_) {});
+      if (mounted) context.push('/check-email', extra: email);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   Widget _icon(String name, Color color) {
@@ -267,7 +291,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: const Text('Forgot password?'),
                 ),
               ),
-              AuthButton(label: 'Log in', onPressed: _submit),
+              AuthButton(label: 'Log in', busy: _busy, onPressed: _submit),
               const SizedBox(height: 14),
               AuthButton(
                 label: 'Unlock with fingerprint',

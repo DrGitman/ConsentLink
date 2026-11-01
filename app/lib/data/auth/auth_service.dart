@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' show ClientException;
 import 'package:supabase/supabase.dart';
 
 import '../local/database_key.dart' show KeyStore;
@@ -146,6 +147,12 @@ class AuthService {
       };
     } on SocketException {
       throw const AuthFailure(_offline);
+    } on ClientException {
+      throw const AuthFailure(_offline);
+    } on PostgrestException {
+      throw const AuthFailure(
+        'ConsentLink’s server could not answer. Try again in a minute.',
+      );
     } on TimeoutException {
       throw const AuthFailure(_offline);
     }

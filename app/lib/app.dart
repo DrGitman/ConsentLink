@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/l10n/app_localizations.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/theme_provider.dart';
+import 'data/auth/auth_providers.dart';
 import 'features/preferences/accessibility_preferences.dart';
 
 class ConsentLinkApp extends ConsumerWidget {
@@ -13,6 +14,8 @@ class ConsentLinkApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textScale = ref.watch(appTextScaleProvider);
     final reduceMotionSetting = ref.watch(reduceMotionPreferenceProvider);
+    // Signs back in with the login saved on this phone (real auth only).
+    ref.listen(sessionRestoreProvider, (_, _) {});
 
     return MediaQuery.fromView(
       view: View.of(context),
