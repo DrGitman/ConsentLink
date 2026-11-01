@@ -64,11 +64,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) context.go('/home');
     } on AuthFailure catch (failure) {
       if (!mounted) return;
-      _showNotice(failure.message);
-      if (failure.needsConfirmation) {
-        await auth.resendCode(email).catchError((_) {});
-        if (mounted) context.push('/confirm-email-preview', extra: email);
-      }
+      if (!failure.needsConfirmation) return _showNotice(failure.message);
+      await auth.resendCode(email).catchError((_) {});
+      if (mounted) context.push('/check-email', extra: email);
     } finally {
       if (mounted) setState(() => _busy = false);
     }

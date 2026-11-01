@@ -3,9 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
-import 'data/auth/auth_providers.dart';
-import 'features/templates/template_upload_service.dart'
-    show templateAccessTokenProvider;
 import 'core/theme/theme_provider.dart';
 import 'features/institution/institution.dart';
 import 'features/institution/institution_preferences.dart';
@@ -101,11 +98,6 @@ Future<void> main() async {
         ),
         researcherDraftProvider.overrideWith((ref) => researcher.details),
         researcherEmailProvider.overrideWith((ref) => researcher.email),
-        // Template upload (P4 service) uses the signed-in researcher's login.
-        templateAccessTokenProvider.overrideWith(
-          (ref) =>
-              () async => ref.read(authServiceProvider)?.accessToken(),
-        ),
       ],
       child: const ConsentLinkApp(),
     ),

@@ -1,15 +1,18 @@
 import 'package:consentlink/data/auth/auth_providers.dart';
 import 'package:consentlink/data/auth/auth_service.dart';
+import 'package:consentlink/features/auth/check_email_screen.dart';
 import 'package:consentlink/features/auth/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' show ClientException;
-import 'package:supabase/supabase.dart' show PostgrestException;
+import 'package:supabase/supabase.dart' show AuthException, PostgrestException;
 
 class _Gateway implements AuthGateway {
   bool profile = true;
+  bool confirmed = true;
+  int resent = 0;
   @override
   Future<String?> institutionForDomain(String domain) async => 'NUST';
   @override
@@ -17,9 +20,17 @@ class _Gateway implements AuthGateway {
   @override
   Future<void> verifySignupCode(String email, String code) async {}
   @override
-  Future<void> resendSignupCode(String email) async {}
+  Future<void> resendSignupCode(String email) async => resent++;
   @override
-  Future<void> signIn(String email, String password) async {}
+  Future<void> signIn(String email, String password) async {
+    if (!confirmed) {
+      throw const AuthException(
+        'Email not confirmed',
+        code: 'email_not_confirmed',
+      );
+    }
+  }
+
   @override
   Future<bool> hasProfile() async => profile;
   @override
@@ -60,6 +71,11 @@ void main() {
       routes: [
         GoRoute(path: '/login', builder: (_, _) => const LoginScreen()),
         GoRoute(path: '/home', builder: (_, _) => const Text('Home page')),
+        GoRoute(
+          path: '/check-email',
+          builder: (_, state) =>
+              CheckEmailScreen(email: state.extra! as String),
+        ),
       ],
     );
     await tester.pumpWidget(
@@ -103,11 +119,25 @@ void main() {
     }
   });
 
-  testWidgets('an account with no institution is told why', (tester) async {
-    gateway.profile = false;
-    await logIn(tester, 'a@gmail.com');
-    expect(find.text(noInstitutionMessage), findsOneWidget);
-    expect(find.text('Home page'), findsNothing);
-    expect(events, isEmpty);
+  testWidgets('an unconfirmed email gets the link again and says what to do', (
+    tester,
+  ) async {
+    gateway.confirmed = false;
+    await logIn(tester, 'ana@nust.na');
+    expect(gateway.resent, 1);
+    expect(
+      find.textContaining('tap the confirmation link, then log in'),
+      findsOneWidget,
+    );
+    expect(events, isEmpty, reason: 'not signed in, so no sync');
+
+    await tester.tap(find.text('Resend email'));
+    await tester.pumpAndSettle();
+    expect(gateway.resent, 2);
+    expect(find.text('Email sent again to ana@nust.na.'), findsOneWidget);
+
+    await tester.tap(find.text('Go to log in'));
+    await tester.pumpAndSettle();
+    expect(find.text('Welcome back'), findsOneWidget);
   });
 }

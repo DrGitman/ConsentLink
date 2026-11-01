@@ -121,7 +121,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
           email: email,
           password: _password.text,
         );
-        if (mounted) context.push('/confirm-email-preview', extra: email);
+        if (mounted) context.push('/check-email', extra: email);
       } on AuthFailure catch (failure) {
         if (mounted) setState(() => _notice = failure.message);
       } finally {

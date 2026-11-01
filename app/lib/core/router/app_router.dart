@@ -46,6 +46,7 @@ import '../../features/templates/template_library_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/sign_up_screen.dart';
+import '../../features/auth/check_email_screen.dart';
 import '../../features/auth/confirm_email_preview_screen.dart';
 import '../../features/auth/password_recovery_preview_screen.dart';
 import '../../features/institution/institution_screen.dart';
@@ -185,7 +186,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
-      if (const bool.fromEnvironment('AUTH_PREVIEW') || realAuthConfigured)
+      if (realAuthConfigured)
+        GoRoute(
+          path: '/check-email',
+          builder: (context, state) => CheckEmailScreen(
+            email: state.extra is String ? state.extra! as String : '',
+          ),
+        ),
+      if (const bool.fromEnvironment('AUTH_PREVIEW'))
         GoRoute(
           path: '/confirm-email-preview',
           pageBuilder: (context, state) {
