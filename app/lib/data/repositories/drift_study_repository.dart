@@ -103,7 +103,11 @@ class DriftStudyRepository implements StudyRepository {
   }
 
   @override
-  Future<Study> publishForm(String studyId) async {
+  Future<Study> publishForm(String studyId) =>
+      // One transaction, so two quick publishes can't take the same version.
+      _db.transaction(() => _publish(studyId));
+
+  Future<Study> _publish(String studyId) async {
     final sections = await getSections(studyId);
     if (sections.isEmpty ||
         sections.any((s) => s.status != SectionStatus.approved)) {

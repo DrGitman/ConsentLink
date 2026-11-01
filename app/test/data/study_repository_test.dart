@@ -70,6 +70,16 @@ void main() {
     await expectLater(studies.publishForm(study.id), throwsStateError);
   });
 
+  test('two quick publishes get different versions', () async {
+    final study = await published();
+    await Future.wait([
+      studies.publishForm(study.id),
+      studies.publishForm(study.id),
+    ]);
+    final versions = await db.select(db.formVersions).get();
+    expect(versions.map((v) => v.version).toSet(), {1, 2, 3});
+  });
+
   test('a published form is frozen with its fingerprint', () async {
     final study = await published();
     final frozen = await studies.getPublishedSections(study.id);
