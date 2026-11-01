@@ -62,6 +62,7 @@ dependencies:
   path: ^1.9.1
   supabase: ^2.13.4
   uuid: ^4.6.0
+  pdf: ^3.11.3
 
 dev_dependencies:
   json_schema: ^5.1.7
