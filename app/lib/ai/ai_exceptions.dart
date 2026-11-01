@@ -12,3 +12,10 @@ class ConsentAiException implements Exception {
 final class InvalidDraftingRequestException extends ConsentAiException {
   const InvalidDraftingRequestException(super.message);
 }
+
+/// The model's output can't be read as a consent draft.
+///
+/// [message] names the problem, never the form text.
+final class InvalidModelOutputException extends ConsentAiException {
+  const InvalidModelOutputException(super.message);
+}
