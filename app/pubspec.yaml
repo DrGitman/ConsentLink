@@ -61,6 +61,7 @@ dependencies:
   path_provider: ^2.1.5
   path: ^1.9.1
   supabase: ^2.13.4
+  uuid: ^4.6.0
 
 dev_dependencies:
   json_schema: ^5.1.7
