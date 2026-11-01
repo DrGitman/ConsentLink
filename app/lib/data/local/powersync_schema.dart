@@ -9,7 +9,7 @@ import 'package:drift/drift.dart'
 import 'package:powersync_sqlcipher/powersync.dart';
 
 /// Tables that stay on the phone. They are never uploaded or downloaded.
-const localOnlyTables = {'upload_failures'};
+const localOnlyTables = {'upload_failures', 'local_files'};
 
 Schema powerSyncSchemaFor(GeneratedDatabase db) => Schema([
   for (final table in db.allTables)

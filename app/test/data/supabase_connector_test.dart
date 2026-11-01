@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:consentlink/data/local/app_database.dart';
 import 'package:consentlink/data/sync/supabase_connector.dart';
@@ -38,6 +39,15 @@ class _FakeRemote implements SyncRemote {
   @override
   Future<bool> exists(String table, String id) async =>
       rows.containsKey('$table/$id');
+
+  final files = <String, Uint8List>{};
+  Object? fileFail;
+  @override
+  Future<void> uploadFile(String path, Uint8List bytes, String type) async {
+    calls.add('file $path');
+    if (fileFail != null) throw fileFail!;
+    files[path] = bytes;
+  }
 }
 
 CrudEntry _put(String table, String id, Map<String, dynamic> data) =>
