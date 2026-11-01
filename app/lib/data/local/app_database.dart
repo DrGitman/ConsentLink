@@ -18,6 +18,7 @@ part 'app_database.g.dart';
     ConsentFiles,
     AuditLog,
     UploadFailures,
+    LocalFiles,
   ],
 )
 class AppDatabase extends _$AppDatabase {

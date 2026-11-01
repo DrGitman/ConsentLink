@@ -13,6 +13,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 abstract interface class KeyStore {
   Future<String?> read(String name);
   Future<void> write(String name, String value);
+  Future<void> delete(String name);
 }
 
 class SecureKeyStore implements KeyStore {
@@ -26,6 +27,9 @@ class SecureKeyStore implements KeyStore {
   @override
   Future<void> write(String name, String value) =>
       _storage.write(key: name, value: value);
+
+  @override
+  Future<void> delete(String name) => _storage.delete(key: name);
 }
 
 const databaseKeyName = 'consentlink_db_key_v1';

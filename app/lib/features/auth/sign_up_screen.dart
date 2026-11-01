@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../data/auth/auth_providers.dart';
+import '../../data/auth/auth_service.dart';
 import '../preferences/accessibility_preferences.dart';
 import 'widgets/auth_button.dart';
 import 'widgets/password_visibility_icon.dart';
@@ -29,6 +31,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
   bool _hidePassword = true;
   bool _submitted = false;
   bool _acceptedTerms = false;
+  bool _busy = false;
   late final TapGestureRecognizer _termsLink;
   late final TapGestureRecognizer _privacyLink;
   String? _notice;
@@ -91,7 +94,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
     return null;
   }
 
-  void _submit() {
+  Future<void> _submit() async {
+    if (_busy) return;
     setState(() {
       _submitted = true;
       _notice = null;
@@ -107,6 +111,24 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
     if (!valid || !_acceptedTerms) return;
 
     FocusScope.of(context).unfocus();
+    final auth = ref.read(authServiceProvider);
+    if (auth != null) {
+      final email = _email.text.trim();
+      setState(() => _busy = true);
+      try {
+        await auth.signUp(
+          name: _name.text,
+          email: email,
+          password: _password.text,
+        );
+        if (mounted) context.push('/check-email', extra: email);
+      } on AuthFailure catch (failure) {
+        if (mounted) setState(() => _notice = failure.message);
+      } finally {
+        if (mounted) setState(() => _busy = false);
+      }
+      return;
+    }
     if (const bool.fromEnvironment('AUTH_PREVIEW')) {
       context.push('/confirm-email-preview', extra: _email.text.trim());
       return;
@@ -422,6 +444,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
                                 const SizedBox(height: 16),
                                 AuthButton(
                                   label: 'Create account',
+                                  busy: _busy,
                                   onPressed: _submit,
                                 ),
                                 const SizedBox(height: 8),

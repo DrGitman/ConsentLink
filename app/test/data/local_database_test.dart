@@ -12,6 +12,8 @@ class _MapKeyStore implements KeyStore {
   Future<String?> read(String name) async => values[name];
   @override
   Future<void> write(String name, String value) async => values[name] = value;
+  @override
+  Future<void> delete(String name) async => values.remove(name);
 }
 
 void main() {
@@ -28,11 +30,11 @@ void main() {
         for (final t in schema)
           if (t.localOnly) t.name,
       ],
-      ['upload_failures'],
-      reason: 'only the failure log stays on the phone',
+      ['upload_failures', 'local_files'],
+      reason: 'the failure log and file bytes stay on the phone',
     );
     expect(tables.keys, containsAll(['studies', 'consents', 'audit_log']));
-    expect(tables.length, 10);
+    expect(tables.length, 11);
     expect(tables['consents']!['child_assent'], ps.ColumnType.integer);
     expect(tables['consents']!['withdrawal_reason'], ps.ColumnType.text);
     expect(tables['consent_sections']!['text'], ps.ColumnType.text);

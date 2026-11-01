@@ -182,7 +182,8 @@ class ConsentSection {
   final String id;
   final String studyId;
   final int order;
-  final String language; // code from languages.dart: 'en', 'hz', 'naq', 'ktz', ...
+  final String
+  language; // code from languages.dart: 'en', 'hz', 'naq', 'ktz', ...
   final String text;
   final int? sourcePage; // page of the proposal the AI took this from
   final String?
