@@ -54,6 +54,7 @@ import '../../features/offline/offline_pack_screen.dart';
 import '../../features/legal/legal_content.dart';
 import '../../features/legal/legal_screen.dart';
 import '../widgets/dictation_sheet.dart';
+import '../../data/auth/auth_providers.dart' show realAuthConfigured;
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
@@ -184,7 +185,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
-      if (const bool.fromEnvironment('AUTH_PREVIEW'))
+      if (const bool.fromEnvironment('AUTH_PREVIEW') || realAuthConfigured)
         GoRoute(
           path: '/confirm-email-preview',
           pageBuilder: (context, state) {

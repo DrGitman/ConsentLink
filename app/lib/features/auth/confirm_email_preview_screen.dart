@@ -8,6 +8,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/app_back_button.dart';
+import '../../data/auth/auth_providers.dart';
+import '../../data/auth/auth_service.dart';
 import '../preferences/accessibility_preferences.dart';
 import 'widgets/auth_button.dart';
 
@@ -119,7 +121,10 @@ class _ConfirmEmailPreviewScreenState
     }
   }
 
-  void _verify() {
+  /// Real sign-in when the app is built with Supabase; otherwise a preview.
+  AuthService? get _auth => ref.read(authServiceProvider);
+
+  Future<void> _verify() async {
     if (_complete || _tries == 0) return;
 
     if (_digits.any((controller) => controller.text.length != 1)) {
@@ -128,6 +133,17 @@ class _ConfirmEmailPreviewScreenState
     }
 
     final code = _digits.map((controller) => controller.text).join();
+
+    final auth = _auth;
+    if (auth != null) {
+      try {
+        await auth.confirm(widget.email, code);
+        if (mounted) context.go('/home');
+      } on AuthFailure catch (failure) {
+        if (mounted) _showError(failure.message);
+      }
+      return;
+    }
 
     if (code != _previewCode) {
       _tries--;
@@ -150,6 +166,9 @@ class _ConfirmEmailPreviewScreenState
 
   void _resend() {
     if (_remaining > 0 || _complete) return;
+    _auth?.resendCode(widget.email).catchError((Object failure) {
+      if (mounted) _showError(failure.toString());
+    });
 
     for (final controller in _digits) {
       controller.clear();
@@ -335,17 +354,18 @@ class _ConfirmEmailPreviewScreenState
                         children: [
                           AppBackButton(onPressed: _back),
                           const Spacer(),
-                          TextButton(
-                            onPressed: showPreviewInfo,
-                            style: TextButton.styleFrom(
-                              foregroundColor: colors.onSurfaceVariant,
-                              textStyle: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 12,
+                          if (_auth == null)
+                            TextButton(
+                              onPressed: showPreviewInfo,
+                              style: TextButton.styleFrom(
+                                foregroundColor: colors.onSurfaceVariant,
+                                textStyle: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 12,
+                                ),
                               ),
+                              child: const Text('Preview'),
                             ),
-                            child: const Text('Preview'),
-                          ),
                         ],
                       ),
                     ),
@@ -476,7 +496,9 @@ class _ConfirmEmailPreviewScreenState
                               child: Text(
                                 _remaining > 0
                                     ? 'Resend code in $countdown'
-                                    : 'Resend preview code',
+                                    : _auth == null
+                                    ? 'Resend preview code'
+                                    : 'Resend code',
                                 textAlign: TextAlign.center,
                               ),
                             ),
