@@ -35,6 +35,16 @@ final class CorruptedPdfException extends ConsentAiException {
   const CorruptedPdfException(super.message);
 }
 
+/// The proposal file is above the size limit read on the device.
+final class ProposalTooLargeException extends ConsentAiException {
+  const ProposalTooLargeException(super.message);
+}
+
+/// The proposal PDF has more pages than the device reads.
+final class TooManyPagesException extends ConsentAiException {
+  const TooManyPagesException(super.message);
+}
+
 /// The language code is not one of `contracts/languages.dart`.
 final class UnsupportedLanguageException extends ConsentAiException {
   const UnsupportedLanguageException(super.message);
