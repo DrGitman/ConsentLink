@@ -30,4 +30,6 @@ bucket_definitions:
       - SELECT * FROM participants WHERE study_id = bucket.study_id
       - SELECT * FROM consents WHERE study_id = bucket.study_id
       - SELECT * FROM consent_files WHERE study_id = bucket.study_id
+      # Signatures from share link consents (20261102000001_consent_links.sql).
+      - SELECT * FROM link_signatures WHERE study_id = bucket.study_id
       - SELECT * FROM audit_log WHERE study_id = bucket.study_id
