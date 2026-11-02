@@ -4,6 +4,8 @@ import 'drafting/consent_drafting_service.dart';
 import 'drafting/fake_consent_drafting_service.dart';
 import 'pdf/pdfrx_text_extractor.dart';
 import 'pdf/proposal_text_extractor.dart';
+import 'tts/flutter_tts_engine.dart';
+import 'tts/read_aloud_service.dart';
 
 /// The drafting service. Returns the fake until the on-device model is ready.
 final consentDraftingServiceProvider = Provider<ConsentDraftingService>(
@@ -13,4 +15,9 @@ final consentDraftingServiceProvider = Provider<ConsentDraftingService>(
 /// Reads the text of an accepted proposal PDF, on the device only.
 final proposalTextExtractorProvider = Provider<ProposalTextExtractor>(
   (ref) => const PdfrxTextExtractor(),
+);
+
+/// Reads consent texts aloud: recording, else a local device voice, else none.
+final readAloudServiceProvider = Provider<ReadAloudService>(
+  (ref) => ReadAloudService(FlutterTtsEngine()),
 );

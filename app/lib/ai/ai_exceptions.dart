@@ -34,3 +34,13 @@ final class ScannedPdfException extends ConsentAiException {
 final class CorruptedPdfException extends ConsentAiException {
   const CorruptedPdfException(super.message);
 }
+
+/// The language code is not one of `contracts/languages.dart`.
+final class UnsupportedLanguageException extends ConsentAiException {
+  const UnsupportedLanguageException(super.message);
+}
+
+/// The device text-to-speech engine failed to read a text aloud.
+final class ReadAloudException extends ConsentAiException {
+  const ReadAloudException(super.message);
+}
