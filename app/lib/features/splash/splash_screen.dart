@@ -22,6 +22,7 @@ class _SplashScreenState extends State<SplashScreen>
   var _loadErrorReported = false;
   var _reduceMotion = false;
   var _backgroundLoaded = false;
+  var _animationReady = false;
   LottieComposition? _foregroundComposition;
 
   @override
@@ -30,6 +31,9 @@ class _SplashScreenState extends State<SplashScreen>
     _controller = AnimationController(vsync: this)
       ..addStatusListener(_handleAnimationStatus);
     _artworkProgress = _controller;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() => _animationReady = true);
+    });
   }
 
   void _handleAnimationStatus(AnimationStatus status) {
@@ -167,48 +171,61 @@ class _SplashScreenState extends State<SplashScreen>
             child: Stack(
               fit: StackFit.expand,
               children: [
-                Lottie.asset(
-                  'assets/animations/consentlink-splash-background.json',
-                  controller: _artworkProgress,
-                  animate: false,
-                  repeat: false,
-                  fit: BoxFit.fill,
-                  backgroundLoading: false,
-                  onLoaded: _onBackgroundLoaded,
-                  errorBuilder: (context, error, stackTrace) =>
-                      _buildLoadError(context, strings, error, stackTrace),
-                ),
+                if (_animationReady)
+                  RepaintBoundary(
+                    child: Lottie.asset(
+                      'assets/animations/consentlink-splash-background.json',
+                      controller: _artworkProgress,
+                      animate: false,
+                      repeat: false,
+                      fit: BoxFit.fill,
+                      backgroundLoading: false,
+                      frameRate: const FrameRate(30),
+                      onLoaded: _onBackgroundLoaded,
+                      errorBuilder: (context, error, stackTrace) =>
+                          _buildLoadError(context, strings, error, stackTrace),
+                    ),
+                  ),
                 SafeArea(
                   minimum: EdgeInsets.symmetric(horizontal: horizontalInset),
-                  child: Lottie.asset(
-                    'assets/animations/consentlink-splash.json',
-                    key: const ValueKey('consentlink-splash-animation'),
-                    controller: _artworkProgress,
-                    animate: false,
-                    repeat: false,
-                    fit: BoxFit.contain,
-                    alignment: Alignment.center,
-                    onLoaded: _startAnimation,
-                    backgroundLoading: false,
-                    delegates: LottieDelegates(
-                      textStyle: (font) {
-                        final style = font.style.toLowerCase().replaceAll(
-                          ' ',
-                          '',
-                        );
-                        return TextStyle(
-                          fontFamily: font.fontFamily,
-                          fontWeight: style.contains('semibold')
-                              ? FontWeight.w600
-                              : style.contains('medium')
-                              ? FontWeight.w500
-                              : FontWeight.w400,
-                        );
-                      },
-                    ),
-                    errorBuilder: (context, error, stackTrace) =>
-                        _buildLoadError(context, strings, error, stackTrace),
-                  ),
+                  child: _animationReady
+                      ? RepaintBoundary(
+                          child: Lottie.asset(
+                            'assets/animations/consentlink-splash.json',
+                            key: const ValueKey('consentlink-splash-animation'),
+                            controller: _artworkProgress,
+                            animate: false,
+                            repeat: false,
+                            fit: BoxFit.contain,
+                            alignment: Alignment.center,
+                            onLoaded: _startAnimation,
+                            backgroundLoading: false,
+                            frameRate: const FrameRate(30),
+                            delegates: LottieDelegates(
+                              textStyle: (font) {
+                                final style = font.style
+                                    .toLowerCase()
+                                    .replaceAll(' ', '');
+                                return TextStyle(
+                                  fontFamily: font.fontFamily,
+                                  fontWeight: style.contains('semibold')
+                                      ? FontWeight.w600
+                                      : style.contains('medium')
+                                      ? FontWeight.w500
+                                      : FontWeight.w400,
+                                );
+                              },
+                            ),
+                            errorBuilder: (context, error, stackTrace) =>
+                                _buildLoadError(
+                                  context,
+                                  strings,
+                                  error,
+                                  stackTrace,
+                                ),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                 ),
               ],
             ),

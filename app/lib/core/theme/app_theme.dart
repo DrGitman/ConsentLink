@@ -231,6 +231,20 @@ abstract final class AppTheme {
         color: highContrast ? AppColors.muted : AppColors.line,
         thickness: 1,
       ),
+      switchTheme: SwitchThemeData(
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? scheme.primary
+              : const Color(0xFFD5DAD8),
+        ),
+        thumbColor: const WidgetStatePropertyAll(Colors.white),
+        trackOutlineColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? Colors.transparent
+              : const Color(0xFFD5DAD8),
+        ),
+        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+      ),
     );
   }
 }

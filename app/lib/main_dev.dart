@@ -20,11 +20,14 @@ Future<void> main() async {
   String? savedResearcher;
 
   try {
-    savedValue = await storage.getString(PreferencePersistence.storageKey);
-    savedPhoto = await storage.getString(PreferencePersistence.photoKey);
-    savedResearcher = await storage.getString(
-      PreferencePersistence.researcherKey,
-    );
+    final preferences = await Future.wait([
+      storage.getString(PreferencePersistence.storageKey),
+      storage.getString(PreferencePersistence.photoKey),
+      storage.getString(PreferencePersistence.researcherKey),
+    ]);
+    savedValue = preferences[0];
+    savedPhoto = preferences[1];
+    savedResearcher = preferences[2];
   } catch (error, stack) {
     FlutterError.reportError(
       FlutterErrorDetails(
