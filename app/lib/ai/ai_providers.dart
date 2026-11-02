@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'drafting/consent_drafting_service.dart';
 import 'drafting/fake_consent_drafting_service.dart';
+import 'llm/guarded_llm_runtime.dart';
 import 'llm/llama_cpp_runtime.dart';
 import 'llm/llm_runtime.dart';
 import 'pdf/pdfrx_text_extractor.dart';
@@ -26,7 +27,7 @@ final readAloudServiceProvider = Provider<ReadAloudService>(
 
 /// The on-device model; disposed with the provider.
 final llmRuntimeProvider = Provider<LlmRuntime>((ref) {
-  final runtime = LlamaCppRuntime();
+  final runtime = GuardedLlmRuntime(LlamaCppRuntime());
   ref.onDispose(runtime.dispose);
   return runtime;
 });

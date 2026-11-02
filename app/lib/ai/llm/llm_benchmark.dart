@@ -56,7 +56,8 @@ final class BenchmarkResult {
 /// Loads [config] with [runtime], generates once and measures it.
 ///
 /// [currentRss] and [maxRss] read the process memory, `ProcessInfo` on the
-/// phone (decision D4.3). The model is disposed afterwards.
+/// phone (decision D4.3). The model stays loaded: [runtime] belongs to the
+/// caller (D5.11), and disposing it would stop any other user mid-way.
 Future<BenchmarkResult> runBenchmark(
   LlmRuntime runtime,
   LlmModelConfig config, {
@@ -67,32 +68,28 @@ Future<BenchmarkResult> runBenchmark(
   final clock = Stopwatch()..start();
   await runtime.load(config);
   final loadTime = clock.elapsed;
-  try {
-    final prompt = LlmPrompt(
-      system: benchmarkSystem,
-      user: benchmarkUser,
-      maxTokens: benchmarkMaxTokens,
-    );
-    clock.reset();
-    Duration? firstToken;
-    var tokens = 0;
-    final text = StringBuffer();
-    await for (final piece in runtime.generate(prompt)) {
-      firstToken ??= clock.elapsed;
-      tokens++;
-      text.write(piece);
-    }
-    return BenchmarkResult(
-      loadTime: loadTime,
-      firstTokenTime: firstToken ?? clock.elapsed,
-      generationTime: clock.elapsed,
-      tokenCount: tokens,
-      rssBeforeBytes: rssBefore,
-      rssAfterBytes: currentRss(),
-      maxRssBytes: maxRss(),
-      sampleText: text.toString(),
-    );
-  } finally {
-    await runtime.dispose();
+  final prompt = LlmPrompt(
+    system: benchmarkSystem,
+    user: benchmarkUser,
+    maxTokens: benchmarkMaxTokens,
+  );
+  clock.reset();
+  Duration? firstToken;
+  var tokens = 0;
+  final text = StringBuffer();
+  await for (final piece in runtime.generate(prompt)) {
+    firstToken ??= clock.elapsed;
+    tokens++;
+    text.write(piece);
   }
+  return BenchmarkResult(
+    loadTime: loadTime,
+    firstTokenTime: firstToken ?? clock.elapsed,
+    generationTime: clock.elapsed,
+    tokenCount: tokens,
+    rssBeforeBytes: rssBefore,
+    rssAfterBytes: currentRss(),
+    maxRssBytes: maxRss(),
+    sampleText: text.toString(),
+  );
 }

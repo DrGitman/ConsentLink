@@ -31,24 +31,27 @@ LlmModelConfig _config({int contextSize = smallContextSize}) => LlmModelConfig(
 );
 
 void main() {
-  test('loads, generates once, measures and disposes', () async {
-    final runtime = _FakeRuntime();
-    var rss = 100;
+  test(
+    'loads, generates once and measures, leaving the model loaded',
+    () async {
+      final runtime = _FakeRuntime();
+      var rss = 100;
 
-    final result = await runBenchmark(
-      runtime,
-      _config(contextSize: largeContextSize),
-      currentRss: () => rss += 50,
-      maxRss: () => 400,
-    );
+      final result = await runBenchmark(
+        runtime,
+        _config(contextSize: largeContextSize),
+        currentRss: () => rss += 50,
+        maxRss: () => 400,
+      );
 
-    expect(runtime.calls, ['load 4096', 'generate', 'dispose']);
-    expect(runtime.prompt!.maxTokens, benchmarkMaxTokens);
-    expect(result.tokenCount, _pieces.length);
-    expect(result.sampleText, _pieces.join());
-    expect((result.rssBeforeBytes, result.rssAfterBytes), (150, 200));
-    expect(result.maxRssBytes, 400);
-  });
+      expect(runtime.calls, ['load 4096', 'generate']);
+      expect(runtime.prompt!.maxTokens, benchmarkMaxTokens);
+      expect(result.tokenCount, _pieces.length);
+      expect(result.sampleText, _pieces.join());
+      expect((result.rssBeforeBytes, result.rssAfterBytes), (150, 200));
+      expect(result.maxRssBytes, 400);
+    },
+  );
 
   test('computes tokens per second and a summary without text', () {
     const result = BenchmarkResult(
@@ -67,23 +70,18 @@ void main() {
     expect(result.summary, isNot(contains('Invented')));
   });
 
-  test('disposes the model even when generation fails', () async {
+  test('a generation failure is rethrown, the model is not disposed', () async {
     final runtime = _FailingRuntime();
     await expectLater(
       runBenchmark(runtime, _config(), currentRss: () => 0, maxRss: () => 0),
       throwsA(isA<LlmException>()),
     );
-    expect(runtime.disposed, isTrue);
+    expect(runtime.calls, isNot(contains('dispose')));
   });
 }
 
 final class _FailingRuntime extends _FakeRuntime {
-  bool disposed = false;
-
   @override
   Stream<String> generate(LlmPrompt prompt) =>
       Stream.error(const LlmException('Invented failure.'));
-
-  @override
-  Future<void> dispose() async => disposed = true;
 }
