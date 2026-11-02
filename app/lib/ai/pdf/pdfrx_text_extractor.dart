@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:pdfrx/pdfrx.dart';
 
 import '../ai_exceptions.dart';
+import 'proposal_file_guard.dart';
 import 'proposal_page.dart';
 import 'proposal_text_extractor.dart';
 
@@ -31,13 +32,13 @@ final class PdfrxTextExtractor implements ProposalTextExtractor {
 
   @override
   Future<List<ProposalPage>> extract(Uint8List bytes) async {
-    if (bytes.isEmpty) {
-      throw const CorruptedPdfException('The file is empty.');
-    }
+    checkProposalBytes(bytes);
     final stopwatch = Stopwatch()..start();
     await initialize();
     final document = await _openDocument(bytes);
     try {
+      // Before reading any text, so a huge PDF costs nothing.
+      checkProposalPageCount(document.pages.length);
       final pages = [
         for (final page in document.pages)
           ProposalPage(
