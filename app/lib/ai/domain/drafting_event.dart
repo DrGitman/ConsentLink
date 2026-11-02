@@ -1,3 +1,6 @@
+import 'package:flutter/foundation.dart';
+
+import 'consent_element.dart';
 import 'generated_consent_draft.dart';
 import 'rule_report.dart';
 
@@ -44,17 +47,26 @@ final class DraftingStepCompleted extends DraftingEvent {
 
 /// The last event of a successful drafting.
 final class DraftingCompleted extends DraftingEvent {
-  const DraftingCompleted({required this.draft, required this.report});
+  DraftingCompleted({
+    required this.draft,
+    required this.report,
+    List<ConsentElement> failed = const [],
+  }) : failed = List.unmodifiable(failed);
 
   final GeneratedConsentDraft draft;
   final RuleReport report;
+
+  /// Elements in `draft.missing` because the AI gave no valid answer, not
+  /// because the proposal lacks them.
+  final List<ConsentElement> failed;
 
   @override
   bool operator ==(Object other) =>
       other is DraftingCompleted &&
       other.draft == draft &&
-      other.report == report;
+      other.report == report &&
+      listEquals(other.failed, failed);
 
   @override
-  int get hashCode => Object.hash(draft, report);
+  int get hashCode => Object.hash(draft, report, Object.hashAll(failed));
 }

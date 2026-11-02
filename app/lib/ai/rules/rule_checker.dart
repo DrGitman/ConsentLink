@@ -8,14 +8,22 @@ import 'element_rules.dart';
 const checkedLanguage = 'en';
 
 const missingSectionHint = 'Add a section that covers this element.';
+const modelFailedHint =
+    'The AI could not draft this element. Check the proposal and write it.';
 const notCheckedHint =
     'Not checked automatically in this language. Read it against the proposal.';
 
 /// Checks [draft] against the required elements of [profile].
 ///
-/// Deterministic: no section gives [RuleStatus.missing]; a section gives
+/// Deterministic: no section gives [RuleStatus.missing], or
+/// [RuleStatus.uncertain] when the element is in [failed] (the AI gave no
+/// valid answer, so the proposal may still cover it); a section gives
 /// [RuleStatus.ok] when its content checks pass, else [RuleStatus.uncertain].
-RuleReport checkRules(GeneratedConsentDraft draft, StudyProfile profile) {
+RuleReport checkRules(
+  GeneratedConsentDraft draft,
+  StudyProfile profile, {
+  Set<ConsentElement> failed = const {},
+}) {
   final sections = {
     for (final section in draft.sections) section.element: section,
   };
@@ -23,7 +31,10 @@ RuleReport checkRules(GeneratedConsentDraft draft, StudyProfile profile) {
   return RuleReport(
     items: [
       for (final element in requiredElementsFor(profile))
-        _checkElement(element, sections[element], contentChecked),
+        if (sections[element] == null && failed.contains(element))
+          _uncertain(element, modelFailedHint)
+        else
+          _checkElement(element, sections[element], contentChecked),
     ],
   );
 }
