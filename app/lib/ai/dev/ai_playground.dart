@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'tiles/fake_drafting_tile.dart';
 import 'tiles/llm_benchmark_tile.dart';
 import 'tiles/llm_drafting_tile.dart';
+import 'tiles/model_download_tile.dart';
 
 /// Dev-only screen to try each AI brick on its own. Never routed in the app.
 ///
@@ -17,6 +18,7 @@ const playgroundTiles = <Widget>[
   FakeDraftingTile(),
   LlmBenchmarkTile(),
   LlmDraftingTile(),
+  ModelDownloadTile(),
 ];
 
 class AiPlayground extends StatelessWidget {
