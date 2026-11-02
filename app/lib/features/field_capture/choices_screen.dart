@@ -10,6 +10,7 @@ import '../new_consent/consent_widgets.dart';
 import '../preferences/accessibility_preferences.dart';
 import 'capture_widgets.dart';
 import 'field_capture_data.dart';
+import 'capture_store.dart';
 
 /// Figma 06.4 Consent choices (3:3057). Every choice needs a Yes or No before
 /// Continue. Saying No to taking part ends the session without signing.
@@ -29,11 +30,12 @@ class _ChoicesScreenState extends ConsumerState<ChoicesScreen> {
     super.dispose();
   }
 
-  /// Voice packs aren't connected: the button shows it's "speaking" for the
-  /// length of the sentence.
+  /// Reads the choice with the phone's voice; the button shows it is speaking
+  /// for about the length of the sentence.
   void _readAloud(ConsentChoice choice) {
     _readTimer?.cancel();
     setState(() => _reading = choice.key);
+    speakAloud(ref, choice.label);
     _readTimer = Timer(
       Duration(milliseconds: 420 * choice.label.split(' ').length + 400),
       () {
@@ -50,9 +52,16 @@ class _ChoicesScreenState extends ConsumerState<ChoicesScreen> {
     }
   }
 
-  void _continue() {
+  Future<void> _continue() async {
     final session = ref.read(captureSessionProvider);
     if (session.declined) {
+      // A "No" is recorded too, so the study can report it.
+      try {
+        await saveCapturedConsent(ref);
+      } catch (_) {
+        // Nothing to undo: the participant still sees the thank-you screen.
+      }
+      if (!mounted) return;
       ref.read(captureSessionProvider.notifier).complete();
       context.go('/field-capture/done');
     } else {

@@ -92,6 +92,7 @@ class ConsentRecordScreen extends ConsumerWidget {
                                       context,
                                       subtitle: '${r.code} · 1 record',
                                       count: 1,
+                                      records: r.consentId == null ? null : [r],
                                     ),
                                   ),
                           ),

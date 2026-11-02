@@ -1,0 +1,287 @@
+{
+  "pack_id": "ktz-na",
+  "about": "Phrase-level seed from the Ju|'hoansi lessons PDF, converted from ASCII click letters to U+01C0-U+01C3. Nothing here is cleared for participants.",
+  "count": 31,
+  "dictionary": [
+    {
+      "en": "Hello (morning), how are you?",
+      "target": "ǂXáí-ó, à ré ǂxáí?",
+      "source_spelling": "‡Xáí-ó, à ré ‡xáí?",
+      "pos": "phrase",
+      "domain": "general",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands",
+      "note": "Lesson 1"
+    },
+    {
+      "en": "Hello (afternoon), how are you?",
+      "target": "Gǁàán-ó, à ré gǁàán?",
+      "source_spelling": "G||àán-ó, à ré g||àán?",
+      "pos": "phrase",
+      "domain": "general",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "I'm fine.",
+      "target": "Mí ǂxáí.",
+      "source_spelling": "Mí ‡xáí.",
+      "pos": "phrase",
+      "domain": "general",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "I'm not fine.",
+      "target": "Mí ǂxáí tàmà.",
+      "source_spelling": "Mí ‡xáí tàmà.",
+      "pos": "phrase",
+      "domain": "health",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands",
+      "note": "tàmà appears to negate"
+    },
+    {
+      "en": "I don't know.",
+      "target": "Mí ǀóá ǃ’hàn.",
+      "source_spelling": "Mí |óá !’hàn.",
+      "pos": "phrase",
+      "domain": "consent",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands",
+      "note": "Needed for the 'Not sure' assent answer (10.5)"
+    },
+    {
+      "en": "What is your name?",
+      "target": "À ǃú ré ó hajòè?",
+      "source_spelling": "À !ú ré ó hajòè?",
+      "pos": "question",
+      "domain": "consent",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands",
+      "note": "Lesson 16; field capture 06.3 asks this"
+    },
+    {
+      "en": "What is your father's name?",
+      "target": "À bá ǃú ré ó hajòè?",
+      "source_spelling": "À bá !ú ré ó hajòè?",
+      "pos": "question",
+      "domain": "person",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "What is your mother's name?",
+      "target": "À taqè ǃú ré ó hajòè?",
+      "source_spelling": "À taqè !ú ré ó hajòè?",
+      "pos": "question",
+      "domain": "person",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "Is this your child?",
+      "target": "Da’àmà ó à mà, ré?",
+      "pos": "question",
+      "domain": "consent",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands",
+      "note": "Relevant to the guardian flow (10.3)"
+    },
+    {
+      "en": "child",
+      "target": "da’àmà",
+      "pos": "noun",
+      "domain": "person",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "I am sick.",
+      "target": "Mí kú ǀkàè.",
+      "source_spelling": "Mí kú |kàè.",
+      "pos": "phrase",
+      "domain": "health",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "Where does it hurt?",
+      "target": "À kòré ré kú ǁ’àn?",
+      "source_spelling": "À kòré ré kú ||’àn?",
+      "pos": "question",
+      "domain": "health",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "My head hurts.",
+      "target": "Mí nǀái kú ǁ’àn mí.",
+      "source_spelling": "Mí n|ái kú ||’àn mí.",
+      "pos": "phrase",
+      "domain": "health",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "My stomach hurts.",
+      "target": "Mí nǃáng kú ǁ’àn mí.",
+      "source_spelling": "Mí n!áng kú ||’àn mí.",
+      "pos": "phrase",
+      "domain": "health",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "What's making you sick?",
+      "target": "Hatcé ré kú nǂáí ǀkàè à?",
+      "source_spelling": "Hatcé ré kú n‡áí |kàè à?",
+      "pos": "question",
+      "domain": "health",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "How many days have you been sick?",
+      "target": "ǀÁmsà nàùn ta’má ré à kú ǀkàè?",
+      "source_spelling": "|Ámsà nàùn ta’má ré à kú |kàè?",
+      "pos": "question",
+      "domain": "health",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "You should go to the clinic.",
+      "target": "Ká ǂ’àùn ká à nǂáú nǀomtjù.",
+      "source_spelling": "Ká ‡’àùn ká à n‡áú n|omtjù.",
+      "pos": "phrase",
+      "domain": "health",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "book, paper",
+      "target": "ǂxanù",
+      "source_spelling": "‡xanù",
+      "pos": "noun",
+      "domain": "consent",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands",
+      "note": "Likely root for 'consent form'"
+    },
+    {
+      "en": "write, draw",
+      "target": "ǀòrè",
+      "source_spelling": "|òrè",
+      "pos": "verb",
+      "domain": "consent",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands",
+      "note": "Needed for 'sign here' (06.5)"
+    },
+    {
+      "en": "water",
+      "target": "gǃú",
+      "source_spelling": "g!ú",
+      "pos": "noun",
+      "domain": "general",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "person, people",
+      "target": "jú",
+      "pos": "noun",
+      "domain": "person",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "It's important to work together.",
+      "target": "Ká ǂ’àùn ká jú huià khòè.",
+      "source_spelling": "Ká ‡’àùn ká jú huià khòè.",
+      "pos": "phrase",
+      "domain": "general",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands",
+      "note": "ǂ’àùn seems to carry 'should / it is important'"
+    },
+    {
+      "en": "I cannot do it.",
+      "target": "Mí taàhn mí ǀ’àè.",
+      "source_spelling": "Mí taàhn mí |’àè.",
+      "pos": "phrase",
+      "domain": "consent",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "who",
+      "target": "hajòè",
+      "pos": "question",
+      "domain": "ui",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "what",
+      "target": "hatcé",
+      "pos": "question",
+      "domain": "ui",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "where",
+      "target": "kòré",
+      "pos": "question",
+      "domain": "ui",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "when",
+      "target": "ǂ’ómá nè ré",
+      "source_spelling": "‡’ómá nè ré",
+      "pos": "question",
+      "domain": "ui",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "why",
+      "target": "khàma hatcé",
+      "pos": "question",
+      "domain": "ui",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    {
+      "en": "I agree / I consent",
+      "target": null,
+      "pos": "phrase",
+      "domain": "consent",
+      "status": "needs_review",
+      "source_id": null,
+      "note": "NOT IN THE SOURCE. Must come from a speaker - the most important string in the app."
+    },
+    {
+      "en": "I do not agree",
+      "target": null,
+      "pos": "phrase",
+      "domain": "consent",
+      "status": "needs_review",
+      "source_id": null,
+      "note": "NOT IN THE SOURCE. A wrong word here invalidates consent."
+    },
+    {
+      "en": "You can stop at any time.",
+      "target": null,
+      "pos": "phrase",
+      "domain": "consent",
+      "status": "needs_review",
+      "source_id": null,
+      "note": "NOT IN THE SOURCE. Required consent element 'voluntary_withdrawal'."
+    }
+  ]
+}

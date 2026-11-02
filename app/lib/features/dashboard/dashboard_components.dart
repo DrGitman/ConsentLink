@@ -122,8 +122,17 @@ class _DashboardActionState extends State<DashboardAction> {
 }
 
 class DashboardStats extends StatelessWidget {
-  const DashboardStats({super.key, required this.preview});
+  const DashboardStats({
+    super.key,
+    required this.preview,
+    this.total = 0,
+    this.summary,
+  });
   final bool preview;
+
+  /// Live mode: consents recorded on this phone, and a one-line summary.
+  final int total;
+  final String? summary;
   @override
   Widget build(BuildContext context) => Container(
     decoration: BoxDecoration(
@@ -166,7 +175,7 @@ class DashboardStats extends StatelessWidget {
           ],
         ),
         Text(
-          preview ? '128' : '0',
+          preview ? '128' : '$total',
           style: dashboardText(
             48,
             weight: FontWeight.w600,
@@ -175,7 +184,7 @@ class DashboardStats extends StatelessWidget {
         Text(
           preview
               ? 'across 3 projects · 96% agreed'
-              : 'No consent records connected yet',
+              : summary ?? 'No consent records yet',
           style: dashboardText(13, color: AppColors.subtle),
         ),
         const SizedBox(height: 12),

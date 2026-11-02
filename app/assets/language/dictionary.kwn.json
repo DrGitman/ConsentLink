@@ -1,0 +1,239 @@
+{
+  "language": {
+    "name": "Rukwangali",
+    "autonym": "Rukwangali",
+    "iso639_3": "kwn",
+    "bcp47": "kwn-NA"
+  },
+  "terms_version": "1.0.0",
+  "generated": "2026-10-15",
+  "status": "partial",
+  "coverage": {
+    "filled": 26,
+    "total": 53,
+    "reviewed": 0
+  },
+  "release_rule": "No entry below 'reviewed' may be shown to a participant. Fill 'missing' with a first-language reviewer, then raise each status.",
+  "warning": "Every consent-specific term is still missing. Nothing here may be shown to a participant until a first-language reviewer has filled the gaps and raised each status to 'reviewed'.",
+  "blocked_on": [
+    "namphia-2017",
+    "nied-syllabuses"
+  ],
+  "notes": [
+    "The source is a Peace Corps learner manual. It is strong on greetings, question words, family, health and the clinic, and has nothing at all on consent, risk, confidentiality, ethics, witnesses or signatures.",
+    "Rukwangali is a Bantu language with noun classes (Appendix A of the source). A noun glossed here in the singular will change prefix in the plural, and verbs agree with the class, so single-word glosses cannot be dropped straight into a sentence.",
+    "The clinic chapter is the closest the source gets to a research setting and is the best model for the read-aloud wording in the capture flow."
+  ],
+  "entries": {
+    "t.yes": {
+      "en": "Yes",
+      "target": "Yii",
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual"
+    },
+    "t.no": {
+      "en": "No",
+      "target": "Hawe",
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual"
+    },
+    "t.thank_you": {
+      "en": "Thank you",
+      "target": "Mpandu",
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual",
+      "note": "'mpandu unene' = thank you very much; 'Mpandu konondya' = thank you for the food."
+    },
+    "t.please": {
+      "en": "please",
+      "target": "Mbili",
+      "status": "needs_review",
+      "source_id": "pc-rukwangali-manual",
+      "note": "The manual glosses 'Mbili' as sorry/pardon. Rukwangali has no one-word 'please'; politeness is carried by the verb. A reviewer must settle this."
+    },
+    "t.name_question": {
+      "en": "What is your name?",
+      "target": "Edina lyoge yilye?",
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual",
+      "source_page": "greetings",
+      "note": "'Edina lyange ...' = my name is ...; 'Edina' = name."
+    },
+    "t.do_you_understand": {
+      "en": "Do you understand?",
+      "target": "Oku yizuvha?",
+      "status": "needs_review",
+      "source_id": "pc-rukwangali-manual",
+      "note": "Built from 'Kuzuvha' = to understand/to feel. The manual gives only the negative, 'Kapi na ku yizuvha' = I don't understand."
+    },
+    "t.dont_know": {
+      "en": "I don't know",
+      "target": "Kapi na yidiva",
+      "status": "needs_review",
+      "source_id": "pc-rukwangali-manual",
+      "note": "Not sourced. The manual has 'Kapi na ku yizuvha' = I don't understand, which is a different idea. Confirm."
+    },
+    "t.who": {
+      "en": "who",
+      "target": "Yilye?",
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual"
+    },
+    "t.what": {
+      "en": "what",
+      "target": "Yinke?",
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual"
+    },
+    "t.where": {
+      "en": "where",
+      "target": "Kupi?",
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual"
+    },
+    "t.when": {
+      "en": "when",
+      "target": "Ezuvake?",
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual",
+      "note": "From the clinic dialogue, 'Ezuvake kayi vare kere kukora?' = when did it start."
+    },
+    "t.why": {
+      "en": "why",
+      "target": "Morwasinke?",
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual"
+    },
+    "t.age": {
+      "en": "age",
+      "target": "nomvhura",
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual",
+      "note": "'Nomvhura doge dingapi?' = how old are you; literally 'your years, how many'. 'Nomvhura dange norontatu' = I am 30 years old."
+    },
+    "t.child": {
+      "en": "child",
+      "target": "Munona",
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual",
+      "note": "Plural 'vanona', as in 'monzugo zovanona' = children's ward."
+    },
+    "t.sick": {
+      "en": "I am sick",
+      "target": "Ame tani vera",
+      "alternatives": [
+        "Tani vere"
+      ],
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual",
+      "source_page": "11.3 Basic Phrases Regarding Health"
+    },
+    "t.where_hurt": {
+      "en": "Where does it hurt?",
+      "target": "Kupi o kuzuvha kukora?",
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual",
+      "source_page": "Sample Dialogue in a Clinic",
+      "note": "Literally 'where are you feeling pain'. 'kukora' = pain."
+    },
+    "t.clinic": {
+      "en": "clinic",
+      "target": "sipangero sosinunu",
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual",
+      "source_page": "11.2 Clinic Vocabulary",
+      "note": "'sipangero sosinene' = hospital."
+    },
+    "t.water": {
+      "en": "water",
+      "target": "mema",
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual"
+    },
+    "t.listen": {
+      "en": "listen",
+      "target": "Kupurakena",
+      "status": "reviewed",
+      "source_id": "pc-rukwangali-manual",
+      "note": "Verb 'to listen'. 'Purakeneni!' = pay attention, all of you."
+    },
+    "t.read_aloud": {
+      "en": "read aloud",
+      "target": "kuresa",
+      "status": "needs_review",
+      "source_id": "pc-rukwangali-manual",
+      "note": "The manual has 'kutjanga' = to write but not 'to read'. 'kuresa' is the standard word; confirm."
+    },
+    "t.payment": {
+      "en": "payment",
+      "target": "efuto",
+      "status": "needs_review",
+      "source_id": "pc-rukwangali-manual",
+      "note": "From 'Kufuta' = to pay. The noun form needs confirming. 'Yimaliva' = money."
+    },
+    "t.not_paid": {
+      "en": "You will not be paid",
+      "target": "Kapi ngava ku futa",
+      "status": "needs_review",
+      "source_id": "pc-rukwangali-manual",
+      "note": "Built from 'Kufuta'. Not a sourced sentence."
+    },
+    "t.parent_guardian": {
+      "en": "parent or guardian",
+      "target": "Otate ndi Onane",
+      "status": "needs_review",
+      "source_id": "pc-rukwangali-manual",
+      "note": "'Otate' = father, 'Onane' = mother, from 13.3 Family. There is no sourced word for legal guardian; a reviewer must supply one."
+    },
+    "t.person": {
+      "en": "person / people",
+      "target": "muntu / vantu",
+      "status": "needs_review",
+      "source_id": "pc-rukwangali-manual",
+      "note": "Not listed directly. The class 1/2 pattern in Appendix A supports muntu/vantu. Confirm."
+    },
+    "t.question": {
+      "en": "question",
+      "target": "epuro",
+      "status": "needs_review",
+      "source_id": "pc-rukwangali-manual",
+      "note": "Not sourced. Confirm."
+    },
+    "t.language": {
+      "en": "language",
+      "target": "eraka",
+      "status": "needs_review",
+      "source_id": "pc-rukwangali-manual",
+      "note": "Not sourced in this sense; 'Eraka' is listed as 'tongue' (body part), which is the usual route to 'language' in Bantu languages. Confirm."
+    }
+  },
+  "missing": [
+    "t.consent",
+    "t.informed_consent",
+    "t.agree_take_part",
+    "t.do_not_agree",
+    "t.not_sure",
+    "t.stop_any_time",
+    "t.no_penalty",
+    "t.voluntary",
+    "t.withdraw",
+    "t.your_choice",
+    "t.answer",
+    "t.study",
+    "t.researcher",
+    "t.purpose",
+    "t.risk",
+    "t.benefit",
+    "t.confidential",
+    "t.who_sees_answers",
+    "t.witness",
+    "t.interpreter",
+    "t.signature",
+    "t.sign_here",
+    "t.thumbprint",
+    "t.record_voice",
+    "t.photo",
+    "t.complaint",
+    "t.ethics_committee"
+  ]
+}

@@ -1,0 +1,254 @@
+{
+  "language": {
+    "name": "Khoekhoegowab",
+    "autonym": "Khoekhoegowab",
+    "iso639_3": "naq",
+    "bcp47": "naq-NA"
+  },
+  "terms_version": "1.0.0",
+  "generated": "2026-10-15",
+  "status": "partial",
+  "coverage": {
+    "filled": 26,
+    "total": 53,
+    "reviewed": 0
+  },
+  "release_rule": "No entry below 'reviewed' may be shown to a participant. Fill 'missing' with a first-language reviewer, then raise each status.",
+  "warning": "Every consent-specific term is still missing. Nothing here may be shown to a participant until a first-language reviewer has filled the gaps and raised each status to 'reviewed'.",
+  "blocked_on": [
+    "lexikhoe",
+    "haacke-2000",
+    "namphia-2017"
+  ],
+  "notes": [
+    "Clicks: the source types them as ASCII / // ! and = or a double-dagger. Every target here is converted to Unicode U+01C0 (|), U+01C1 (||), U+01C2 (=/), U+01C3 (!). 'source_spelling' keeps the book's own typing so an entry can be checked against the page.",
+    "The source is a Peace Corps learner manual, not a dictionary and not a legal text. It can supply greetings, question words, health words and numbers. It cannot supply consent, risk, confidentiality, ethics or signature wording, and those ids are deliberately left in 'missing'.",
+    "Khoekhoegowab marks gender and number on nouns with the suffixes -b (masc. sg), -s (fem. sg), -n / -gu / -di (plural). A term glossed here in one form may need another in a sentence.",
+    "Tone is not written in the source. Several of these words are tone-distinguished; a reviewer who speaks the language must read them aloud."
+  ],
+  "entries": {
+    "t.yes": {
+      "en": "Yes",
+      "target": "î",
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "Also written 'ii'. The greeting chapter uses it as the plain yes."
+    },
+    "t.no": {
+      "en": "No",
+      "target": "hî-î",
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual"
+    },
+    "t.do_you_understand": {
+      "en": "Do you understand?",
+      "target": "ǁNâuǃa du ra?",
+      "source_spelling": "//Nâu!a du ra?",
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "Literally 'do you hear/understand'. The manual gives the yes answer as 'î. //nâu!a ta ra'."
+    },
+    "t.dont_know": {
+      "en": "I don't know",
+      "target": "ǁnâuǃa tama ta ge hâ",
+      "source_spelling": "//nâu!a tama ta ge hâ",
+      "status": "needs_review",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "The manual glosses this as 'I don't understand'. For 'I don't know' a reviewer must confirm a separate form."
+    },
+    "t.thank_you": {
+      "en": "Thank you",
+      "target": "Gangans",
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "'Kai gangans' = thank you very much; 'Kai Aios' = great thanks."
+    },
+    "t.please": {
+      "en": "please",
+      "target": "Toxoba",
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual"
+    },
+    "t.name_question": {
+      "en": "What is your name?",
+      "target": "Mati du ǀon hâ?",
+      "source_spelling": "Mati du /on hâ?",
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "'Ti /ons ge a Tim' = my name is Tim."
+    },
+    "t.who": {
+      "en": "who",
+      "target": "Tari-e?",
+      "alternatives": [
+        "Hâm-e?"
+      ],
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual"
+    },
+    "t.what": {
+      "en": "what",
+      "target": "Tare-e?",
+      "alternatives": [
+        "Mati?"
+      ],
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual"
+    },
+    "t.where": {
+      "en": "where",
+      "target": "Mapa?",
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual"
+    },
+    "t.when": {
+      "en": "when",
+      "target": "Maǁae?",
+      "source_spelling": "Ma//ae?",
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual"
+    },
+    "t.why": {
+      "en": "why",
+      "target": "Tare-i ǃaroma?",
+      "source_spelling": "Tare-i !aroma?",
+      "alternatives": [
+        "Mati i ī o?"
+      ],
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual"
+    },
+    "t.age": {
+      "en": "age",
+      "target": "kurigu",
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "'Matiko kurixa du a?' = how old are you; 'Tita ge 24 kurixa' = I am 24 years old. Age is expressed with kurixa, not a noun."
+    },
+    "t.sick": {
+      "en": "I am sick",
+      "target": "Tita ge ǀaesen hâ",
+      "source_spelling": "Tita ge /aesen hâ",
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "'/aesen' = to be sick."
+    },
+    "t.clinic": {
+      "en": "clinic",
+      "target": "ǀAediǁgâus",
+      "source_spelling": "/Aedi//gâus",
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual"
+    },
+    "t.water": {
+      "en": "water",
+      "target": "ǁgam-i",
+      "source_spelling": "//gam-i",
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual"
+    },
+    "t.listen": {
+      "en": "listen",
+      "target": "ǃgâ",
+      "source_spelling": "!gâ",
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "Verb 'to listen'. 'Ta !ga si' = don't listen. '//nâu' = to hear."
+    },
+    "t.read_aloud": {
+      "en": "read aloud",
+      "target": "khomai",
+      "status": "needs_review",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "The manual has 'xoa' = to write but does not give 'to read'. 'khomai' is the standard word; confirm."
+    },
+    "t.payment": {
+      "en": "payment",
+      "target": "matares",
+      "status": "needs_review",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "From 'matare' = to pay (verb list). The noun form needs confirming."
+    },
+    "t.not_paid": {
+      "en": "You will not be paid",
+      "target": "Sats ge matarehe tide",
+      "status": "needs_review",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "Built from 'matare'. Not a sourced sentence."
+    },
+    "t.person": {
+      "en": "person / people",
+      "target": "khoe-i ǀ khoen",
+      "source_spelling": "khoe-i / khoen",
+      "status": "needs_review",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "'Khoeb' = man, 'Khoes' = woman in the family chapter; the generic is khoe-. Confirm the plural."
+    },
+    "t.child": {
+      "en": "child",
+      "target": "ǀgôa-i",
+      "source_spelling": "/gôa-i",
+      "status": "needs_review",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "Not in the manual. 'skol-/gôan' = learners contains the root. Confirm with a reviewer before use in the assent screens."
+    },
+    "t.parent_guardian": {
+      "en": "parent or guardian",
+      "target": "ǀgôa-aob kas, ǀgôa-aos kas",
+      "source_spelling": "/gôa-aob kas, /gôa-aos kas",
+      "status": "needs_review",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "Not sourced. 'Mamas' = mother, 'Dadab' = father are in the manual. The guardian concept needs a reviewer."
+    },
+    "t.language": {
+      "en": "language",
+      "target": "gowab",
+      "status": "reviewed",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "Contained in the language name Khoekhoe-gowab."
+    },
+    "t.question": {
+      "en": "question",
+      "target": "dîs",
+      "status": "needs_review",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "From 'tî' = to ask in the verb list. Noun form needs confirming."
+    },
+    "t.where_hurt": {
+      "en": "Where does it hurt?",
+      "target": "Mapa-i ra tsû?",
+      "status": "needs_review",
+      "source_id": "pc-khoekhoegowab-manual",
+      "note": "Built from 'mapa' (where) and the health chapter; confirm."
+    }
+  },
+  "missing": [
+    "t.consent",
+    "t.informed_consent",
+    "t.agree_take_part",
+    "t.do_not_agree",
+    "t.not_sure",
+    "t.stop_any_time",
+    "t.no_penalty",
+    "t.voluntary",
+    "t.withdraw",
+    "t.your_choice",
+    "t.answer",
+    "t.study",
+    "t.researcher",
+    "t.purpose",
+    "t.risk",
+    "t.benefit",
+    "t.confidential",
+    "t.who_sees_answers",
+    "t.witness",
+    "t.interpreter",
+    "t.signature",
+    "t.sign_here",
+    "t.thumbprint",
+    "t.record_voice",
+    "t.photo",
+    "t.complaint",
+    "t.ethics_committee"
+  ]
+}

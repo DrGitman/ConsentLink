@@ -103,10 +103,14 @@ Future<void> clearToast(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('normal mode shows no sample data', (tester) async {
+  testWidgets('normal insights mode shows no sample data', (tester) async {
     await pumpResponses(tester, preview: false);
     expect(find.text('No insights yet'), findsOneWidget);
     expect(find.text('64'), findsNothing);
+    expectNoException(tester);
+  });
+
+  testWidgets('normal responses mode shows no sample data', (tester) async {
     await pumpResponses(tester, preview: false, initial: '/insights/responses');
     expect(find.text('No responses yet'), findsOneWidget);
     expect(find.text('All 0'), findsOneWidget);

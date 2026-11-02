@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pdfrx/pdfrx.dart';
+
 import '../../core/theme/app_theme.dart';
+import '../ai_assist/on_device_assistant.dart';
 import '../dashboard/dashboard_components.dart';
 import '../projects/project_widgets.dart';
 import 'consent_draft_data.dart';
@@ -161,14 +164,10 @@ class _WhySheet extends ConsumerWidget {
                   Expanded(
                     child: ConsentPillButton(
                       icon: 'sparkle',
-                      label: 'Simplify',
+                      label: 'Simpler wording',
                       filled: false,
                       height: 52,
-                      onPressed: () => showProjectNotice(
-                        context,
-                        'Simplify',
-                        'Rewording runs on the on-device AI, which is not connected yet.',
-                      ),
+                      onPressed: () => _simplify(context, ref, section),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -208,6 +207,126 @@ class _WhySheet extends ConsumerWidget {
   }
 }
 
+/// 04.4 "Simpler wording": the on-device AI (or the word list when the
+/// model is not on this phone) proposes plainer text. Nothing changes until
+/// the researcher chooses "Use this wording"; that counts as their edit.
+Future<void> _simplify(
+  BuildContext context,
+  WidgetRef ref,
+  DraftSection section,
+) async {
+  showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const AlertDialog(
+      content: Row(
+        children: [
+          SizedBox.square(
+            dimension: 22,
+            child: CircularProgressIndicator(strokeWidth: 2.4),
+          ),
+          SizedBox(width: 16),
+          Expanded(child: Text('Finding simpler wording on this phone…')),
+        ],
+      ),
+    ),
+  );
+  Rewording result;
+  try {
+    result = await simplerWording(
+      ref.read(onDeviceAssistantProvider),
+      section.text,
+    );
+  } finally {
+    if (context.mounted) Navigator.of(context).pop();
+  }
+  if (!context.mounted) return;
+  if (!result.changed) {
+    await showProjectNotice(
+      context,
+      'Simpler wording',
+      'This text is already plain. Nothing to change.',
+    );
+    return;
+  }
+  final use = await showDialog<bool>(
+    context: context,
+    builder: (dialog) => AlertDialog(
+      title: const Text('Simpler wording'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(result.text, style: dashboardText(15).copyWith(height: 1.45)),
+            const SizedBox(height: 14),
+            for (final c in result.changes)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  '• $c',
+                  style: dashboardText(12, color: AppColors.subtle),
+                ),
+              ),
+            const SizedBox(height: 6),
+            Text(
+              result.byModel
+                  ? 'Written by the on-device AI. Check every fact before using it.'
+                  : 'The AI model is not on this phone, so a plain words list was '
+                        'used. Download the model in Offline pack for full rewording.',
+              style: dashboardText(12, color: AppColors.subtle),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialog, false),
+          child: const Text('Keep mine'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(dialog, true),
+          child: const Text('Use this wording'),
+        ),
+      ],
+    ),
+  );
+  if (use != true) return;
+  ref
+      .read(consentDraftProvider.notifier)
+      .edit(section.key, result.text, approverName(ref));
+}
+
+/// The proposal page a quote came from, read on this phone.
+Future<void> _openPage(BuildContext context, WidgetRef ref, int page) async {
+  final draft = ref.read(consentDraftProvider);
+  final bytes = draft.bytes;
+  if (bytes == null) {
+    await showProjectNotice(
+      context,
+      'Open page $page',
+      'The proposal is only kept while you draft. Upload it again to see the page.',
+    );
+    return;
+  }
+  if (!context.mounted) return;
+  await Navigator.of(context, rootNavigator: true).push(
+    MaterialPageRoute<void>(
+      fullscreenDialog: true,
+      builder: (route) => Scaffold(
+        appBar: AppBar(
+          title: Text('${draft.file?.name ?? 'Proposal'} · page $page'),
+        ),
+        body: PdfViewer.data(
+          bytes,
+          sourceName: draft.file?.name ?? 'proposal.pdf',
+          initialPageNumber: page,
+        ),
+      ),
+    ),
+  );
+}
+
 class _Panel extends StatelessWidget {
   const _Panel({required this.fill, required this.children});
   final Color fill;
@@ -227,12 +346,12 @@ class _Panel extends StatelessWidget {
   );
 }
 
-class _OpenPage extends StatelessWidget {
+class _OpenPage extends ConsumerWidget {
   const _OpenPage({required this.pages, required this.primary});
   final List<int> pages;
   final Color primary;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final page = pages.isEmpty ? null : pages.first;
     final label = page == null ? 'Open proposal' : 'Open page $page';
     // 24 dp badge inside a 48 dp touch target.
@@ -243,11 +362,7 @@ class _OpenPage extends StatelessWidget {
         child: DashboardAction(
           label: label,
           radius: 12,
-          onPressed: () => showProjectNotice(
-            context,
-            label,
-            'The document viewer will be connected with file upload.',
-          ),
+          onPressed: () => _openPage(context, ref, page ?? 1),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(8, 5, 10, 5),
             child: Row(

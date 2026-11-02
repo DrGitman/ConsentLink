@@ -108,7 +108,11 @@ void main() {
       open: (_) => throw const PdfPasswordException('No password.'),
     );
     expect(
-      extractor.extract(Uint8List.fromList(pdfHeader.codeUnits)),
+      extractor.extract(
+        Uint8List.fromList(
+          '$pdfHeader\n1 0 obj\n/Encrypt 2 0 R\n%%EOF'.codeUnits,
+        ),
+      ),
       throwsA(isA<EncryptedPdfException>()),
     );
   });

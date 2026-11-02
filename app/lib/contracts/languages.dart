@@ -24,8 +24,9 @@ const consentLanguages = <ConsentLanguage>[
   ConsentLanguage('de', 'deu', 'Deutsch'),
   ConsentLanguage('hz', 'her', 'Otjiherero'),
   ConsentLanguage('naq', 'naq', 'Khoekhoegowab'),
-  // U+01C0 LATIN LETTER DENTAL CLICK, not the ASCII "/" or "|".
-  ConsentLanguage('ktz', 'ktz', 'Juǀ\'hoansi'),
+  // Shown as Ju/'hoansi (team decision, 2 Nov). Text written in the language
+  // still uses the click letters (ai/language/orthography.dart).
+  ConsentLanguage('ktz', 'ktz', 'Ju/\'hoansi'),
   ConsentLanguage('kwn', 'kwn', 'Rukwangali'),
   ConsentLanguage('loz', 'loz', 'Silozi'),
   // "Oshiwambo" is two written standards; a form is in one or the other.

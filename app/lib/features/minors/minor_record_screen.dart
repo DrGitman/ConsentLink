@@ -117,11 +117,19 @@ class MinorRecordScreen extends ConsumerWidget {
                           trailing: ProjectCircleButton(
                             icon: 'projects/download',
                             label: 'Export this record',
-                            onPressed: () => showExportSheet(
-                              context,
-                              subtitle: '${r.code} · 1 record',
-                              count: 1,
-                            ),
+                            onPressed: () {
+                              final saved = [
+                                for (final x in ref.read(responsesProvider))
+                                  if (x.code == r.code && x.consentId != null)
+                                    x,
+                              ];
+                              showExportSheet(
+                                context,
+                                subtitle: '${r.code} · 1 record',
+                                count: 1,
+                                records: saved.isEmpty ? null : saved,
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(height: 12),

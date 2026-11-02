@@ -19,6 +19,7 @@ import '../../contracts/models.dart';
 import '../../contracts/study_repository.dart';
 import '../repositories/drift_consent_repository.dart';
 import '../repositories/repository_providers.dart';
+import 'pdf_password.dart';
 
 /// Signature, thumbprint, witness and audio files of a consent (#80).
 typedef SignatureLoader =
@@ -42,7 +43,14 @@ class ConsentExportService implements ExportService {
   final SignatureLoader? signatures;
 
   @override
-  Future<Uint8List> consentPdf(String consentId) async {
+  Future<Uint8List> consentPdf(String consentId) => _consentPdf(consentId);
+
+  /// The same PDF, locked with [password]: readers ask for it before
+  /// showing anything (see pdf_password.dart).
+  Future<Uint8List> consentPdfProtected(String consentId, String password) =>
+      _consentPdf(consentId, password: password);
+
+  Future<Uint8List> _consentPdf(String consentId, {String? password}) async {
     final consent = await consents.getConsent(consentId);
     if (consent == null) throw StateError('No consent $consentId');
     final study = (await studies.listStudies()).firstWhere(
@@ -134,6 +142,9 @@ class ConsentExportService implements ExportService {
         ],
       ),
     );
+    if (password != null) {
+      doc.document.encryption = PdfPasswordEncryption(doc.document, password);
+    }
     final bytes = await doc.save();
     await audit.log(AuditAction.consentExported, consentId, study.id);
     return bytes;
@@ -182,7 +193,7 @@ Future<(ByteData, ByteData)> _appFonts() async => (
   await rootBundle.load('assets/fonts/Inter-SemiBold.ttf'),
 );
 
-final exportServiceProvider = FutureProvider<ExportService>(
+final exportServiceProvider = FutureProvider<ConsentExportService>(
   (ref) async => ConsentExportService(
     studies: await ref.watch(studyRepositoryProvider.future),
     consents: await ref.watch(consentRepositoryProvider.future),

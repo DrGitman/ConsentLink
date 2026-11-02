@@ -10,6 +10,7 @@ import '../../core/widgets/skeleton.dart';
 import '../dashboard/dashboard_components.dart';
 import '../projects/project_widgets.dart';
 import 'export_sheet.dart';
+import 'live_responses.dart';
 import 'responses_data.dart';
 import 'responses_widgets.dart';
 
@@ -24,7 +25,9 @@ class InsightsScreen extends ConsumerWidget {
     final preview = ref.watch(insightsPreviewProvider);
     final period = ref.watch(insightsPeriodProvider);
     final responses = ref.watch(responsesProvider);
-    final data = insightsFor(period);
+    final data = preview
+        ? insightsFor(period)
+        : liveInsights(period, responses, DateTime.now());
     final reduced = MediaQuery.disableAnimationsOf(context);
 
     return Align(
@@ -56,9 +59,11 @@ class InsightsScreen extends ConsumerWidget {
                       label: 'Export responses',
                       onPressed: () => showExportSheet(
                         context,
-                        subtitle:
-                            'Water access & health · ${responses.length} records',
+                        subtitle: preview
+                            ? 'Water access & health · ${responses.length} records'
+                            : 'All projects · ${responses.length} records',
                         count: responses.length,
+                        records: preview ? null : responses,
                       ),
                     ),
                   ],
@@ -82,12 +87,12 @@ class InsightsScreen extends ConsumerWidget {
                     label: 'Loading insights',
                     slowMessage: 'Counting responses on this phone…',
                     skeleton: const InsightsSkeleton(),
-                    child: !preview
+                    child: responses.isEmpty
                         ? const EmptyCard(
                             title: 'No insights yet',
                             message:
-                                'Recruitment, agreement and understanding appear '
-                                'here once responses sync. Sync isn\'t connected yet.',
+                                'Recruitment and agreement appear here once '
+                                'consent is recorded on this phone.',
                           )
                         : AnimatedSwitcher(
                             duration: Duration(
@@ -146,7 +151,7 @@ class _Body extends StatelessWidget {
         ),
       ],
       const SizedBox(height: 22),
-      _LanguageCard(languages: data.languages),
+      _LanguageCard(languages: data.languages, title: data.languageTitle),
     ],
   );
 }
@@ -189,7 +194,7 @@ class _GoalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DashboardAction(
     label:
-        'Recruitment goal, ${data.consented} of ${data.goal}, ${data.onTrack ? 'on track' : 'behind'}. Open responses',
+        '${data.goalTitle}, ${data.consented} of ${data.goal}, ${data.onTrack ? 'on track' : 'behind'}. Open responses',
     onPressed: onTap,
     child: Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 9),
@@ -201,7 +206,7 @@ class _GoalCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Recruitment goal',
+                  data.goalTitle,
                   style: dashboardText(
                     14,
                     color: AppColors.subtle,
@@ -392,8 +397,9 @@ class _KpiTile extends StatelessWidget {
 }
 
 class _LanguageCard extends StatelessWidget {
-  const _LanguageCard({required this.languages});
+  const _LanguageCard({required this.languages, required this.title});
   final List<(String, double)> languages;
+  final String title;
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
@@ -411,7 +417,7 @@ class _LanguageCard extends StatelessWidget {
           Semantics(
             header: true,
             child: Text(
-              'Understanding by language',
+              title,
               style: dashboardText(14, weight: FontWeight.w600),
             ),
           ),

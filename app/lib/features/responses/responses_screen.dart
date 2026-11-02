@@ -65,7 +65,6 @@ class _ResponsesScreenState extends ConsumerState<ResponsesScreen> {
     final query = ref.watch(responseSearchProvider).trim().toLowerCase();
     final sort = ref.watch(responseSortProvider);
     final unsyncedOnly = ref.watch(unsyncedOnlyProvider);
-    final preview = ref.watch(insightsPreviewProvider);
     final reduced = MediaQuery.disableAnimationsOf(context);
     final now = DateTime.now();
 
@@ -222,12 +221,11 @@ class _ResponsesScreenState extends ConsumerState<ResponsesScreen> {
                           child: Column(
                             key: ValueKey('$filter-$sort-$unsyncedOnly-$query'),
                             children: [
-                              if (!preview)
+                              if (all.isEmpty)
                                 const EmptyCard(
                                   title: 'No responses yet',
                                   message:
-                                      'Consent records appear here after field capture. '
-                                      'Sync with project storage isn\'t connected yet.',
+                                      'Consent records appear here after field capture.',
                                 )
                               else if (visible.isEmpty)
                                 EmptyCard(

@@ -3,15 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_back_button.dart';
+import '../../core/widgets/app_toast.dart';
 import '../../core/widgets/screen_skeletons.dart';
 import '../../core/widgets/skeleton.dart';
 import '../dashboard/dashboard_components.dart';
-import '../new_consent/review_draft_screen.dart' show sheetMotion;
 import '../preferences/accessibility_preferences.dart';
+import '../responses/export_files.dart';
 import '../responses/export_sheet.dart';
 import '../responses/responses_data.dart';
-import '../settings/settings_widgets.dart' show SettingsRow;
-import '../templates/template_widgets.dart' show SheetHandle;
+import '../responses/responses_widgets.dart' show showOverlayToast;
+import 'project_actions.dart';
+import 'share_link.dart';
 import 'project_data.dart';
 import 'project_widgets.dart';
 
@@ -27,61 +29,6 @@ class ProjectDetailScreen extends ConsumerWidget {
       context.go('/projects');
     }
   }
-
-  /// More options: Participants (Figma 10.1, includes minors) and the
-  /// project actions that need the project data source.
-  Future<void> _more(
-    BuildContext context,
-    Project project,
-  ) => showModalBottomSheet<void>(
-    context: context,
-    useSafeArea: true,
-    useRootNavigator: true,
-    backgroundColor: Colors.white,
-    barrierColor: const Color(0xFF0B100E).withValues(alpha: .45),
-    sheetAnimationStyle: sheetMotion(context),
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-    ),
-    builder: (sheet) => Padding(
-      padding: const EdgeInsets.fromLTRB(24, 10, 24, 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SheetHandle(),
-          const SizedBox(height: 19),
-          Text(
-            project.title,
-            style: dashboardText(20, weight: FontWeight.w600),
-          ),
-          const SizedBox(height: 8),
-          SettingsRow(
-            icon: 'capture/users',
-            title: 'Participants',
-            subtitle: 'Age groups, guardians and assent',
-            onTap: () {
-              Navigator.pop(sheet);
-              context.push('/participants/${project.id}');
-            },
-          ),
-          SettingsRow(
-            icon: 'projects/dots',
-            title: 'Rename, duplicate or close',
-            subtitle: 'Needs the project data source',
-            onTap: () {
-              Navigator.pop(sheet);
-              showProjectNotice(
-                context,
-                project.title,
-                'Rename, duplicate and close will be connected with the project data source.',
-              );
-            },
-          ),
-        ],
-      ),
-    ),
-  );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -99,19 +46,30 @@ class ProjectDetailScreen extends ConsumerWidget {
           ProjectCircleButton(
             icon: 'projects/download',
             label: 'Export responses',
-            onPressed: () => showExportSheet(
-              context,
-              subtitle:
-                  '${project.title} · ${ref.read(responsesProvider).length} records',
-              count: ref.read(responsesProvider).length,
-            ),
+            onPressed: () {
+              final all = ref.read(responsesProvider);
+              final preview = ref.read(insightsPreviewProvider);
+              // Live: only this project's records.
+              final records = preview
+                  ? all
+                  : [
+                      for (final r in all)
+                        if (r.studyId == project.id) r,
+                    ];
+              showExportSheet(
+                context,
+                subtitle: '${project.title} · ${records.length} records',
+                count: records.length,
+                records: preview ? null : records,
+              );
+            },
           ),
           const SizedBox(width: 4),
           ProjectCircleButton(
             icon: 'projects/dots',
             label: 'More project options',
             color: AppColors.subtle,
-            onPressed: () => _more(context, project),
+            onPressed: () => showProjectMenu(context, ref, project),
           ),
         ],
       ],
@@ -318,11 +276,15 @@ class _FormCard extends StatelessWidget {
     final source = project.formSource;
     return DashboardAction(
       label: hasForm ? 'Open ${project.formTitle}' : 'Create a consent form',
-      onPressed: () => showProjectNotice(
-        context,
-        hasForm ? project.formTitle! : 'Create a consent form',
-        'The form builder will be connected in the New consent (AI drafting) task.',
-      ),
+      onPressed: hasForm
+          ? () => showProjectNotice(
+              context,
+              project.formTitle!,
+              'Published in ${project.languages}. Participants see this '
+              'version during field capture. To change it, draft a new '
+              'consent form from New consent.',
+            )
+          : () => context.push('/new-consent'),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -469,57 +431,115 @@ class _StartCapture extends ConsumerWidget {
   }
 }
 
-class _OtherWays extends StatelessWidget {
+class _OtherWays extends ConsumerWidget {
   const _OtherWays({required this.project});
   final Project project;
-  @override
-  Widget build(BuildContext context) {
-    Widget row(String icon, String title, String subtitle, String message) =>
-        DashboardAction(
-          label: title,
-          radius: 18,
-          onPressed: () => showProjectNotice(context, title, message),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: AppColors.brand50,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: DashboardIcon(icon, color: AppColors.brandDark),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: dashboardText(16, weight: FontWeight.w500),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        subtitle,
-                        style: dashboardText(13, color: AppColors.subtle),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const DashboardIcon(
-                  'chevron_right',
-                  size: 20,
-                  color: AppColors.subtle,
-                ),
-              ],
+
+  Future<void> _blankForm(BuildContext context, WidgetRef ref) async {
+    if (ref.read(projectsPreviewProvider)) {
+      return showProjectNotice(
+        context,
+        'Export blank form',
+        'Preview only: no file is saved.',
+      );
+    }
+    final word = await showDialog<bool>(
+      context: context,
+      builder: (dialog) => SimpleDialog(
+        title: const Text('Export blank form'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(dialog, false),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text('PDF to print'),
             ),
           ),
-        );
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(dialog, true),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text('Word to edit (.docx)'),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (word == null || !context.mounted) return;
+    try {
+      final saved = word
+          ? await exportBlankFormWord(ref, project.id)
+          : await exportBlankForm(ref, project.id);
+      if (!context.mounted) return;
+      showOverlayToast(
+        context,
+        kind: AppToastKind.success,
+        title: 'Blank form saved',
+        subtitle: 'Saved to ${saved.place}/${saved.name}.',
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      showProjectNotice(
+        context,
+        'Export blank form',
+        e is StateError ? e.message : 'The form could not be saved. Try again.',
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    Widget row(
+      String icon,
+      String title,
+      String subtitle,
+      String message, {
+      VoidCallback? onPressed,
+    }) => DashboardAction(
+      label: title,
+      radius: 18,
+      onPressed: onPressed ?? () => showProjectNotice(context, title, message),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.brand50,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: DashboardIcon(icon, color: AppColors.brandDark),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: dashboardText(16, weight: FontWeight.w500),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: dashboardText(13, color: AppColors.subtle),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const DashboardIcon(
+              'chevron_right',
+              size: 20,
+              color: AppColors.subtle,
+            ),
+          ],
+        ),
+      ),
+    );
     return _Card(
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
       child: Column(
@@ -528,13 +548,15 @@ class _OtherWays extends StatelessWidget {
             'projects/link',
             'Share link / QR code',
             'Participant fills on their own phone',
-            'Sharing links and QR codes will be connected with the sync service.',
+            '',
+            onPressed: () => showShareLinkSheet(context, ref, project),
           ),
           row(
             'projects/download',
             'Export blank form',
             'PDF or Word to print',
-            'Blank form export will be connected in the Insights task.',
+            '',
+            onPressed: () => _blankForm(context, ref),
           ),
         ],
       ),

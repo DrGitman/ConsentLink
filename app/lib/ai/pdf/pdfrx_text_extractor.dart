@@ -60,6 +60,11 @@ final class PdfrxTextExtractor implements ProposalTextExtractor {
     try {
       return await open(bytes);
     } on PdfPasswordException {
+      // PDFium on Windows reports some damaged files as needing a password.
+      // Only a file with an /Encrypt entry is really locked.
+      if (!_hasEncryptEntry(bytes)) {
+        throw const CorruptedPdfException('The file is not a readable PDF.');
+      }
       throw const EncryptedPdfException(
         'The PDF is password-protected. Upload a copy without a password.',
       );
@@ -67,4 +72,17 @@ final class PdfrxTextExtractor implements ProposalTextExtractor {
       throw const CorruptedPdfException('The file is not a readable PDF.');
     }
   }
+}
+
+/// True when [bytes] contain the PDF /Encrypt key (a password-protected file).
+bool _hasEncryptEntry(Uint8List bytes) {
+  const key = [0x2F, 0x45, 0x6E, 0x63, 0x72, 0x79, 0x70, 0x74]; // "/Encrypt"
+  outer:
+  for (var i = 0; i + key.length <= bytes.length; i++) {
+    for (var j = 0; j < key.length; j++) {
+      if (bytes[i + j] != key[j]) continue outer;
+    }
+    return true;
+  }
+  return false;
 }

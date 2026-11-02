@@ -1,0 +1,176 @@
+{
+  "language": {
+    "name": "Ju/'hoansi",
+    "autonym": "Juǀ'hoansi",
+    "iso639_3": "ktz",
+    "bcp47": "ktz-NA"
+  },
+  "terms_version": "1.0.0",
+  "generated": "2026-10-15",
+  "status": "partial",
+  "coverage": {
+    "filled": 15,
+    "total": 53,
+    "reviewed": 0
+  },
+  "release_rule": "No entry below 'reviewed' may be shown to a participant. Fill 'missing' with a first-language reviewer, then raise each status.",
+  "warning": "This is the least served language in the app and the one where a wrong word does the most harm. Only 15 of 53 ids are filled, none of them consent terms, and all of them from a learner's lesson book. Nothing here may reach a participant.",
+  "blocked_on": [
+    "ju-lessons-sands",
+    "namphia-2017",
+    "nyae-nyae-conservancy"
+  ],
+  "notes": [
+    "Clicks are written with the Unicode letters U+01C0 (ǀ dental), U+01C1 (ǁ lateral), U+01C2 (ǂ palatal) and U+01C3 (ǃ alveolar). The lesson PDF types them as | || ‡ !, and 'source_spelling' keeps that typing so an entry can be checked against the page.",
+    "Tone is marked in the source with acute and grave accents and it is contrastive; dropping the accents changes the word. Do not let any part of the app strip combining marks, and normalise to NFC everywhere.",
+    "Ju/'hoansi was added at the lecturer's request. There is no dictionary, no corpus, no machine translation and no official consent precedent. The honest path is the Nyae Nyae Conservancy and the Ju/'hoan Transcription Group, not a translation tool.",
+    "Several consent ids were deliberately left unfilled in the seed file too: 'I agree', 'I do not agree' and 'you can stop at any time' had no attested source and were not invented.",
+    "Full phrase seed, including greetings and the clinic dialogue, is in dictionary.en-ju_hoansi.seed.json next to this file."
+  ],
+  "entries": {
+    "t.dont_know": {
+      "en": "I don't know",
+      "target": "Mí ǀóá ǃ’hàn.",
+      "source_spelling": "Mí |óá !’hàn.",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands",
+      "note": "Lesson text. Needed for the 'Not sure' assent answer on screen 10.5."
+    },
+    "t.name_question": {
+      "en": "What is your name?",
+      "target": "À ǃú ré ó hajòè?",
+      "source_spelling": "À !ú ré ó hajòè?",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands",
+      "note": "Lesson 16. Field capture 06.3 asks this."
+    },
+    "t.child": {
+      "en": "child",
+      "target": "da’àmà",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    "t.sick": {
+      "en": "I am sick",
+      "target": "Mí kú ǀkàè.",
+      "source_spelling": "Mí kú |kàè.",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    "t.where_hurt": {
+      "en": "Where does it hurt?",
+      "target": "À kòré ré kú ǁ’àn?",
+      "source_spelling": "À kòré ré kú ||’àn?",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    "t.clinic": {
+      "en": "clinic",
+      "target": "nǀomtjù",
+      "source_spelling": "n|omtju",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands",
+      "note": "From 'Ká ǂ’àùn ká à nǂáú nǀomtjù' = you should go to the clinic."
+    },
+    "t.water": {
+      "en": "water",
+      "target": "gǃú",
+      "source_spelling": "g!ú",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    "t.person": {
+      "en": "person / people",
+      "target": "jú",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    "t.who": {
+      "en": "who",
+      "target": "hajòè",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    "t.what": {
+      "en": "what",
+      "target": "hatcé",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    "t.where": {
+      "en": "where",
+      "target": "kòré",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    "t.when": {
+      "en": "when",
+      "target": "ǂ’ómá nè ré",
+      "source_spelling": "‡’ómá nè ré",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    "t.why": {
+      "en": "why",
+      "target": "khàma hatcé",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands"
+    },
+    "t.read_aloud": {
+      "en": "read aloud",
+      "target": "ǂxanù",
+      "source_spelling": "‡xanu",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands",
+      "note": "The lessons give 'ǂxanù' = book/paper and 'ǀòrè' = to write/draw. There is no attested verb for reading aloud; a reviewer must supply one. Reading aloud matters more in Ju/'hoansi than in any other language in the app, because literacy rates are the lowest."
+    },
+    "t.parent_guardian": {
+      "en": "parent or guardian",
+      "target": "bá / taqè",
+      "source_spelling": "ba / taqe",
+      "status": "needs_review",
+      "source_id": "ju-lessons-sands",
+      "note": "'à bá' = your father, 'à taqè' = your mother, from the name questions. There is no attested word for legal guardian, and the Ju/'hoan kinship system does not map onto the legal category; this needs a reviewer and probably a longer phrase."
+    }
+  },
+  "missing": [
+    "t.consent",
+    "t.informed_consent",
+    "t.agree_take_part",
+    "t.do_not_agree",
+    "t.yes",
+    "t.no",
+    "t.not_sure",
+    "t.stop_any_time",
+    "t.no_penalty",
+    "t.voluntary",
+    "t.withdraw",
+    "t.your_choice",
+    "t.do_you_understand",
+    "t.question",
+    "t.answer",
+    "t.study",
+    "t.researcher",
+    "t.purpose",
+    "t.risk",
+    "t.benefit",
+    "t.payment",
+    "t.not_paid",
+    "t.confidential",
+    "t.who_sees_answers",
+    "t.age",
+    "t.witness",
+    "t.interpreter",
+    "t.signature",
+    "t.sign_here",
+    "t.thumbprint",
+    "t.record_voice",
+    "t.photo",
+    "t.listen",
+    "t.language",
+    "t.complaint",
+    "t.ethics_committee",
+    "t.thank_you",
+    "t.please"
+  ]
+}

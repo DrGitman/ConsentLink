@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
-  testWidgets('unavailable packs stay pending and continuing opens Home', (
+  testWidgets('nothing is installed yet and skipping opens Home', (
     tester,
   ) async {
     final router = GoRouter(
@@ -34,13 +34,15 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // The model is not on the phone; only English (no pack needed) is ready.
     expect(find.text('Not downloaded'), findsOneWidget);
-    expect(find.text('Ready'), findsNothing);
+    expect(find.text('Ready'), findsOneWidget);
     expect(find.textContaining('64%'), findsNothing);
+    expect(find.text('Download & continue'), findsOneWidget);
     // ListView builds children as they approach the viewport. Reach the
     // additional languages as a user would before checking their content.
     await tester.scrollUntilVisible(
-      find.textContaining('Oshiwambo'),
+      find.textContaining('Oshikwanyama'),
       150,
       scrollable: find.descendant(
         of: find.byType(ListView),
@@ -48,8 +50,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.textContaining('Oshiwambo'), findsOneWidget);
-    await tester.tap(find.text('Continue without pack'));
+    expect(find.textContaining('Oshikwanyama'), findsOneWidget);
+    await tester.tap(find.text('Skip for now'));
     await tester.pumpAndSettle();
     expect(find.text('Home destination'), findsOneWidget);
   });
@@ -79,6 +81,6 @@ void main() {
     await tester.drag(find.byType(ListView), const Offset(0, -1400));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.text('Continue without pack'), findsOneWidget);
+    expect(find.text('Skip for now'), findsOneWidget);
   });
 }

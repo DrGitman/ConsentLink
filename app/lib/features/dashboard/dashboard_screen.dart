@@ -10,6 +10,7 @@ import '../institution/researcher_details_screen.dart';
 import '../preferences/accessibility_preferences.dart';
 import 'dashboard_components.dart';
 import 'dashboard_sync_preview.dart';
+import '../projects/project_data.dart';
 
 final dashboardPreviewProvider = Provider<bool>(
   (ref) => const bool.fromEnvironment('DASHBOARD_PREVIEW'),
@@ -86,6 +87,23 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ? 'Ndapewa'
         : (draft.first.trim().isEmpty ? 'Researcher' : draft.first.trim());
     final primary = Theme.of(context).colorScheme.primary;
+    // Live mode: the studies and consents on this phone.
+    final projects = preview ? const <Project>[] : ref.watch(projectsProvider);
+    final active =
+        projects
+            .where((p) => p.status == ProjectStatus.collecting)
+            .firstOrNull ??
+        projects.firstOrNull;
+    final totalConsents = projects.fold<int>(
+      0,
+      (sum, p) => sum + p.consented + p.declined + p.withdrew,
+    );
+    final agreed = projects.fold<int>(0, (sum, p) => sum + p.consented);
+    final statsSummary = totalConsents == 0
+        ? (projects.isEmpty
+              ? 'No consent records yet'
+              : 'across ${projects.length} ${projects.length == 1 ? 'project' : 'projects'} · none yet')
+        : 'across ${projects.length} ${projects.length == 1 ? 'project' : 'projects'} · ${(agreed * 100 / totalConsents).round()}% agreed';
     final now = DateTime.now().hour;
     final greeting = preview || now < 12
         ? 'Good morning,'
@@ -252,7 +270,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           style: dashboardText(14, color: AppColors.muted),
                         ),
                       ),
-                    DashboardStats(preview: preview),
+                    DashboardStats(
+                      preview: preview,
+                      total: totalConsents,
+                      summary: statsSummary,
+                    ),
                     const SizedBox(height: 18),
                     Text(
                       'Quick actions',
@@ -425,16 +447,33 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           Text(
                             preview
                                 ? 'Water access & health in Opuwo'
-                                : 'No projects yet',
+                                : active?.title ?? 'No projects yet',
                             style: dashboardText(15, weight: FontWeight.w600),
                           ),
                           const SizedBox(height: 6),
                           Text(
                             preview
                                 ? 'Otjiherero · 64 of 80 participants'
-                                : 'Your projects will appear here once connected.',
+                                : active == null
+                                ? 'Start a project with New consent.'
+                                : '${active.languages} · ${active.consented} agreed · ${active.status.label}',
                             style: dashboardText(12, color: AppColors.subtle),
                           ),
+                          if (!preview && active != null) ...[
+                            const SizedBox(height: 10),
+                            TextButton(
+                              onPressed: () =>
+                                  context.go('/projects/${active.id}'),
+                              child: Text(
+                                'Open project',
+                                style: dashboardText(
+                                  14,
+                                  color: primary,
+                                  weight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
                           if (preview) ...[
                             const SizedBox(height: 5),
                             Row(

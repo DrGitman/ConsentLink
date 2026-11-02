@@ -16,6 +16,7 @@ part 'app_database.g.dart';
     Participants,
     Consents,
     ConsentFiles,
+    LinkSignatures,
     AuditLog,
     UploadFailures,
     LocalFiles,

@@ -9,18 +9,20 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_back_button.dart';
 import '../../core/widgets/app_toast.dart';
 import '../../core/widgets/dictation_sheet.dart';
+import '../ai_assist/on_device_assistant.dart';
 import '../dashboard/dashboard_components.dart';
 import '../new_consent/consent_widgets.dart';
 import '../preferences/accessibility_preferences.dart';
 import '../projects/project_widgets.dart';
 import '../responses/responses_widgets.dart';
 import 'template_data.dart';
+import 'template_preview_pdf.dart';
 import 'template_widgets.dart';
 
 /// Figma 05.4 Describe a template (3:2714). Messages rise in; the assistant
 /// shows typing dots, then its proposal. Every item is a checkbox: only the
-/// ticked ones go into the template. The on-device model (P3) isn't
-/// connected, so in the preview the replies are scripted.
+/// ticked ones go into the template. Live, the on-device model proposes the
+/// items (fixed rules when it isn't on the phone); the preview is scripted.
 class DescribeTemplateScreen extends ConsumerStatefulWidget {
   const DescribeTemplateScreen({super.key});
   @override
@@ -98,15 +100,40 @@ class _DescribeTemplateScreenState
     );
   });
 
+  /// Live: the on-device model (or the request rules when it isn't on this
+  /// phone) turns the request into checklist items, added to the last ones.
+  Future<void> _sendLive(String text) async {
+    final last = _messages.whereType<_Proposal>().lastOrNull;
+    setState(() {
+      _messages.add(_UserText(text));
+      _typing = true;
+      _text.clear();
+    });
+    _toBottom();
+    final (items, _) = await templateItemsFor(
+      ref.read(onDeviceAssistantProvider),
+      text,
+    );
+    if (!mounted) return;
+    setState(() {
+      _typing = false;
+      _messages.add(
+        _Proposal([
+          if (last != null)
+            for (final i in last.items)
+              if ((last.checked[i] ?? false) && !items.contains(i)) i,
+          ...items,
+        ]),
+      );
+    });
+    _toBottom();
+  }
+
   void _send() {
     final text = _text.text.trim();
     if (text.isEmpty || _typing) return;
     if (!ref.read(templatesPreviewProvider)) {
-      showProjectNotice(
-        context,
-        'Template assistant',
-        'The on-device model isn\'t connected yet.',
-      );
+      _sendLive(text);
       return;
     }
     final last = _messages.whereType<_Proposal>().lastOrNull;
@@ -142,6 +169,16 @@ class _DescribeTemplateScreenState
     _text.text = text.trim();
   }
 
+  Future<void> _preview(_Proposal p) async {
+    final layout = TemplateLayout.fromItems([
+      for (final i in p.items)
+        if (p.checked[i] ?? false) i,
+    ]);
+    final bytes = await templatePreviewPdf(layout);
+    if (!mounted) return;
+    await showPdfPreview(context, bytes, 'Template preview');
+  }
+
   Future<void> _create(_Proposal p) async {
     final items = [
       for (final i in p.items)
@@ -152,8 +189,6 @@ class _DescribeTemplateScreenState
       suggestedName: 'Health consent + witness',
     );
     if (result == null || !mounted) return;
-    final footer = items.where((i) => i.startsWith('Footer')).firstOrNull;
-    final twoColumns = items.any((i) => i.startsWith('Two columns'));
     final t = ref
         .read(templateLibraryProvider.notifier)
         .add(
@@ -164,32 +199,7 @@ class _DescribeTemplateScreenState
             meta: 'You · edited today',
             access: result.$2,
             mine: true,
-            rules: [
-              const TemplateRule(
-                key: 'font',
-                title: 'Font',
-                value: 'Arial 11 pt',
-                icon: 'form/type',
-              ),
-              const TemplateRule(
-                key: 'margins',
-                title: 'Margins',
-                value: '2.5 cm',
-                icon: 'layers',
-              ),
-              TemplateRule(
-                key: 'footer',
-                title: 'Footer',
-                value: footer == null ? 'Page numbers' : 'REC no. + page',
-                icon: 'responses/file',
-              ),
-              TemplateRule(
-                key: 'languages',
-                title: 'Languages',
-                value: twoColumns ? 'EN | AF' : 'EN',
-                icon: 'form/globe',
-              ),
-            ],
+            rules: TemplateLayout.fromItems(items).rules,
           ),
         );
     if (!mounted) return;
@@ -204,7 +214,6 @@ class _DescribeTemplateScreenState
 
   @override
   Widget build(BuildContext context) {
-    final preview = ref.watch(templatesPreviewProvider);
     return Scaffold(
       backgroundColor: AppColors.canvas,
       body: SafeArea(
@@ -235,12 +244,13 @@ class _DescribeTemplateScreenState
                         ),
                       ),
                       const SizedBox(height: 14),
-                      if (!preview)
+                      if (_messages.isEmpty)
                         const EmptyCard(
                           title: 'Describe the template you need',
                           message:
-                              'The template assistant runs on this phone. The '
-                              'on-device model isn\'t connected yet.',
+                              'For example: the ethics number in the footer, a '
+                              'witness line and an Afrikaans column. Type or '
+                              'hold the mic to speak.',
                         ),
                       for (final (i, m) in _messages.indexed) ...[
                         if (i > 0) const SizedBox(height: 12),
@@ -257,12 +267,7 @@ class _DescribeTemplateScreenState
                                 () => p.checked[item] =
                                     !(p.checked[item] ?? false),
                               ),
-                              onPreview: () => showProjectNotice(
-                                context,
-                                'Preview PDF',
-                                'A PDF preview comes with export (P2). The '
-                                    'template keeps the ticked rules.',
-                              ),
+                              onPreview: () => _preview(p),
                               onCreate: () => _create(p),
                             ),
                           },
@@ -282,7 +287,7 @@ class _DescribeTemplateScreenState
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
                   child: _Composer(
                     controller: _text,
-                    enabled: preview,
+                    enabled: true,
                     onSend: _send,
                     onSpeak: _speak,
                   ),

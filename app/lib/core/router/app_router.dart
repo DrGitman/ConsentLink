@@ -21,6 +21,7 @@ import '../../features/minors/minors_settings_screen.dart';
 import '../../features/form_builder/form_builder_screen.dart';
 import '../../features/form_builder/template_style_screen.dart';
 import '../../features/new_consent/drafting_screen.dart';
+import '../../features/new_consent/guided_questions_screen.dart';
 import '../../features/new_consent/review_draft_screen.dart';
 import '../../features/new_consent/upload_proposal_screen.dart';
 import '../../features/projects/project_detail_screen.dart';
@@ -327,6 +328,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           child: const UploadProposalScreen(),
         ),
         routes: [
+          GoRoute(
+            path: 'questions',
+            pageBuilder: (context, state) => projectPushPage(
+              key: state.pageKey,
+              child: const GuidedQuestionsScreen(),
+            ),
+          ),
           GoRoute(
             path: 'drafting',
             pageBuilder: (context, state) => projectPushPage(

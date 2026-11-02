@@ -15,6 +15,7 @@ import '../preferences/accessibility_preferences.dart';
 import '../projects/project_widgets.dart';
 import 'capture_widgets.dart';
 import 'field_capture_data.dart';
+import 'capture_store.dart';
 
 /// Figma 06.5 Sign, thumbprint or verbal (3:3129) with "Consent capture"
 /// (4:19275): ink follows the finger and Clear fades it; the thumbprint scan
@@ -41,7 +42,40 @@ class _SignScreenState extends ConsumerState<SignScreen> {
     }
   }
 
-  void _finish() {
+  bool _saving = false;
+
+  Future<void> _finish() async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      final session = ref.read(captureSessionProvider);
+      // The preview saves nothing, so it draws no image either.
+      final png =
+          session.method == ConsentMethod.sign &&
+              !ref.read(fieldCapturePreviewProvider)
+          ? await strokesToPng(_strokes)
+          : null;
+      await saveCapturedConsent(ref, signature: png);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _saving = false);
+        await showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Consent not saved'),
+            content: Text('$e'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+      return;
+    }
+    if (!mounted) return;
     ref.read(captureSessionProvider.notifier).complete();
     context.go('/field-capture/done');
   }

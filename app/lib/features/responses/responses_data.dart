@@ -1,5 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/data/data_revision.dart';
+import '../../data/repositories/repository_providers.dart';
+import 'live_responses.dart';
+
 /// Sample responses and insights appear only with INSIGHTS_PREVIEW=true or the
 /// existing DASHBOARD_PREVIEW / PROJECTS_PREVIEW flags. The consent record
 /// store and sync (P2) aren't connected yet, so nothing is read from or
@@ -63,6 +67,8 @@ class ConsentResponse {
     this.witness,
     this.audit = const [],
     this.withdrawnAt,
+    this.consentId,
+    this.studyId,
   });
 
   final int number;
@@ -78,6 +84,10 @@ class ConsentResponse {
   final String? witness;
   final List<AuditEvent> audit;
   final DateTime? withdrawnAt;
+
+  /// Live records: the stored consent and its study (null in preview).
+  final String? consentId;
+  final String? studyId;
 
   String get code => 'P-${number.toString().padLeft(3, '0')}';
 
@@ -98,6 +108,8 @@ class ConsentResponse {
       AuditEvent(when, 'Withdrawal recorded · excluded from analysis'),
     ],
     withdrawnAt: when,
+    consentId: consentId,
+    studyId: studyId,
   );
 }
 
@@ -279,10 +291,26 @@ List<ConsentResponse> sampleResponses(DateTime now) {
 }
 
 class ResponsesController extends StateNotifier<List<ConsentResponse>> {
-  ResponsesController(super.state);
+  ResponsesController(super.state, [this._ref]);
+  final Ref? _ref;
 
-  void withdraw(String code, DateTime when) =>
-      state = [for (final r in state) r.code == code ? r.withdraw(when) : r];
+  /// Marks the record withdrawn. Live records are withdrawn in the database
+  /// too; a withdrawal can never be undone and the consent is never deleted.
+  void withdraw(
+    String code,
+    DateTime when, {
+    String reason = 'Participant withdrew',
+  }) {
+    final record = state.where((r) => r.code == code).firstOrNull;
+    state = [for (final r in state) r.code == code ? r.withdraw(when) : r];
+    final ref = _ref;
+    final id = record?.consentId;
+    if (ref == null || id == null) return;
+    ref.read(consentRepositoryProvider.future).then((repo) async {
+      await repo.withdraw(id, reason);
+      ref.read(dataRevisionProvider.notifier).state++;
+    });
+  }
 
   /// A new record from field capture, newest first (replaces the same code).
   void add(ConsentResponse r) => state = [
@@ -294,11 +322,12 @@ class ResponsesController extends StateNotifier<List<ConsentResponse>> {
 
 final responsesProvider =
     StateNotifierProvider<ResponsesController, List<ConsentResponse>>(
-      (ref) => ResponsesController(
-        ref.watch(insightsPreviewProvider)
-            ? sampleResponses(DateTime.now())
-            : const [],
-      ),
+      (ref) => ref.watch(insightsPreviewProvider)
+          ? ResponsesController(sampleResponses(DateTime.now()))
+          : ResponsesController(
+              ref.watch(liveResponsesProvider).valueOrNull ?? const [],
+              ref,
+            ),
     );
 
 final responseFilterProvider = StateProvider<ResponseFilter>(
@@ -346,6 +375,8 @@ class InsightsData {
     required this.to,
     required this.kpis,
     required this.languages,
+    this.languageTitle = 'Understanding by language',
+    this.goalTitle = 'Recruitment goal',
   });
   final int consented;
   final int goal;
@@ -356,8 +387,10 @@ class InsightsData {
   final String to;
   final List<Kpi> kpis;
   final List<(String, double)> languages;
+  final String languageTitle;
+  final String goalTitle;
 
-  bool get onTrack => consented / goal >= .6;
+  bool get onTrack => goal > 0 && consented / goal >= .6;
 }
 
 /// Figma bar heights for 30 days (20 → 72 → 28 of 72).
@@ -428,10 +461,13 @@ enum ExportFormat {
 }
 
 class ExportLog {
-  const ExportLog(this.at, this.format, this.count);
+  const ExportLog(this.at, this.format, this.count, {this.savedTo});
   final DateTime at;
   final ExportFormat format;
   final int count;
+
+  /// Where the file was written (live exports only).
+  final String? savedTo;
 }
 
 /// "Exports are logged in the audit trail."
