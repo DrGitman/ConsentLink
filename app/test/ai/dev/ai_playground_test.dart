@@ -1,6 +1,7 @@
 import 'package:consentlink/ai/ai_providers.dart';
 import 'package:consentlink/ai/dev/ai_playground.dart';
 import 'package:consentlink/ai/dev/tiles/fake_drafting_tile.dart';
+import 'package:consentlink/ai/dev/tiles/llm_drafting_tile.dart';
 import 'package:consentlink/ai/domain/drafting_event.dart';
 import 'package:consentlink/ai/drafting/fake_consent_drafting_service.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +29,24 @@ void main() {
     );
   });
 
+  testWidgets('shows the LLM drafting tile, ready to run', (tester) async {
+    await _pumpPlayground(tester);
+    await tester.scrollUntilVisible(find.text(llmDraftingRunLabel), 200);
+
+    expect(find.text(llmDraftingTitle), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.ancestor(
+              of: find.text(llmDraftingRunLabel),
+              matching: find.byType(FilledButton),
+            ),
+          )
+          .onPressed,
+      isNotNull,
+    );
+  });
+
   testWidgets('fake drafting shows every step, then the result', (
     tester,
   ) async {
@@ -46,7 +65,12 @@ void main() {
   testWidgets('the minors switch checks the 14 elements', (tester) async {
     await _pumpPlayground(tester);
 
-    await tester.tap(find.byType(Switch));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(FakeDraftingTile),
+        matching: find.byType(Switch),
+      ),
+    );
     await tester.pump();
     await tester.tap(find.text(fakeDraftingRunLabel));
     await tester.pumpAndSettle();
