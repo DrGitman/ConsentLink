@@ -46,8 +46,7 @@ final class LlmModelConfig {
 /// Internal, because Android 11+ hides files that adb puts in the external
 /// app folder. Throws a [ModelNotFoundException] if it is not there.
 Future<String> deviceModelPath() async {
-  final folder = await getApplicationSupportDirectory();
-  final path = '${folder.path}/$modelsFolderName/$gemmaModelFileName';
+  final path = '${(await deviceModelsFolder()).path}/$gemmaModelFileName';
   if (!File(path).existsSync()) {
     throw const ModelNotFoundException(
       'The model is not on this phone. Copy $gemmaModelFileName to the '
@@ -55,4 +54,10 @@ Future<String> deviceModelPath() async {
     );
   }
   return path;
+}
+
+/// The app's internal `files/models` folder, where models are read and saved.
+Future<Directory> deviceModelsFolder() async {
+  final folder = await getApplicationSupportDirectory();
+  return Directory('${folder.path}/$modelsFolderName');
 }

@@ -64,3 +64,13 @@ final class ModelNotFoundException extends ConsentAiException {
 final class LlmException extends ConsentAiException {
   const LlmException(super.message);
 }
+
+/// Why a model download failed, so the UI can pick its message.
+enum ModelDownloadFailure { network, server, storage, checksum }
+
+/// The model could not be downloaded or did not match its checksum.
+final class ModelDownloadException extends ConsentAiException {
+  const ModelDownloadException(this.failure, super.message);
+
+  final ModelDownloadFailure failure;
+}
