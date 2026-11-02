@@ -6,20 +6,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/app_toast.dart';
 import '../../core/widgets/app_toggle.dart';
+import '../auth/widgets/password_visibility_icon.dart';
 import '../dashboard/dashboard_components.dart';
 import '../new_consent/consent_widgets.dart';
 import '../new_consent/review_draft_screen.dart' show sheetMotion;
 import '../preferences/accessibility_preferences.dart';
+import 'export_files.dart';
 import 'responses_data.dart';
 import 'responses_widgets.dart';
 
 /// Figma 07.4 Export (3:3561): rises with a slight overshoot over a 45% scrim.
 /// In the preview nothing is written: the export is logged and a toast says
-/// no file was created.
+/// no file was created. Live, [records] are written to the phone.
 Future<void> showExportSheet(
   BuildContext context, {
   required String subtitle,
   required int count,
+  List<ConsentResponse>? records,
 }) async {
   final log = await showModalBottomSheet<ExportLog>(
     context: context,
@@ -34,14 +37,17 @@ Future<void> showExportSheet(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
-    builder: (_) => ExportSheet(subtitle: subtitle, count: count),
+    builder: (_) =>
+        ExportSheet(subtitle: subtitle, count: count, records: records),
   );
   if (log == null || !context.mounted) return;
   showOverlayToast(
     context,
     kind: AppToastKind.success,
     title: 'Export ready · ${exportLabel(log.format, log.count)}',
-    subtitle: 'Preview only: no file was saved. Logged in the audit trail.',
+    subtitle: log.savedTo == null
+        ? 'Preview only: no file was saved. Logged in the audit trail.'
+        : 'Saved to ${log.savedTo}. Logged in the audit trail.',
   );
 }
 
@@ -52,9 +58,17 @@ String exportLabel(ExportFormat format, int count) => switch (format) {
 };
 
 class ExportSheet extends ConsumerStatefulWidget {
-  const ExportSheet({super.key, required this.subtitle, required this.count});
+  const ExportSheet({
+    super.key,
+    required this.subtitle,
+    required this.count,
+    this.records,
+  });
   final String subtitle;
   final int count;
+
+  /// The records to write (live). Null in the preview.
+  final List<ConsentResponse>? records;
   @override
   ConsumerState<ExportSheet> createState() => _ExportSheetState();
 }
@@ -64,6 +78,13 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
   bool _logo = true;
   bool _bothLanguages = true;
   bool _password = false;
+  bool _hidePassword = true;
+  final _secret = TextEditingController();
+  final _again = TextEditingController();
+
+  /// Six or more characters, typed the same twice.
+  bool get _passwordReady =>
+      _secret.text.length >= 6 && _secret.text == _again.text;
   bool _working = false;
   double _pull = 0;
   Timer? _timer;
@@ -71,10 +92,57 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
   @override
   void dispose() {
     _timer?.cancel();
+    _secret.dispose();
+    _again.dispose();
     super.dispose();
   }
 
   void _export() {
+    if (ref.read(insightsPreviewProvider)) return _previewExport();
+    _liveExport();
+  }
+
+  /// Records that are stored on this phone (live).
+  int get _saved =>
+      widget.records?.where((r) => r.consentId != null).length ?? 0;
+
+  Future<void> _liveExport() async {
+    setState(() => _working = true);
+    try {
+      final records = widget.records ?? const <ConsentResponse>[];
+      final saved = await exportRecords(
+        ref,
+        _format,
+        records,
+        password: _password ? _secret.text : null,
+      );
+      if (!mounted) return;
+      final log = ExportLog(
+        DateTime.now(),
+        _format,
+        records.length,
+        savedTo: '${saved.place}/${saved.name}',
+      );
+      ref.read(exportLogProvider.notifier).state = [
+        ...ref.read(exportLogProvider),
+        log,
+      ];
+      Navigator.pop(context, log);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _working = false);
+      showOverlayToast(
+        context,
+        kind: AppToastKind.error,
+        title: 'Export failed',
+        subtitle: e is StateError
+            ? e.message
+            : 'The file could not be saved. Try again.',
+      );
+    }
+  }
+
+  void _previewExport() {
     setState(() => _working = true);
     _timer = Timer(const Duration(milliseconds: 1200), () {
       if (!mounted) return;
@@ -88,7 +156,12 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
   @override
   Widget build(BuildContext context) {
     final preview = ref.watch(insightsPreviewProvider);
-    final canExport = preview && widget.count > 0 && !_working;
+    // A password can't be added to the file yet, so live exports wait until
+    // it is turned off rather than writing an unprotected file.
+    final canExport =
+        !_working &&
+        widget.count > 0 &&
+        (preview || (_saved > 0 && (!_password || _passwordReady)));
     // The content scrolls on small screens, which would swallow the sheet's
     // own drag. Pulling down past the top (or flinging down) closes it.
     return NotificationListener<OverscrollNotification>(
@@ -111,6 +184,34 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
       ),
     );
   }
+
+  Widget _passwordField(TextEditingController controller, String label) =>
+      TextField(
+        controller: controller,
+        obscureText: _hidePassword,
+        autocorrect: false,
+        enableSuggestions: false,
+        keyboardType: TextInputType.visiblePassword,
+        onChanged: (_) => setState(() {}),
+        style: dashboardText(15),
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
+          ),
+          suffixIcon: IconButton(
+            tooltip: _hidePassword ? 'Show password' : 'Hide password',
+            onPressed: () => setState(() => _hidePassword = !_hidePassword),
+            icon: PasswordVisibilityIcon(
+              obscured: _hidePassword,
+              color: AppColors.subtle,
+            ),
+          ),
+        ),
+      );
 
   Widget _content(BuildContext context, bool preview, bool canExport) {
     return SingleChildScrollView(
@@ -144,7 +245,9 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
           ),
           const SizedBox(height: 5),
           Text(
-            preview ? widget.subtitle : 'No records on this phone yet',
+            preview || _saved > 0
+                ? widget.subtitle
+                : 'No records on this phone yet',
             style: dashboardText(14, color: AppColors.subtle),
           ),
           const SizedBox(height: 17),
@@ -192,6 +295,13 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
                   value: _password,
                   onChanged: (v) => setState(() => _password = v),
                 ),
+                if (_password && !preview) ...[
+                  const SizedBox(height: 6),
+                  _passwordField(_secret, 'Password (6 or more characters)'),
+                  const SizedBox(height: 8),
+                  _passwordField(_again, 'Type it again'),
+                  const SizedBox(height: 8),
+                ],
               ],
             ),
           ),
@@ -212,7 +322,12 @@ class _ExportSheetState extends ConsumerState<ExportSheet> {
           SizedBox(
             width: double.infinity,
             child: Text(
-              'Exports are logged in the audit trail.',
+              !preview && _password
+                  ? (_again.text.isNotEmpty && _secret.text != _again.text
+                        ? 'The two passwords are different.'
+                        : 'Share the password separately, never with the file. '
+                              'Exports are logged in the audit trail.')
+                  : 'Exports are logged in the audit trail.',
               textAlign: TextAlign.center,
               style: dashboardText(12, color: AppColors.subtle),
             ),

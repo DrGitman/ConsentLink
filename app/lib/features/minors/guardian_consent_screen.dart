@@ -16,6 +16,7 @@ import '../projects/project_widgets.dart';
 import '../responses/responses_data.dart';
 import '../templates/template_widgets.dart' show SheetHandle;
 import 'minors_data.dart';
+import '../field_capture/capture_store.dart';
 
 /// Figma 10.4 Guardian consent (3:7029), step 2 of 3. Three equal-weight
 /// Yes/No choices and the guardian's signature. If the guardian says no,
@@ -39,6 +40,11 @@ class GuardianConsentScreen extends ConsumerWidget {
       final capture = ref.read(captureSessionProvider.notifier);
       capture.choose('take_part', false);
       capture.complete();
+      saveCapturedConsent(
+        ref,
+        isMinor: true,
+        guardianConsent: false,
+      ).catchError((_) => null);
       recordMinorDecline(ref, guardian: true);
       context.go('/field-capture/done');
     } else {

@@ -14,6 +14,7 @@ import '../responses/responses_data.dart';
 import '../settings/settings_data.dart';
 import 'guardian_consent_screen.dart' show recordMinorDecline;
 import 'minors_data.dart';
+import '../field_capture/capture_store.dart';
 
 /// Figma 10.5 Child assent 12–17 (3:7074) and 10.6 Child assent 7–11,
 /// pictures + audio (3:7132). Step 3 of 3. Yes / Not sure / No, equal
@@ -68,6 +69,13 @@ class _AssentScreenState extends ConsumerState<AssentScreen> {
         final capture = ref.read(captureSessionProvider.notifier);
         capture.choose('take_part', false);
         capture.complete();
+        // The child's "No" always wins and is recorded as such.
+        saveCapturedConsent(
+          ref,
+          isMinor: true,
+          guardianConsent: true,
+          childAssent: false,
+        ).catchError((_) => null);
         recordMinorDecline(ref, guardian: false);
         context.go('/field-capture/stopped');
       case AssentAnswer.notSure || null:
@@ -81,6 +89,15 @@ class _AssentScreenState extends ConsumerState<AssentScreen> {
     final capture = ref.read(captureSessionProvider.notifier);
     capture.choose('take_part', true);
     capture.complete();
+    saveCapturedConsent(
+      ref,
+      signatureLater: ref.read(fieldCapturePreviewProvider)
+          ? null
+          : strokesToPng(s.strokes),
+      isMinor: true,
+      guardianConsent: true,
+      childAssent: true,
+    ).catchError((_) => null);
     final code = minorCodeOf(ref.read(fieldCapturePreviewProvider));
     final number = int.tryParse(code.replaceFirst('P-', ''));
     if (number == null) return;

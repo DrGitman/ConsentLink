@@ -8,6 +8,7 @@ import '../../core/widgets/app_toggle.dart';
 import '../dashboard/dashboard_components.dart';
 import '../minors/minors_data.dart';
 import '../new_consent/consent_widgets.dart';
+import '../offline/offline_pack_screen.dart' show voiceLabelProvider;
 import '../preferences/accessibility_preferences.dart';
 import '../projects/project_widgets.dart';
 import 'capture_widgets.dart';
@@ -56,6 +57,21 @@ class _HandOverScreenState extends ConsumerState<HandOverScreen> {
     final primary = Theme.of(context).colorScheme.primary;
     final tint = institutionTint(ref, context);
     final minors = minorsFor(ref, widget.projectId);
+    final languages = ref.watch(captureLanguagesProvider);
+    if (!languages.contains(session.language)) {
+      // Live: start on a language the published form really has.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) controller.setLanguage(languages.first);
+      });
+    }
+    final voice = ref.watch(fieldCapturePreviewProvider)
+        ? 'Recorded ${session.language} voice'
+        : ref
+                  .watch(
+                    voiceLabelProvider(languageCodeForName(session.language)),
+                  )
+                  .valueOrNull ??
+              '…';
 
     return CaptureScaffold(
       participant: false,
@@ -108,9 +124,8 @@ class _HandOverScreenState extends ConsumerState<HandOverScreen> {
           clipBehavior: Clip.none,
           child: Row(
             children: [
-              for (final language in captureLanguages) ...[
-                if (language != captureLanguages.first)
-                  const SizedBox(width: 8),
+              for (final language in languages) ...[
+                if (language != languages.first) const SizedBox(width: 8),
                 _LanguageChip(
                   label: language,
                   selected: session.language == language,
@@ -120,6 +135,15 @@ class _HandOverScreenState extends ConsumerState<HandOverScreen> {
             ],
           ),
         ),
+        if (ref.watch(readTextUncheckedProvider)) ...[
+          const SizedBox(height: 8),
+          Text(
+            'This ${session.language} text is an AI translation, not yet checked '
+            'by a fluent speaker. Read it with the participant and use an '
+            'interpreter if anything is unclear.',
+            style: dashboardText(13, color: const Color(0xFF9A5B00)),
+          ),
+        ],
         const SizedBox(height: 20),
         Container(
           padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
@@ -133,7 +157,7 @@ class _HandOverScreenState extends ConsumerState<HandOverScreen> {
                 icon: 'capture/volume',
                 tint: tint,
                 title: 'Read everything aloud',
-                subtitle: 'Recorded ${session.language} voice',
+                subtitle: voice,
                 value: session.readAloud,
                 onChanged: controller.setReadAloud,
               ),

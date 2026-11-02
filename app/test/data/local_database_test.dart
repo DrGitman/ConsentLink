@@ -34,7 +34,8 @@ void main() {
       reason: 'the failure log and file bytes stay on the phone',
     );
     expect(tables.keys, containsAll(['studies', 'consents', 'audit_log']));
-    expect(tables.length, 11);
+    expect(tables.length, 12);
+    expect(tables['link_signatures']!['png_base64'], ps.ColumnType.text);
     expect(tables['consents']!['child_assent'], ps.ColumnType.integer);
     expect(tables['consents']!['withdrawal_reason'], ps.ColumnType.text);
     expect(tables['consent_sections']!['text'], ps.ColumnType.text);

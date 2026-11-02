@@ -64,6 +64,9 @@ class PrivacySettingsScreen extends ConsumerWidget {
                   context,
                   subtitle: 'All your forms & records · $records records',
                   count: records,
+                  records: ref.read(insightsPreviewProvider)
+                      ? null
+                      : ref.read(responsesProvider),
                 ),
               ),
             ],

@@ -14,6 +14,7 @@ import '../preferences/accessibility_preferences.dart';
 import '../projects/project_widgets.dart';
 import 'consent_draft_data.dart';
 import 'consent_widgets.dart';
+import 'translations_panel.dart';
 import 'why_sheet.dart';
 
 const _aiFill = Color(0xFFEDEEFF);
@@ -113,13 +114,15 @@ class _ReviewDraftScreenState extends ConsumerState<ReviewDraftScreen> {
     final sections = draft.sections;
     final added = sections.where((s) => s.key == 'contacts_ethics').toList();
     final base = sections.where((s) => s.key != 'contacts_ethics').toList();
-    final shown = [
-      ...base.take(_showAll ? base.length : _visibleCount),
-      ...added,
-    ];
-    final hidden = base.length - _visibleCount;
-    // Second language of the sample project (Figma 04.3).
-    const otherLanguage = 'Otjiherero';
+    // Live, a participant language shows its translations instead.
+    final translating =
+        !ref.watch(newConsentPreviewProvider) && draft.language != 'English';
+    final shown = translating
+        ? const <DraftSection>[]
+        : [...base.take(_showAll ? base.length : _visibleCount), ...added];
+    final hidden = translating ? 0 : base.length - _visibleCount;
+    // English plus the languages with a reviewed pack (Figma 04.3 chips).
+    final languages = ref.watch(draftLanguagesProvider);
 
     // Figma 11.4: sections are skeletons while the draft loads; the back
     // button and footer stay real ("Preparing sections…").
@@ -148,11 +151,8 @@ class _ReviewDraftScreenState extends ConsumerState<ReviewDraftScreen> {
                                   trailing: ProjectCircleButton(
                                     icon: 'consent/preview_doc',
                                     label: 'Preview as participant',
-                                    onPressed: () => showProjectNotice(
-                                      context,
-                                      'Preview as participant',
-                                      'The participant view comes with the Form builder (04.5).',
-                                    ),
+                                    onPressed: () =>
+                                        showParticipantPreview(context, ref),
                                   ),
                                 ),
                                 const SizedBox(height: 16),
@@ -170,10 +170,7 @@ class _ReviewDraftScreenState extends ConsumerState<ReviewDraftScreen> {
                                         spacing: 8,
                                         runSpacing: 8,
                                         children: [
-                                          for (final language in [
-                                            'English',
-                                            otherLanguage,
-                                          ])
+                                          for (final language in languages)
                                             _LanguageChip(
                                               label: language,
                                               selected:
@@ -210,11 +207,20 @@ class _ReviewDraftScreenState extends ConsumerState<ReviewDraftScreen> {
                                                 key: ValueKey('done'),
                                               ),
                                       ),
+                                      if (draft.sample) ...[
+                                        const SizedBox(height: 10),
+                                        const _SampleNote(),
+                                      ],
                                       if (draft.language != 'English') ...[
                                         const SizedBox(height: 10),
-                                        _TranslationNote(
-                                          language: draft.language,
-                                        ),
+                                        if (translating)
+                                          TranslationPanel(
+                                            language: draft.language,
+                                          )
+                                        else
+                                          _TranslationNote(
+                                            language: draft.language,
+                                          ),
                                       ],
                                       const SizedBox(height: 10),
                                       AnimatedSize(
@@ -473,6 +479,26 @@ class _ChecklistDone extends StatelessWidget {
   );
 }
 
+/// Shown when the on-device model was not on this phone, so the review holds
+/// the built-in sample draft rather than a draft of the uploaded proposal.
+class _SampleNote extends StatelessWidget {
+  const _SampleNote();
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: _warnFill,
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Text(
+      'The AI model is not on this phone, so this is a sample draft, not a '
+      'draft of your proposal. Edit every section before you publish.',
+      style: dashboardText(12, color: _warnInk),
+    ),
+  );
+}
+
 class _TranslationNote extends StatelessWidget {
   const _TranslationNote({required this.language});
   final String language;
@@ -485,7 +511,7 @@ class _TranslationNote extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
     ),
     child: Text(
-      'The $language version is drafted on this phone and must be checked by a fluent reviewer. Translation is not generated in this preview, so the English text is shown.',
+      'The $language version is drafted on this phone and must be checked by a fluent reviewer. Translation is not generated yet, so the English text is shown.',
       style: dashboardText(12, color: const Color(0xFF2E318F)),
     ),
   );

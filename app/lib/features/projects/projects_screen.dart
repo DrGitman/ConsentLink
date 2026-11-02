@@ -6,6 +6,7 @@ import '../../core/widgets/screen_skeletons.dart';
 import '../../core/widgets/skeleton.dart';
 import '../dashboard/dashboard_components.dart';
 import '../preferences/accessibility_preferences.dart';
+import 'project_actions.dart';
 import 'project_data.dart';
 import 'project_widgets.dart';
 
@@ -19,9 +20,11 @@ class ProjectsScreen extends ConsumerWidget {
     final filter = ref.watch(projectFilterProvider);
     final preview = ref.watch(projectsPreviewProvider);
     final reduced = MediaQuery.disableAnimationsOf(context);
+    final search = ref.watch(projectSearchProvider);
     final visible = [
       for (final project in projects)
-        if (filter.matches(project)) project,
+        if (filter.matches(project) && projectMatches(project, search ?? ''))
+          project,
     ];
 
     return Align(
@@ -49,11 +52,9 @@ class ProjectsScreen extends ConsumerWidget {
                     ProjectCircleButton(
                       icon: 'search',
                       label: 'Search projects',
-                      onPressed: () => showProjectNotice(
-                        context,
-                        'Search projects',
-                        'Project search will be connected with the project data source.',
-                      ),
+                      onPressed: () =>
+                          ref.read(projectSearchProvider.notifier).state =
+                              search == null ? '' : null,
                     ),
                     const SizedBox(width: 4),
                     ProjectCircleButton(
@@ -66,6 +67,39 @@ class ProjectsScreen extends ConsumerWidget {
                 ),
               ),
             ),
+            if (search != null)
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                sliver: SliverToBoxAdapter(
+                  child: TextField(
+                    autofocus: true,
+                    textInputAction: TextInputAction.search,
+                    onChanged: (v) =>
+                        ref.read(projectSearchProvider.notifier).state = v,
+                    style: dashboardText(16),
+                    decoration: InputDecoration(
+                      hintText: 'Search by name, language or ethics number',
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: DashboardIcon('search', size: 20),
+                      ),
+                      suffixIcon: IconButton(
+                        tooltip: 'Close search',
+                        onPressed: () =>
+                            ref.read(projectSearchProvider.notifier).state =
+                                null,
+                        icon: const Icon(Icons.close),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             SliverToBoxAdapter(
               child: _FilterChips(
                 counts: {
@@ -94,7 +128,11 @@ class ProjectsScreen extends ConsumerWidget {
                         key: ValueKey(filter),
                         children: [
                           if (visible.isEmpty)
-                            _EmptyState(preview: preview, filter: filter)
+                            _EmptyState(
+                              preview: preview,
+                              filter: filter,
+                              searching: (search ?? '').trim().isNotEmpty,
+                            )
                           else
                             for (final (i, project) in visible.indexed)
                               _StaggeredIn(
@@ -105,11 +143,8 @@ class ProjectsScreen extends ConsumerWidget {
                                     project: project,
                                     onOpen: () =>
                                         context.go('/projects/${project.id}'),
-                                    onMore: () => showProjectNotice(
-                                      context,
-                                      project.title,
-                                      'Rename, duplicate and close will be connected with the project data source.',
-                                    ),
+                                    onMore: () =>
+                                        showProjectMenu(context, ref, project),
                                   ),
                                 ),
                               ),
@@ -224,9 +259,14 @@ class _StaggeredIn extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.preview, required this.filter});
+  const _EmptyState({
+    required this.preview,
+    required this.filter,
+    this.searching = false,
+  });
   final bool preview;
   final ProjectFilter filter;
+  final bool searching;
   @override
   Widget build(BuildContext context) => Container(
     width: double.infinity,
@@ -239,16 +279,20 @@ class _EmptyState extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          filter == ProjectFilter.all
+          searching
+              ? 'No matching projects'
+              : filter == ProjectFilter.all
               ? 'No projects yet'
               : 'No ${filter.label.toLowerCase()} projects',
           style: dashboardText(16, weight: FontWeight.w600),
         ),
         const SizedBox(height: 6),
         Text(
-          preview || filter != ProjectFilter.all
+          searching
+              ? 'Try another name or clear the search.'
+              : preview || filter != ProjectFilter.all
               ? 'Try another filter.'
-              : 'Your projects will appear here once the project data source is connected.',
+              : 'Tap + to start a project from your proposal.',
           style: dashboardText(13, color: AppColors.subtle),
         ),
       ],

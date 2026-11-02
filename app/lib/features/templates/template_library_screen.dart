@@ -77,14 +77,6 @@ class _TemplateLibraryScreenState extends ConsumerState<TemplateLibraryScreen> {
   /// The + button: a blank template with the usual defaults, which you then
   /// edit on 05.5 (Upload and Describe are the other two ways in).
   Future<void> _newBlank() async {
-    if (!ref.read(templatesPreviewProvider)) {
-      await showProjectNotice(
-        context,
-        'New template',
-        'Saving templates will be connected with template storage.',
-      );
-      return;
-    }
     final result = await showSaveTemplateSheet(
       context,
       suggestedName: 'Untitled template',
@@ -136,7 +128,6 @@ class _TemplateLibraryScreenState extends ConsumerState<TemplateLibraryScreen> {
     final all = ref.watch(templateLibraryProvider);
     final filter = ref.watch(templateFilterProvider);
     final query = ref.watch(templateSearchProvider).trim().toLowerCase();
-    final preview = ref.watch(templatesPreviewProvider);
     final reduced = reduceMotion(context);
     final visible = [
       for (final t in all)
@@ -226,13 +217,12 @@ class _TemplateLibraryScreenState extends ConsumerState<TemplateLibraryScreen> {
                                 child: Column(
                                   key: ValueKey('$filter-$query'),
                                   children: [
-                                    if (!preview)
+                                    if (all.isEmpty)
                                       const EmptyCard(
                                         title: 'No templates yet',
                                         message:
-                                            'Your templates and your institution\'s '
-                                            'official ones appear here once template '
-                                            'storage is connected.',
+                                            'Tap + for a blank template, or upload '
+                                            'one or describe what you need.',
                                       )
                                     else if (visible.isEmpty)
                                       EmptyCard(

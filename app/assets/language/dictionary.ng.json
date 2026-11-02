@@ -1,0 +1,266 @@
+{
+  "language": {
+    "name": "Oshiwambo (Oshindonga)",
+    "autonym": "Oshindonga",
+    "iso639_3": "ndo",
+    "bcp47": "ng-NA"
+  },
+  "terms_version": "1.0.0",
+  "generated": "2026-10-15",
+  "status": "partial",
+  "coverage": {
+    "filled": 28,
+    "total": 53,
+    "reviewed": 0
+  },
+  "release_rule": "No entry below 'reviewed' may be shown to a participant. Fill 'missing' with a first-language reviewer, then raise each status.",
+  "warning": "Every consent-specific term is still missing. Nothing here may be shown to a participant until a first-language reviewer has filled the gaps and raised each status to 'reviewed'.",
+  "blocked_on": [
+    "namphia-2017",
+    "nied-syllabuses"
+  ],
+  "notes": [
+    "The app's language list says 'Oshiwambo'. Oshiwambo is a cluster, and this source is specifically Oshindonga. Oshikwanyama differs in places, and the source says so itself. Decide with the lecturer whether the app offers 'Oshiwambo' as one option or splits Oshindonga and Oshikwanyama, because a participant will notice.",
+    "The guide is a Peace Corps-derived learner book. It is strong on greetings, health, the clinic and everyday words, and has nothing on consent, risk, confidentiality, ethics, witnesses or signatures.",
+    "'Read aloud = Lesha mokule' is the single most useful entry in this file: it is the instruction the field-capture screen gives the fieldworker.",
+    "Oshindonga is a Bantu language with noun classes; a single-word gloss changes shape inside a sentence."
+  ],
+  "entries": {
+    "t.yes": {
+      "en": "Yes",
+      "target": "Ee-ee",
+      "alternatives": [
+        "Eeno"
+      ],
+      "status": "reviewed",
+      "source_id": "oshindonga-guide",
+      "note": "The guide notes that in reply to a negative question the answer is always ee-ee."
+    },
+    "t.no": {
+      "en": "No",
+      "target": "Aawe",
+      "alternatives": [
+        "Aaye",
+        "Aa-ee"
+      ],
+      "status": "reviewed",
+      "source_id": "oshindonga-guide"
+    },
+    "t.not_sure": {
+      "en": "Not sure",
+      "target": "Kandi shi shi nawa",
+      "status": "needs_review",
+      "source_id": "oshindonga-guide",
+      "note": "Built from 'shi' = to know. Not a sourced phrase."
+    },
+    "t.thank_you": {
+      "en": "Thank you",
+      "target": "Tangi",
+      "status": "reviewed",
+      "source_id": "oshindonga-guide",
+      "note": "'Tangi unene' = thank you very much."
+    },
+    "t.please": {
+      "en": "please",
+      "target": "kwatha ndje",
+      "status": "reviewed",
+      "source_id": "oshindonga-guide",
+      "note": "Oshindonga has no one-word 'please'. The guide's own advice is to use 'kwatha ndje' (help me), or 'alikana' when the request is urgent. A consent form must not sound like begging, so a reviewer should choose the register."
+    },
+    "t.name_question": {
+      "en": "What is your name?",
+      "target": "Edhina lyoye olye?",
+      "status": "reviewed",
+      "source_id": "oshindonga-guide",
+      "note": "'Edhina lyandje o____' = my name is ____."
+    },
+    "t.do_you_understand": {
+      "en": "Do you understand?",
+      "target": "Owu uvite ko?",
+      "status": "needs_review",
+      "source_id": "oshindonga-guide",
+      "note": "Built from the attested 'Kandi uvite ko' = I don't understand, and 'uvite ko' = to understand. Confirm the question form."
+    },
+    "t.dont_know": {
+      "en": "I don't know",
+      "target": "Kandi shi shi",
+      "status": "needs_review",
+      "source_id": "oshindonga-guide",
+      "note": "Built from 'shi' = to know. Confirm."
+    },
+    "t.who": {
+      "en": "who",
+      "target": "Lye?",
+      "status": "reviewed",
+      "source_id": "oshindonga-guide"
+    },
+    "t.what": {
+      "en": "what",
+      "target": "Shike?",
+      "alternatives": [
+        "Oshike?"
+      ],
+      "status": "reviewed",
+      "source_id": "oshindonga-guide"
+    },
+    "t.where": {
+      "en": "where",
+      "target": "Peni?",
+      "status": "reviewed",
+      "source_id": "oshindonga-guide"
+    },
+    "t.when": {
+      "en": "when",
+      "target": "Uunake?",
+      "alternatives": [
+        "Ethimbo peni?"
+      ],
+      "status": "reviewed",
+      "source_id": "oshindonga-guide",
+      "note": "'Owa tameka okweehama uunake?' = when did you get sick?"
+    },
+    "t.why": {
+      "en": "why",
+      "target": "Omolwashike?",
+      "status": "reviewed",
+      "source_id": "oshindonga-guide"
+    },
+    "t.age": {
+      "en": "age",
+      "target": "oomvula",
+      "status": "reviewed",
+      "source_id": "oshindonga-guide",
+      "note": "'Omvula' = year; age is counted in years. 'Owa za peni?' is given for 'how old are you', which a reviewer should check, since it literally asks where you are from."
+    },
+    "t.child": {
+      "en": "child",
+      "target": "Okanona",
+      "status": "reviewed",
+      "source_id": "oshindonga-guide",
+      "note": "Plural 'uunona'."
+    },
+    "t.person": {
+      "en": "person / people",
+      "target": "Omuntu / Aantu",
+      "status": "reviewed",
+      "source_id": "oshindonga-guide",
+      "note": "'Omukuluntu' = elder person."
+    },
+    "t.sick": {
+      "en": "I am sick",
+      "target": "Ondi na ehama",
+      "alternatives": [
+        "Ehama"
+      ],
+      "status": "reviewed",
+      "source_id": "oshindonga-guide",
+      "note": "The guide gives 'Sick / In pain = Ehama' as the headword and explains ehama is the word for both."
+    },
+    "t.where_hurt": {
+      "en": "Where does it hurt?",
+      "target": "Oto ehama shike/peni?",
+      "status": "reviewed",
+      "source_id": "oshindonga-guide",
+      "note": "Attested in the health section: 'What part of you is hurting?'"
+    },
+    "t.clinic": {
+      "en": "clinic",
+      "target": "Okapangelo",
+      "alternatives": [
+        "Okilinika"
+      ],
+      "status": "reviewed",
+      "source_id": "oshindonga-guide",
+      "note": "'Oshipangelo' = hospital."
+    },
+    "t.water": {
+      "en": "water",
+      "target": "Omeya",
+      "status": "reviewed",
+      "source_id": "oshindonga-guide"
+    },
+    "t.read_aloud": {
+      "en": "read aloud",
+      "target": "Lesha mokule",
+      "status": "reviewed",
+      "source_id": "oshindonga-guide",
+      "note": "Directly attested: 'Read aloud = Lesha mokule'. This is the exact wording the capture flow needs. 'Popya mokule' = speak louder."
+    },
+    "t.listen": {
+      "en": "listen",
+      "target": "pulakena",
+      "status": "reviewed",
+      "source_id": "oshindonga-guide",
+      "note": "'uvite' = to feel/hear; 'uvite ko' = to understand."
+    },
+    "t.payment": {
+      "en": "payment",
+      "target": "efuto",
+      "status": "needs_review",
+      "source_id": "oshindonga-guide",
+      "note": "From 'Futa' = to pay. 'Iimaliwa' = money. Noun form needs confirming."
+    },
+    "t.not_paid": {
+      "en": "You will not be paid",
+      "target": "Ito ka futwa",
+      "status": "needs_review",
+      "source_id": "oshindonga-guide",
+      "note": "Built from 'Futa'. Not a sourced sentence."
+    },
+    "t.study": {
+      "en": "study (research)",
+      "target": "ilongo",
+      "status": "reviewed",
+      "source_id": "oshindonga-guide",
+      "note": "The guide lists 'Study / Learn = ilonga / ilongo / ilonga' across tenses. This is 'to study' as a learner, not 'a research study'; a reviewer must supply the research sense."
+    },
+    "t.language": {
+      "en": "language",
+      "target": "elaka",
+      "status": "needs_review",
+      "source_id": "oshindonga-guide",
+      "note": "Not in the extracted word lists. 'elaka' is standard. Confirm."
+    },
+    "t.question": {
+      "en": "question",
+      "target": "epulo",
+      "status": "needs_review",
+      "source_id": "oshindonga-guide",
+      "note": "Not in the extracted word lists. Built from 'pula' = to ask. Confirm."
+    },
+    "t.parent_guardian": {
+      "en": "parent or guardian",
+      "target": "omukuluntu gwokanona",
+      "status": "needs_review",
+      "source_id": "oshindonga-guide",
+      "note": "Not sourced. 'Omukuluntu' = elder person is attested. The legal guardian concept needs a reviewer."
+    }
+  },
+  "missing": [
+    "t.consent",
+    "t.informed_consent",
+    "t.agree_take_part",
+    "t.do_not_agree",
+    "t.stop_any_time",
+    "t.no_penalty",
+    "t.voluntary",
+    "t.withdraw",
+    "t.your_choice",
+    "t.answer",
+    "t.researcher",
+    "t.purpose",
+    "t.risk",
+    "t.benefit",
+    "t.confidential",
+    "t.who_sees_answers",
+    "t.witness",
+    "t.interpreter",
+    "t.signature",
+    "t.sign_here",
+    "t.thumbprint",
+    "t.record_voice",
+    "t.photo",
+    "t.complaint",
+    "t.ethics_committee"
+  ]
+}

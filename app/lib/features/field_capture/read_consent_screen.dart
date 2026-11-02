@@ -12,6 +12,8 @@ import '../new_consent/review_draft_screen.dart' show sheetMotion;
 import '../projects/project_widgets.dart';
 import 'capture_widgets.dart';
 import 'field_capture_data.dart';
+import '../../ai/ai_providers.dart';
+import '../../ai/tts/audio_source.dart';
 
 /// Figma 06.2 Participant reads consent (3:2948) with the "Read-aloud
 /// highlight" animation (4:18979): the sentence being spoken is highlighted,
@@ -42,25 +44,60 @@ class _ReadConsentScreenState extends ConsumerState<ReadConsentScreen>
   bool _finished = false;
   bool _ready = false;
 
+  /// The device voice for the participant's language, if this phone has one.
+  DeviceTts? _voice;
+
   @override
   void initState() {
     super.initState();
+    _prepareVoice();
     _load(ref.read(captureSessionProvider).section);
   }
 
+  Future<void> _prepareVoice() async {
+    final code = ref.read(readLanguageCodeProvider);
+    try {
+      final source = await _readAloud.resolve(code);
+      if (source is DeviceTts && mounted) {
+        _voice = source;
+        if (_player.isAnimating) _say(_current);
+      }
+    } catch (_) {
+      // No voice: the highlighted text still moves along, without sound.
+    }
+  }
+
+  /// Reads one sentence aloud with the device voice (when read-aloud is on).
+  void _say(int index) {
+    final voice = _voice;
+    if (voice == null || !ref.read(captureSessionProvider).readAloud) return;
+    final sentences = _section.sentences;
+    if (index < 0 || index >= sentences.length) return;
+    _readAloud.speak(voice, sentences[index]).catchError((_) {});
+  }
+
+  // Read once: dispose() may not use ref.
+  late final _readAloud = ref.read(readAloudServiceProvider);
+
+  void _quiet() => _readAloud.stop().catchError((_) {});
+
   @override
   void dispose() {
+    _quiet();
     _player.dispose();
     super.dispose();
   }
 
+  List<ConsentReadSection> get _sections => ref.read(readSectionsProvider);
+
   ConsentReadSection get _section =>
-      sampleReadSections[ref.read(captureSessionProvider).section];
+      _sections[ref.read(captureSessionProvider).section];
 
   Duration get _total => _player.duration ?? Duration.zero;
 
   void _load(int index) {
-    final section = sampleReadSections[index];
+    if (_sections.isEmpty) return;
+    final section = _sections[index.clamp(0, _sections.length - 1)];
     _keys = [for (final _ in section.sentences) GlobalKey()];
     _rects = [];
     // Timing per sentence: words × 0.42 s + 0.6 s pause.
@@ -79,9 +116,10 @@ class _ReadConsentScreenState extends ConsumerState<ReadConsentScreen>
     _current = 0;
     _finished = false;
     _ready = true;
-    if (ref.read(captureSessionProvider).readAloud &&
-        ref.read(fieldCapturePreviewProvider)) {
+    _quiet();
+    if (ref.read(captureSessionProvider).readAloud) {
       _player.forward();
+      _say(0);
     }
   }
 
@@ -92,6 +130,7 @@ class _ReadConsentScreenState extends ConsumerState<ReadConsentScreen>
       if (_player.value >= _starts[k]) i = k;
     }
     if (i != _current) {
+      if (_player.isAnimating) _say(i);
       setState(() => _current = i);
     } else {
       setState(() {});
@@ -101,6 +140,7 @@ class _ReadConsentScreenState extends ConsumerState<ReadConsentScreen>
   void _togglePlay() {
     if (_player.isAnimating) {
       _player.stop();
+      _quiet();
       setState(() {});
       return;
     }
@@ -109,6 +149,7 @@ class _ReadConsentScreenState extends ConsumerState<ReadConsentScreen>
       _finished = false;
     }
     _player.forward();
+    _say(_current);
     setState(() {});
   }
 
@@ -117,6 +158,7 @@ class _ReadConsentScreenState extends ConsumerState<ReadConsentScreen>
     _player.value = _starts[index];
     _current = index;
     _player.forward();
+    _say(index);
     setState(() {});
   }
 
@@ -135,7 +177,7 @@ class _ReadConsentScreenState extends ConsumerState<ReadConsentScreen>
 
   void _next() {
     final session = ref.read(captureSessionProvider);
-    if (session.section < sampleReadSections.length - 1) {
+    if (session.section < _sections.length - 1) {
       ref
           .read(captureSessionProvider.notifier)
           .goToSection(session.section + 1);
@@ -198,7 +240,7 @@ class _ReadConsentScreenState extends ConsumerState<ReadConsentScreen>
                   style: dashboardText(20, weight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
-                for (final language in captureLanguages)
+                for (final language in ref.watch(captureLanguagesProvider))
                   DashboardAction(
                     label: language,
                     color: Colors.transparent,
@@ -248,8 +290,8 @@ class _ReadConsentScreenState extends ConsumerState<ReadConsentScreen>
       (_, next) => setState(() => _load(next)),
     );
     final session = ref.watch(captureSessionProvider);
-    final preview = ref.watch(fieldCapturePreviewProvider);
-    if (!preview) {
+    // Live: wait for the published form; a project without one can't be read.
+    if (ref.watch(readSectionsProvider).isEmpty) {
       return CaptureScaffold(
         onBack: () => context.pop(),
         footer: ConsentPillButton(
@@ -311,7 +353,7 @@ class _ReadConsentScreenState extends ConsumerState<ReadConsentScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Section ${session.section + 1} of ${sampleReadSections.length}',
+                    'Section ${session.section + 1} of ${ref.watch(readSectionsProvider).length}',
                     style: dashboardText(
                       13,
                       color: AppColors.subtle,
@@ -346,7 +388,7 @@ class _ReadConsentScreenState extends ConsumerState<ReadConsentScreen>
         ),
         const SizedBox(height: 8),
         CaptureProgress(
-          value: (session.section + 1) / sampleReadSections.length,
+          value: (session.section + 1) / ref.watch(readSectionsProvider).length,
           label: 'Consent progress',
         ),
         const SizedBox(height: 30),

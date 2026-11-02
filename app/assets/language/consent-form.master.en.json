@@ -1,0 +1,233 @@
+{
+  "id": "consent-master-v1",
+  "about": "The words themselves: the full participant-facing consent document in plain English. This is what gets translated, read aloud and printed. Placeholders in {braces} are filled from the project.",
+  "language": "en",
+  "reading_grade_target": "5-6",
+  "version": "1.0.0",
+  "placeholders": {
+    "{study_title}": "Project title",
+    "{researcher_name}": "Researcher's name",
+    "{institution}": "NUST, UNAM ...",
+    "{supervisor}": "Supervisor name and contact",
+    "{ethics_ref}": "e.g. FCI-REC-2026-041",
+    "{ethics_phone}": "Ethics office phone",
+    "{duration}": "e.g. about 40 minutes",
+    "{retention_years}": "e.g. 5",
+    "{site}": "Village, town or clinic"
+  },
+  "header": {
+    "title": "Taking part in a study",
+    "subtitle": "{study_title}",
+    "line": "{researcher_name}, {institution} · Ethics approval {ethics_ref}"
+  },
+  "sections": [
+    {
+      "key": "purpose",
+      "required_element": "purpose",
+      "title": "Why we are doing this study",
+      "text": "We want to learn about {study_title}. What we learn may help {institution} and people in {site}.",
+      "required": true,
+      "status": "verified_official",
+      "reading_grade": 5
+    },
+    {
+      "key": "procedures",
+      "required_element": "procedures",
+      "title": "What you will do",
+      "text": "You will answer some questions in one interview with {researcher_name}. You can answer by speaking or by typing. You do not have to answer every question.",
+      "required": true,
+      "status": "verified_official",
+      "reading_grade": 5
+    },
+    {
+      "key": "duration",
+      "required_element": "duration",
+      "title": "How long it takes",
+      "text": "The interview takes {duration}. You can take a break at any time.",
+      "required": true,
+      "status": "verified_official",
+      "reading_grade": 5
+    },
+    {
+      "key": "risks",
+      "required_element": "risks",
+      "title": "Risks and discomforts",
+      "text": "There is no danger to your body. You may feel tired, or a question may feel private. You can skip any question. You can rest or stop at any time. Stopping will not cause you any problem.",
+      "required": true,
+      "status": "verified_official",
+      "reading_grade": 5
+    },
+    {
+      "key": "benefits",
+      "required_element": "benefits",
+      "title": "How this may help",
+      "text": "Taking part may not help you directly. What we learn may help improve services for people in {site}.",
+      "required": true,
+      "status": "verified_official",
+      "reading_grade": 5
+    },
+    {
+      "key": "compensation",
+      "required_element": "compensation",
+      "title": "Payment",
+      "text": "You will not be paid for taking part. Taking part does not cost you money.",
+      "required": true,
+      "status": "verified_official",
+      "reading_grade": 5
+    },
+    {
+      "key": "confidentiality",
+      "required_element": "confidentiality",
+      "title": "Who will see your answers",
+      "text": "Only the research team will see your answers. Your name is never written next to your answers. Your answers are locked on this phone and sent safely to {institution}. We keep them for {retention_years} years, then delete them.",
+      "required": true,
+      "status": "verified_official",
+      "reading_grade": 5
+    },
+    {
+      "key": "voluntary_withdrawal",
+      "required_element": "voluntary_withdrawal",
+      "title": "Your choice",
+      "text": "Taking part is your choice. You can say no now. You can stop later, even after you have agreed. You do not have to give a reason. Saying no will not change how you are treated, and nothing bad will happen.",
+      "required": true,
+      "status": "verified_official",
+      "reading_grade": 5
+    },
+    {
+      "key": "contacts_researcher",
+      "required_element": "contacts_researcher",
+      "title": "Who to ask",
+      "text": "You can ask {researcher_name} any question now or later. Supervisor: {supervisor}.",
+      "required": true,
+      "status": "verified_official",
+      "reading_grade": 5
+    },
+    {
+      "key": "contacts_ethics",
+      "required_element": "contacts_ethics",
+      "title": "If you want to complain",
+      "text": "If you are unhappy about this study, you can contact the {institution} ethics office on {ethics_phone}. Ethics approval number: {ethics_ref}.",
+      "required": true,
+      "status": "verified_official",
+      "reading_grade": 5
+    }
+  ],
+  "choices": {
+    "about": "Each needs its own Yes or No. Yes and No carry equal weight: same size, same colour weight, no default.",
+    "items": [
+      {
+        "key": "take_part",
+        "text": "I agree to take part in this study",
+        "required": true,
+        "note": "If this is No, the session ends without a signature and nothing else is asked."
+      },
+      {
+        "key": "record_voice",
+        "text": "You may record my voice",
+        "required": false
+      },
+      {
+        "key": "quote",
+        "text": "You may quote my words, without my name",
+        "required": false
+      },
+      {
+        "key": "contact_again",
+        "text": "You may contact me again later",
+        "required": false
+      }
+    ]
+  },
+  "signature_block": {
+    "prompt": "How would you like to agree?",
+    "methods": [
+      {
+        "key": "sign",
+        "label": "Sign with your finger",
+        "needs_witness": false
+      },
+      {
+        "key": "thumbprint",
+        "label": "Thumbprint",
+        "needs_witness": true
+      },
+      {
+        "key": "verbal",
+        "label": "Say it out loud",
+        "needs_witness": true
+      }
+    ],
+    "witness_text": "A witness watched this person agree: {witness_name}, {witness_role}.",
+    "copy_text": "You will get a copy of this form to keep."
+  },
+  "withdrawal": {
+    "title": "Stopping later",
+    "text": "If you change your mind, tell {researcher_name} or the ethics office on {ethics_phone}. Your answers will be taken out of the study. Anything already published cannot be taken back."
+  },
+  "minors": {
+    "about": "Figma row 10. Guardian consent AND the young person's assent are both needed. A child's No always stops participation.",
+    "guardian": {
+      "title": "Permission for your child",
+      "intro": "Your child has been asked to take part in {study_title}. You decide first, then we ask your child. If your child says no, we stop, even if you said yes.",
+      "choices": [
+        {
+          "key": "take_part",
+          "text": "My child may take part",
+          "required": true
+        },
+        {
+          "key": "record_voice",
+          "text": "My child may be voice-recorded",
+          "required": false
+        },
+        {
+          "key": "photos",
+          "text": "Photographs of my child may be used",
+          "required": false
+        }
+      ],
+      "authority_statement": "The researcher confirms this person has legal authority for the child. This is a human decision and it is logged."
+    },
+    "assent_12_17": {
+      "title": "It is your choice",
+      "text": "Your guardian said it is OK. But you decide too. If you say no, that is fine. Nobody will be upset and nothing bad will happen.",
+      "points": [
+        "We will talk for about {duration}.",
+        "You can stop any time.",
+        "We will not tell anyone your name."
+      ],
+      "question": "Do you want to take part?",
+      "answers": [
+        "Yes",
+        "Not sure",
+        "No"
+      ],
+      "not_sure_note": "Not sure pauses so the young person can ask questions. It is not a yes."
+    },
+    "assent_7_11": {
+      "title": "Do you want to help with our questions?",
+      "read_aloud_required": true,
+      "text": "We want to ask you some questions. You can say yes or no. If you say no, that is fine.",
+      "answers": [
+        "Yes!",
+        "Not sure",
+        "No"
+      ],
+      "note": "Pictures and audio only. One question, three big faces."
+    },
+    "child_said_no": {
+      "title": "Thank you for telling us",
+      "text": "That is completely OK. You will not take part, and nothing bad will happen.",
+      "researcher_note": "Participation stopped. Guardian consent is overridden by the child's No. No answers or recordings are kept; only 'declined (assent)' is logged. The feedback pop-up is never shown to minors."
+    },
+    "reconsent_at_18": "If the study is still running when the young person turns 18, the app reminds the researcher to ask them for their own consent."
+  },
+  "translation_rules": [
+    "Translate meaning, not words. A literal translation of 'voluntary' is usually wrong.",
+    "Keep sentences short. One idea per sentence.",
+    "Never translate a placeholder in {braces}.",
+    "Yes and No must stay short enough to fit a button and must not differ in force.",
+    "'You can stop at any time' and 'nothing bad will happen' are legally required reassurances - never drop them for brevity.",
+    "If a concept has no word in the language, describe it in a sentence and tell the researcher, rather than borrowing an English word the participant will not know."
+  ]
+}

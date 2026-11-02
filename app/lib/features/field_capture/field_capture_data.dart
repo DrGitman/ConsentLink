@@ -1,6 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../contracts/languages.dart';
+import '../../contracts/models.dart' as m;
+import '../../core/data/data_revision.dart';
+import '../../data/repositories/repository_providers.dart';
 import '../new_consent/consent_draft_data.dart';
+import '../projects/project_data.dart';
+import '../responses/live_responses.dart';
 
 /// Sample participant, consent text and questions appear only with
 /// FIELD_CAPTURE_PREVIEW=true or the existing preview flags. Nothing is synced:
@@ -285,7 +291,8 @@ class CaptureSession {
 }
 
 class CaptureSessionController extends StateNotifier<CaptureSession> {
-  CaptureSessionController() : super(const CaptureSession());
+  CaptureSessionController(this._ref) : super(const CaptureSession());
+  final Ref _ref;
 
   void start({String? projectId}) =>
       state = CaptureSession(projectId: projectId);
@@ -295,9 +302,10 @@ class CaptureSessionController extends StateNotifier<CaptureSession> {
   void setLargeText(bool value) => state = state.copyWith(largeText: value);
   void setInterpreter(bool value) => state = state.copyWith(interpreter: value);
 
-  void goToSection(int index) => state = state.copyWith(
-    section: index.clamp(0, sampleReadSections.length - 1),
-  );
+  void goToSection(int index) {
+    final count = _ref.read(readSectionsProvider).length;
+    state = state.copyWith(section: count == 0 ? 0 : index.clamp(0, count - 1));
+  }
 
   void goToQuestion(int index) => state = state.copyWith(
     question: index.clamp(0, sampleQuestions.length - 1),
@@ -322,12 +330,165 @@ class CaptureSessionController extends StateNotifier<CaptureSession> {
 
 final captureSessionProvider =
     StateNotifierProvider<CaptureSessionController, CaptureSession>(
-      (ref) => CaptureSessionController(),
+      (ref) => CaptureSessionController(ref),
     );
 
-final captureParticipantProvider = Provider<CaptureParticipant?>(
-  (ref) => ref.watch(fieldCapturePreviewProvider) ? sampleParticipant : null,
-);
+/// Preview: the sample participant. Live: the next participant number of the
+/// project being captured. Names are never stored, only the code.
+final captureParticipantProvider = Provider<CaptureParticipant?>((ref) {
+  if (ref.watch(fieldCapturePreviewProvider)) return sampleParticipant;
+  final id = ref.watch(captureSessionProvider.select((s) => s.projectId));
+  if (id == null) return null;
+  final project = ref
+      .watch(projectsProvider)
+      .where((p) => p.id == id)
+      .firstOrNull;
+  if (project == null) return null;
+  // Numbered across the phone, the same way the responses list numbers them.
+  final n = (ref.watch(liveResponsesProvider).valueOrNull?.length ?? 0) + 1;
+  return CaptureParticipant(
+    code: 'P-${n.toString().padLeft(3, '0')}',
+    name: 'Participant $n',
+    project: project.title,
+    site: project.languages,
+    isMinor: false,
+  );
+});
+
+/// The published form of a study, as the plain sections participants read.
+final publishedReadSectionsProvider =
+    FutureProvider.family<List<m.ConsentSection>, String>((ref, studyId) async {
+      ref.watch(dataRevisionProvider);
+      final studies = await ref.watch(studyRepositoryProvider.future);
+      return studies.getPublishedSections(studyId);
+    });
+
+/// The language the participant's text is shown (and read aloud) in: the
+/// chosen language when the published form has it, else English, else the
+/// form's own language. The preview sample is English.
+final readLanguageCodeProvider = Provider<String>((ref) {
+  if (ref.watch(fieldCapturePreviewProvider)) return 'en';
+  final session = ref.watch(captureSessionProvider);
+  final id = session.projectId;
+  if (id == null) return 'en';
+  final all =
+      ref.watch(publishedReadSectionsProvider(id)).valueOrNull ?? const [];
+  final wanted = languageCodeForName(session.language);
+  final codes = completeLanguages(all);
+  if (codes.isEmpty || codes.contains(wanted)) return wanted;
+  return codes.contains('en') ? 'en' : codes.first;
+});
+
+/// What the participant reads: the sample in preview, otherwise the published
+/// form of the project in [readLanguageCodeProvider].
+final readSectionsProvider = Provider<List<ConsentReadSection>>((ref) {
+  if (ref.watch(fieldCapturePreviewProvider)) return sampleReadSections;
+  final id = ref.watch(captureSessionProvider.select((s) => s.projectId));
+  if (id == null) return const [];
+  final all =
+      ref.watch(publishedReadSectionsProvider(id)).valueOrNull ?? const [];
+  final language = ref.watch(readLanguageCodeProvider);
+  final sections = all.where((s) => s.language == language).toList()
+    ..sort((a, b) => a.order.compareTo(b.order));
+  return [for (final s in sections) readSectionFrom(s)];
+});
+
+/// True when the text the participant reads is an AI translation no fluent
+/// speaker has checked yet (allowed for now; shown to the researcher).
+final readTextUncheckedProvider = Provider<bool>((ref) {
+  if (ref.watch(fieldCapturePreviewProvider)) return false;
+  final id = ref.watch(captureSessionProvider.select((s) => s.projectId));
+  if (id == null) return false;
+  final language = ref.watch(readLanguageCodeProvider);
+  final all =
+      ref.watch(publishedReadSectionsProvider(id)).valueOrNull ?? const [];
+  return all.any(
+    (s) =>
+        s.language == language &&
+        s.changes.any((c) => c.startsWith('AI translation')),
+  );
+});
+
+/// Languages the published form has in full: every element of the main
+/// language has a checked text in it. A half translated form never reaches
+/// a participant.
+Set<String> completeLanguages(List<m.ConsentSection> all) {
+  final byLanguage = <String, Set<String>>{};
+  for (final s in all) {
+    byLanguage.putIfAbsent(s.language, () => {}).add(s.requiredElement ?? s.id);
+  }
+  if (byLanguage.isEmpty) return const {};
+  final base = byLanguage.containsKey('en')
+      ? byLanguage['en']!
+      : byLanguage.values.reduce((a, b) => a.length >= b.length ? a : b);
+  return {
+    for (final e in byLanguage.entries)
+      if (e.value.containsAll(base)) e.key,
+  };
+}
+
+/// The app code for a language name shown on a chip. Accepts the ASCII
+/// spelling Ju/'hoansi and the umbrella name Oshiwambo (Oshindonga).
+String languageCodeForName(String name) {
+  for (final l in consentLanguages) {
+    if (l.displayName == name) return l.code;
+  }
+  return switch (name) {
+    "Ju/'hoansi" => 'ktz',
+    'Oshiwambo' => 'ng',
+    _ => 'en',
+  };
+}
+
+/// Language chips for field capture: the sample list in preview, else the
+/// languages the project's published form is in (English first).
+final captureLanguagesProvider = Provider<List<String>>((ref) {
+  if (ref.watch(fieldCapturePreviewProvider)) return captureLanguages;
+  final id = ref.watch(captureSessionProvider.select((s) => s.projectId));
+  if (id == null) return const ['English'];
+  final all =
+      ref.watch(publishedReadSectionsProvider(id)).valueOrNull ?? const [];
+  final codes = completeLanguages(all).toList()
+    ..sort((a, b) => a == 'en' ? -1 : (b == 'en' ? 1 : a.compareTo(b)));
+  return codes.isEmpty
+      ? const ['English']
+      : [for (final c in codes) languageName(c)];
+});
+
+/// One published section as a title, a plain question and short sentences.
+ConsentReadSection readSectionFrom(m.ConsentSection s) {
+  final key = s.requiredElement ?? '';
+  final label = elementLabels[key];
+  final sentences = s.text
+      .split(RegExp(r'(?<=[.!?])\s+'))
+      .map((t) => t.trim())
+      .where((t) => t.isNotEmpty)
+      .toList();
+  return ConsentReadSection(
+    title: label == null
+        ? 'Section ${s.order + 1}'
+        : label[0].toUpperCase() + label.substring(1),
+    question: _plainQuestions[key] ?? 'What does this part say?',
+    sentences: sentences.isEmpty ? [s.text] : sentences,
+  );
+}
+
+const _plainQuestions = {
+  'purpose': 'What is this study about?',
+  'procedures': 'What will I do?',
+  'duration': 'How long will it take?',
+  'risks': 'Is there any risk to me?',
+  'benefits': 'Will this help me?',
+  'compensation': 'Will I be paid?',
+  'confidentiality': 'Who will see my answers?',
+  'voluntary_withdrawal': 'Do I have to take part?',
+  'contacts_researcher': 'Who can I ask?',
+  'contacts_ethics': 'Who can I complain to?',
+  'guardian_permission': 'Does my guardian need to agree?',
+  'child_assent': 'Do I get to choose?',
+  'child_dissent_respected': 'What if I say no?',
+  'safeguarding_contact': 'Who keeps me safe?',
+};
 
 /// Optional feedback (Figma 06.6). Kept apart from the consent answers and
 /// never asked of minors.

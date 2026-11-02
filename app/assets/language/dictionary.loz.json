@@ -1,0 +1,277 @@
+{
+  "language": {
+    "name": "Silozi",
+    "autonym": "Silozi",
+    "iso639_3": "loz",
+    "bcp47": "loz-NA"
+  },
+  "terms_version": "1.0.0",
+  "generated": "2026-10-15",
+  "status": "partial",
+  "coverage": {
+    "filled": 30,
+    "total": 53,
+    "reviewed": 0
+  },
+  "release_rule": "No entry below 'reviewed' may be shown to a participant. Fill 'missing' with a first-language reviewer, then raise each status.",
+  "warning": "Every consent-specific term is still missing. Nothing here may be shown to a participant until a first-language reviewer has filled the gaps and raised each status to 'reviewed'.",
+  "blocked_on": [
+    "namphia-2017",
+    "nied-syllabuses"
+  ],
+  "notes": [
+    "The source PDF is a scan with no text layer. All 93 pages were rasterised at 180 dpi and read with tesseract. The OCR is good on the two-column phrase pages and drifts by one row on the A-Z glossary pages, where a headword can pick up the translation of the line above or below.",
+    "Because of that drift, nothing was taken from the glossary alone unless a phrase elsewhere in the book confirmed it. Three glossary lines that looked right were rejected on that test: 'Stop = Sintolo' (that is 'Store'), 'Thank = Lilete' (that is 'Testicle') and 'Trust = Habeli' (that is 'Twice').",
+    "This is the best-covered of the four scanned or learner sources: 30 of 53 ids, and it is the only language in the pack with a confirmed word for 'witness' (Paki), which the non-reader consent path needs.",
+    "Silozi is a Bantu language with noun classes; single-word glosses change shape inside a sentence.",
+    "Several words carry the letter n-with-tilde (ñ). OCR renders it unreliably, so 'mañi' and 'kabakalañi' in particular should be checked against print."
+  ],
+  "entries": {
+    "t.yes": {
+      "en": "Yes",
+      "target": "Eni",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "Corroborated twice in the phrase sections: 'Eni, President u ñozi libuka' and 'Eni sha, kubala kwa katulusa' = yes indeed."
+    },
+    "t.no": {
+      "en": "No",
+      "target": "Batili",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "'Batili, ni hanyinyani' = no, not at all. The glossary's own 'No' line is an OCR column slip and was not used."
+    },
+    "t.thank_you": {
+      "en": "Thank you",
+      "target": "Ni itumezi",
+      "alternatives": [
+        "Kuitumela"
+      ],
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "'Ni kandelezi hahulu, ni itumezi' = thank you very much; 'Lu itumezi hahulu-hulu' = thank you very much indeed."
+    },
+    "t.please": {
+      "en": "please",
+      "target": "Amu-",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "Silozi has no separate word for please. Politeness is the 'Amu-' polite imperative: 'Amu bize ŋaka' = please call the doctor, 'Amu teeleze' = please listen. The consent screens should use this form, not a word."
+    },
+    "t.sick": {
+      "en": "I am sick",
+      "target": "Na kula",
+      "alternatives": [
+        "Kukula"
+      ],
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "'Komu yaka ya kula' = my cow is sick; 'Ya kula ki mañi?' = who is sick."
+    },
+    "t.where_hurt": {
+      "en": "Where does it hurt?",
+      "target": "Mu utwa kai butuku?",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "Directly attested: 'where exactly do you feel pain'. 'Mwa utwa butuku fa?' = does it hurt here. 'butuku' = pain."
+    },
+    "t.clinic": {
+      "en": "clinic",
+      "target": "sipatela",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "'Sipatela si fakaufi nji?' = is the hospital near. The glossary's clinic line did not survive OCR; sipatela covers hospital and is the safe word."
+    },
+    "t.water": {
+      "en": "water",
+      "target": "Mezi",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "Glossary and phrases agree: 'Likubu ni zona li pila mwa mezi' = hippos also live in the water."
+    },
+    "t.child": {
+      "en": "child",
+      "target": "Mwana",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "Plural 'Banana'. 'Mwanana u i kolofalize maswe' = the child has hurt herself badly."
+    },
+    "t.parent_guardian": {
+      "en": "parent or guardian",
+      "target": "Mushemi",
+      "status": "needs_review",
+      "source_id": "silozi-phrasebook",
+      "note": "'Mushemi wa muuna, ndate' = father; 'Boma' = your mother. 'Mushemi' is the parent word. There is no sourced term for a legal guardian."
+    },
+    "t.person": {
+      "en": "person / people",
+      "target": "Mutu / Batu",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "'Ki mutu yomunde' = he is a good person; 'Batu ba bañata' = most people."
+    },
+    "t.witness": {
+      "en": "witness",
+      "target": "Paki",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "Glossary 'Witness = Paki', corroborated by 'Eye-witness = Paki ya iponezi ze eza'. This is the only language in the pack with a confirmed word for witness, which matters for the non-reader consent path."
+    },
+    "t.question": {
+      "en": "question",
+      "target": "Puzo",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "Glossary 'Question = Puzo, kubuza'; 'kubuza' = to ask is corroborated in the idiom section."
+    },
+    "t.answer": {
+      "en": "answer",
+      "target": "Kalabo",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook"
+    },
+    "t.read_aloud": {
+      "en": "read aloud",
+      "target": "Kubala",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "'Mu ya lata kubala libuka?' = do you enjoy reading books. The 'aloud' half is not sourced; pair it with the Amu- polite imperative."
+    },
+    "t.listen": {
+      "en": "listen",
+      "target": "Kuteeleza",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "'Amu teeleze (teeleza)' = listen; 'Ni bata kuteeleza kwa wayalesi' = I want to listen to the radio."
+    },
+    "t.do_you_understand": {
+      "en": "Do you understand?",
+      "target": "Mwa utwisisa?",
+      "status": "needs_review",
+      "source_id": "silozi-phrasebook",
+      "note": "Glossary 'Understand = Kuutwisisa'. The question form is reconstructed; confirm."
+    },
+    "t.dont_know": {
+      "en": "I don't know",
+      "target": "Ha ni zibi",
+      "status": "needs_review",
+      "source_id": "silozi-phrasebook",
+      "note": "Built from 'Ziba, kuziba' = to know. Confirm the negative form."
+    },
+    "t.confidential": {
+      "en": "confidential",
+      "target": "Kunutu",
+      "status": "needs_review",
+      "source_id": "silozi-phrasebook",
+      "note": "Glossary 'Secret = Kunutu'. Secrecy is not the same as research confidentiality; a reviewer must decide whether this is the right word for a consent form."
+    },
+    "t.withdraw": {
+      "en": "to withdraw",
+      "target": "Kutuhela",
+      "status": "needs_review",
+      "source_id": "silozi-phrasebook",
+      "note": "'ni mu eleza kutuhela kuca' = I advised him to stop eating. This is 'to stop', not the legal sense of withdrawing consent."
+    },
+    "t.stop_any_time": {
+      "en": "You can stop at any time",
+      "target": "Mwa kona kutuhela nako kaufela",
+      "status": "needs_review",
+      "source_id": "silozi-phrasebook",
+      "note": "Built from 'kutuhela' = to stop and 'nako kaufela' = always/at all times, both attested separately. The sentence itself is NOT sourced."
+    },
+    "t.payment": {
+      "en": "payment",
+      "target": "Kulifa",
+      "alternatives": [
+        "mali"
+      ],
+      "status": "needs_review",
+      "source_id": "silozi-phrasebook",
+      "note": "'U palelwa kulifa nji?' = are you not able to pay. 'mali' = money."
+    },
+    "t.not_paid": {
+      "en": "You will not be paid",
+      "target": "Ha mu na kulifiwa",
+      "status": "needs_review",
+      "source_id": "silozi-phrasebook",
+      "note": "Built from 'kulifa'. Not a sourced sentence."
+    },
+    "t.language": {
+      "en": "language",
+      "target": "Puwo",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "Plural 'Lipuwo'. From the book's own contents page: 'Lipuwo / Mishobo = Languages, Tribes'."
+    },
+    "t.age": {
+      "en": "age",
+      "target": "lilimo",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "'Nawa u na ni lilimo ze kai?' = how old is Nawa; literally 'how many years does Nawa have'."
+    },
+    "t.who": {
+      "en": "who",
+      "target": "Ki mañi?",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "'Ya kula ki mañi?' = who is sick; 'Ya mu holofalize ki mañi?' = who hurt him."
+    },
+    "t.what": {
+      "en": "what",
+      "target": "Kifi?",
+      "alternatives": [
+        "Kanti kini?"
+      ],
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "'Mina mu katazwa kini?' = what is wrong with you."
+    },
+    "t.where": {
+      "en": "where",
+      "target": "Kai?",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "'Mukuli u inzi kai?' = where is the patient."
+    },
+    "t.when": {
+      "en": "when",
+      "target": "Lili?",
+      "status": "reviewed",
+      "source_id": "silozi-phrasebook",
+      "note": "'Sipatela se si yahilwe lili?' = when was this hospital built."
+    },
+    "t.why": {
+      "en": "why",
+      "target": "Kabakalañi?",
+      "status": "needs_review",
+      "source_id": "silozi-phrasebook",
+      "note": "The glossary's 'Why?' line did not survive OCR. This is the standard form; confirm."
+    }
+  },
+  "missing": [
+    "t.consent",
+    "t.informed_consent",
+    "t.agree_take_part",
+    "t.do_not_agree",
+    "t.not_sure",
+    "t.no_penalty",
+    "t.voluntary",
+    "t.your_choice",
+    "t.study",
+    "t.researcher",
+    "t.purpose",
+    "t.risk",
+    "t.benefit",
+    "t.who_sees_answers",
+    "t.name_question",
+    "t.interpreter",
+    "t.signature",
+    "t.sign_here",
+    "t.thumbprint",
+    "t.record_voice",
+    "t.photo",
+    "t.complaint",
+    "t.ethics_committee"
+  ]
+}

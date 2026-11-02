@@ -40,11 +40,12 @@ class _UploadProposalScreenState extends ConsumerState<UploadProposalScreen> {
 
   Future<void> _pick() async {
     if (!ref.read(newConsentPreviewProvider)) {
-      await showProjectNotice(
-        context,
-        'Upload a document',
-        'Choosing a file or taking a photo will be connected together with the file safety scan. Nothing has been uploaded.',
-      );
+      // Live: the file is read on this phone only, never uploaded.
+      await ref.read(consentDraftProvider.notifier).pickProposal();
+      final problem = ref.read(consentDraftProvider).problem;
+      if (problem != null && mounted) {
+        await showProjectNotice(context, 'This file can\'t be used', problem);
+      }
       return;
     }
     final choice = await showModalBottomSheet<String>(
@@ -157,6 +158,22 @@ class _UploadProposalScreenState extends ConsumerState<UploadProposalScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
+                        SwitchListTile.adaptive(
+                          contentPadding: EdgeInsets.zero,
+                          value: draft.involvesMinors,
+                          onChanged: ref
+                              .read(consentDraftProvider.notifier)
+                              .setInvolvesMinors,
+                          title: Text(
+                            'Some participants are under 18',
+                            style: dashboardText(14, weight: FontWeight.w600),
+                          ),
+                          subtitle: Text(
+                            'Adds guardian consent and child assent to the form',
+                            style: dashboardText(12, color: AppColors.subtle),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
                         Text(
                           'No document yet?',
                           style: dashboardText(
@@ -168,11 +185,8 @@ class _UploadProposalScreenState extends ConsumerState<UploadProposalScreen> {
                         const SizedBox(height: 10),
                         DashboardAction(
                           label: 'Describe your study by voice or text',
-                          onPressed: () => showProjectNotice(
-                            context,
-                            'Describe your study',
-                            'The six guided questions (by voice or text) will be connected with the on-device AI.',
-                          ),
+                          onPressed: () =>
+                              context.push('/new-consent/questions'),
                           child: Padding(
                             padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
                             child: Row(

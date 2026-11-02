@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../contracts/consent_ai_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../dashboard/dashboard_components.dart';
 import '../institution/institution.dart';
@@ -34,14 +35,15 @@ class _DraftingScreenState extends ConsumerState<DraftingScreen>
   int _done = 0;
   bool _stopped = false;
 
-  List<String> _steps(int pages, String institution) => [
-    'Reading $pages pages',
-    'Purpose, procedures & duration',
-    'Risks, benefits & compensation',
-    'Checking $requiredElementCount required consent elements',
-    'Rewriting at plain-language level (Grade 6)',
-    'Applying $institution template & logo',
-  ];
+  List<String> _steps(int pages, String institution, {bool answers = false}) =>
+      [
+        answers ? 'Reading your answers' : 'Reading $pages pages',
+        'Purpose, procedures & duration',
+        'Risks, benefits & compensation',
+        'Checking $requiredElementCount required consent elements',
+        'Rewriting at plain-language level (Grade 6)',
+        'Applying $institution template & logo',
+      ];
 
   @override
   void initState() {
@@ -59,7 +61,71 @@ class _DraftingScreenState extends ConsumerState<DraftingScreen>
           });
         }
       });
+    } else {
+      // Live: the on-device model drafts the uploaded proposal.
+      WidgetsBinding.instance.addPostFrameCallback((_) => _startLive());
     }
+  }
+
+  StreamSubscription<AiDraftingEvent>? _live;
+
+  void _startLive() {
+    if (!mounted) return;
+    _live = ref
+        .read(consentDraftProvider.notifier)
+        .draft()
+        .listen(
+          (event) {
+            if (event is AiStepCompleted && mounted && !_stopped) {
+              setState(() => _done = event.step.index + 1);
+            }
+          },
+          onError: (Object error) {
+            if (!mounted || _stopped) return;
+            _failed(error);
+          },
+          onDone: () {
+            if (!mounted || _stopped) return;
+            setState(() => _done = 6);
+            Timer(const Duration(milliseconds: 400), () {
+              if (mounted && !_stopped) {
+                context.pushReplacement('/new-consent/review');
+              }
+            });
+          },
+        );
+  }
+
+  Future<void> _failed(Object error) async {
+    final message = switch (error) {
+      AiDraftingException(failure: AiDraftingFailure.encryptedPdf) =>
+        'The PDF is password protected. Upload a copy without a password.',
+      AiDraftingException(failure: AiDraftingFailure.scannedPdf) =>
+        'This PDF is a scan, so its text can\'t be read. Upload a PDF with selectable text.',
+      AiDraftingException(failure: AiDraftingFailure.corruptedPdf) =>
+        'The file is not a readable PDF.',
+      AiDraftingException(failure: AiDraftingFailure.proposalTooLarge) =>
+        'The proposal is too large. Upload a smaller PDF.',
+      AiDraftingException(failure: AiDraftingFailure.tooManyPages) =>
+        'The proposal has too many pages. Upload only the parts participants need.',
+      AiDraftingException(failure: AiDraftingFailure.modelUnavailable) =>
+        'The on-device AI is not available on this phone.',
+      _ => 'Drafting stopped because of a problem on this phone. Try again.',
+    };
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Drafting stopped'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+    if (mounted) context.pop();
   }
 
   @override
@@ -75,6 +141,7 @@ class _DraftingScreenState extends ConsumerState<DraftingScreen>
 
   @override
   void dispose() {
+    _live?.cancel();
     _timer?.cancel();
     _breath.dispose();
     super.dispose();
@@ -118,19 +185,24 @@ class _DraftingScreenState extends ConsumerState<DraftingScreen>
     if (stop == true && mounted) {
       _stopped = true;
       _timer?.cancel();
+      _live?.cancel();
       context.pop();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final preview = ref.watch(newConsentPreviewProvider);
     final file = ref.watch(consentDraftProvider).file;
+    final fromAnswers = ref.watch(consentDraftProvider).answers != null;
     final institution =
         ref.watch(selectedInstitutionProvider) ?? Institution.nust;
     final primary = Theme.of(context).colorScheme.primary;
     final tint = institutionTint(ref, context);
-    final steps = _steps(file?.pages ?? 18, institution.label);
+    final steps = _steps(
+      file?.pages ?? 18,
+      institution.label,
+      answers: fromAnswers,
+    );
     final remainingSeconds = ((6 - _done) * _stepMs / 1000).ceil();
 
     return Scaffold(
@@ -190,52 +262,35 @@ class _DraftingScreenState extends ConsumerState<DraftingScreen>
                               style: dashboardText(14, color: AppColors.subtle),
                             ),
                             SizedBox(height: compact ? 14 : 24),
-                            if (!preview)
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(18),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(24),
-                                ),
-                                child: Text(
-                                  'The on-device AI is not connected yet, so no draft can be made.',
-                                  style: dashboardText(
-                                    14,
-                                    color: AppColors.muted,
-                                  ),
-                                ),
-                              )
-                            else
-                              Container(
-                                width: double.infinity,
-                                padding: EdgeInsets.fromLTRB(
-                                  16,
-                                  compact ? 4 : 8,
-                                  24,
-                                  compact ? 8 : 16,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(24),
-                                ),
-                                child: Column(
-                                  children: [
-                                    for (final (i, label) in steps.indexed)
-                                      _StepRow(
-                                        label: label,
-                                        compact: compact,
-                                        state: i < _done
-                                            ? _StepState.done
-                                            : i == _done
-                                            ? _StepState.active
-                                            : _StepState.pending,
-                                        primary: primary,
-                                        tint: tint,
-                                      ),
-                                  ],
-                                ),
+                            Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.fromLTRB(
+                                16,
+                                compact ? 4 : 8,
+                                24,
+                                compact ? 8 : 16,
                               ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              child: Column(
+                                children: [
+                                  for (final (i, label) in steps.indexed)
+                                    _StepRow(
+                                      label: label,
+                                      compact: compact,
+                                      state: i < _done
+                                          ? _StepState.done
+                                          : i == _done
+                                          ? _StepState.active
+                                          : _StepState.pending,
+                                      primary: primary,
+                                      tint: tint,
+                                    ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       );
@@ -243,45 +298,44 @@ class _DraftingScreenState extends ConsumerState<DraftingScreen>
                   ),
                 ),
                 // Progress stays pinned at the bottom, always in view.
-                if (preview)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                    child: Column(
-                      children: [
-                        TweenAnimationBuilder<double>(
-                          tween: Tween(end: _done / 6),
-                          duration: reduceMotion(context)
-                              ? Duration.zero
-                              : const Duration(milliseconds: _stepMs),
-                          curve: Curves.linear,
-                          builder: (context, v, _) => ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: v,
-                              minHeight: 8,
-                              color: primary,
-                              backgroundColor: AppColors.line,
-                            ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                  child: Column(
+                    children: [
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(end: _done / 6),
+                        duration: reduceMotion(context)
+                            ? Duration.zero
+                            : const Duration(milliseconds: _stepMs),
+                        curve: Curves.linear,
+                        builder: (context, v, _) => ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: v,
+                            minHeight: 8,
+                            color: primary,
+                            backgroundColor: AppColors.line,
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        Semantics(
-                          liveRegion: true,
-                          child: Text(
-                            _done >= 6
-                                ? 'Done'
-                                : 'About $remainingSeconds '
-                                      '${remainingSeconds == 1 ? 'second' : 'seconds'} left',
-                            style: dashboardText(
-                              13,
-                              color: AppColors.subtle,
-                              weight: FontWeight.w500,
-                            ),
+                      ),
+                      const SizedBox(height: 12),
+                      Semantics(
+                        liveRegion: true,
+                        child: Text(
+                          _done >= 6
+                              ? 'Done'
+                              : 'About $remainingSeconds '
+                                    '${remainingSeconds == 1 ? 'second' : 'seconds'} left',
+                          style: dashboardText(
+                            13,
+                            color: AppColors.subtle,
+                            weight: FontWeight.w500,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                ),
               ],
             ),
           ),

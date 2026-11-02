@@ -1,0 +1,245 @@
+{
+  "language": {
+    "name": "Otjiherero",
+    "autonym": "Otjiherero",
+    "iso639_3": "her",
+    "bcp47": "her-NA"
+  },
+  "terms_version": "1.0.0",
+  "generated": "2026-10-15",
+  "status": "partial",
+  "coverage": {
+    "filled": 25,
+    "total": 53,
+    "reviewed": 0
+  },
+  "release_rule": "No entry below 'reviewed' may be shown to a participant. Fill 'missing' with a first-language reviewer, then raise each status.",
+  "warning": "Every entry here came out of OCR on a scanned page and NONE of it is confirmed. Treat this file as a reading of a photograph, not as a dictionary. Nothing may reach a participant until a first-language reviewer has checked each glyph against the printed book and raised the status.",
+  "blocked_on": [
+    "namphia-2017",
+    "nied-syllabuses"
+  ],
+  "notes": [
+    "The source PDF carries no text layer, so the pages were rasterised at 200 dpi and read with tesseract. The dictionary prints four to six columns per page, which the reader frequently interleaves: a line can end in a word from the next column. Every entry above was checked for that, but an unnoticed splice is still possible.",
+    "The printed format is ENGLISH/otjiherero followed by the noun-class plural marker in brackets, e.g. 'CHILD/omuatje (ovan-)'. Those markers are reproduced in the notes, not in the target string.",
+    "Several ids that the OCR did not reach are left in 'missing' rather than guessed: consent sentences, risk, benefit, ethics, interpreter, signature, photograph, complaint, voluntary, 'you can stop at any time'.",
+    "Otjiherero is a Bantu language with noun classes and with tone that the dictionary does not mark; a single-word gloss cannot be dropped into a sentence unchanged."
+  ],
+  "entries": {
+    "t.no": {
+      "en": "No",
+      "target": "kako",
+      "alternatives": [
+        "ayee"
+      ],
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'NO/kako, ayee'. 'Ayee kako' = no, not at all. Read by OCR from the scanned page; the glyphs must be checked against the printed dictionary before use."
+    },
+    "t.consent": {
+      "en": "consent",
+      "target": "omeriindjikirira",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR gives 'PERMISSION/omeriindjikirs' with the tail garbled; the standard form is omeriindjikirira. Must be confirmed on the printed page, and 'permission' is not the same legal idea as 'consent'."
+    },
+    "t.agree_take_part": {
+      "en": "I agree to take part in this study",
+      "target": "itavera",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "Word-level only: OCR 'AGREE/itavera (e)' and 'ACCEPT/yakura, itavera (e)'. This is the verb 'to agree', NOT the consent sentence. A reviewer must write the sentence."
+    },
+    "t.question": {
+      "en": "question",
+      "target": "epuriro",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "Not found in the OCR. Built from 'ASK/pura'. Confirm."
+    },
+    "t.answer": {
+      "en": "answer",
+      "target": "zira",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'ANSWER/zira(i)'. Verb form. Read by OCR from the scanned page; the glyphs must be checked against the printed dictionary before use."
+    },
+    "t.researcher": {
+      "en": "researcher",
+      "target": "omutjinge",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'RESEARCHER/omutjinge (omi-)'. The class marker (omi-) looks wrong for a person noun, which should take (ova-). Verify on the page."
+    },
+    "t.witness": {
+      "en": "witness",
+      "target": "ohatoi",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'WITNESS/ohatoi (ozo-)'; a second form beginning 'omahongo-' was cut off at the column edge. Verify."
+    },
+    "t.thumbprint": {
+      "en": "thumbprint",
+      "target": "okamburo katjimunene",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "Compound. OCR confirms only 'THUMB/katjimunene'. The 'print' half is not sourced."
+    },
+    "t.name_question": {
+      "en": "What is your name?",
+      "target": "Ena roye oani?",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR shows 'NAME/ena (oma-)' and the start of 'WHAT IS YOUR NAME' before the column was cut. The sentence here is reconstructed and must be confirmed."
+    },
+    "t.age": {
+      "en": "age",
+      "target": "oukuru",
+      "alternatives": [
+        "otjiwondo"
+      ],
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'AGE/oukuru, oukurupe' and 'AGE/otjiwondo (ovi-)'. Read by OCR from the scanned page; the glyphs must be checked against the printed dictionary before use."
+    },
+    "t.child": {
+      "en": "child",
+      "target": "omuatje",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'CHILD/omuatje (ovan-)'. Plural ovanatje. Read by OCR from the scanned page; the glyphs must be checked against the printed dictionary before use."
+    },
+    "t.person": {
+      "en": "person / people",
+      "target": "omundu / ovandu",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'PEOPLE/ovandu'. Singular omundu follows the class 1/2 pattern. Read by OCR from the scanned page; the glyphs must be checked against the printed dictionary before use."
+    },
+    "t.thank_you": {
+      "en": "Thank you",
+      "target": "ondangi",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'THANKS/ondangi'. Read by OCR from the scanned page; the glyphs must be checked against the printed dictionary before use."
+    },
+    "t.please": {
+      "en": "please",
+      "target": "arikana",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'PLEASE/arikana'. Read by OCR from the scanned page; the glyphs must be checked against the printed dictionary before use."
+    },
+    "t.water": {
+      "en": "water",
+      "target": "omeva",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'WATER/omeva'. Read by OCR from the scanned page; the glyphs must be checked against the printed dictionary before use."
+    },
+    "t.language": {
+      "en": "language",
+      "target": "eraka",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'LANGUAGE/eraka (oma-)'. Read by OCR from the scanned page; the glyphs must be checked against the printed dictionary before use."
+    },
+    "t.listen": {
+      "en": "listen",
+      "target": "puratena",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'LISTEN/puratena(te)'; 'LISTENER/omupuratene (ova-)'. Read by OCR from the scanned page; the glyphs must be checked against the printed dictionary before use."
+    },
+    "t.where_hurt": {
+      "en": "Where does it hurt?",
+      "target": "Mo hihamwa pi?",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR shows 'PAIN/omuhihame' and the start of 'WHERE DO YOU FEEL' before the column was cut. The sentence is reconstructed; confirm."
+    },
+    "t.confidential": {
+      "en": "confidential",
+      "target": "horeka",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'SECRET/horeka(le)'. This is the verb 'to hide', not the research sense of confidential. A reviewer must supply the right term."
+    },
+    "t.withdraw": {
+      "en": "to withdraw",
+      "target": "yarura ombunda",
+      "alternatives": [
+        "rihumina"
+      ],
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'WITHDRAW/yarura ombunda' and 'WITHDRAW/rihumina'. Neither is attested in the sense of withdrawing consent."
+    },
+    "t.payment": {
+      "en": "payment",
+      "target": "otjimariva",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'MONEY/otjimariva (ovi-)'. This is money, not payment. Confirm the payment noun."
+    },
+    "t.who": {
+      "en": "who",
+      "target": "ani",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "OCR: 'WHO/ani'. Read by OCR from the scanned page; the glyphs must be checked against the printed dictionary before use."
+    },
+    "t.when": {
+      "en": "when",
+      "target": "ruṋe",
+      "source_spelling": "ndovazu, tji, tjinangara",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "The OCR line 'WHEN/ndovazu, tji, tjinangara' gives the conjunction 'when' (as in 'if/when it happens'), not the question word. The question word is reconstructed here and must be confirmed."
+    },
+    "t.read_aloud": {
+      "en": "read aloud",
+      "target": "resa",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "Not found in the OCR. 'WRITE/tjanga' is attested. 'resa' is the standard word; confirm."
+    },
+    "t.sick": {
+      "en": "I am sick",
+      "target": "Ami mba vera",
+      "status": "needs_review",
+      "source_id": "otjiherero-woordeboek",
+      "note": "Not attested as a sentence. OCR has 'ILLNESS/ouvera' and the fragment 'wa vere'. Confirm."
+    }
+  },
+  "missing": [
+    "t.informed_consent",
+    "t.do_not_agree",
+    "t.yes",
+    "t.not_sure",
+    "t.stop_any_time",
+    "t.no_penalty",
+    "t.voluntary",
+    "t.your_choice",
+    "t.do_you_understand",
+    "t.study",
+    "t.purpose",
+    "t.risk",
+    "t.benefit",
+    "t.not_paid",
+    "t.who_sees_answers",
+    "t.parent_guardian",
+    "t.interpreter",
+    "t.signature",
+    "t.sign_here",
+    "t.record_voice",
+    "t.photo",
+    "t.complaint",
+    "t.ethics_committee",
+    "t.clinic",
+    "t.dont_know",
+    "t.what",
+    "t.where",
+    "t.why"
+  ]
+}

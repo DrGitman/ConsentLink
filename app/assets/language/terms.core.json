@@ -1,0 +1,336 @@
+{
+  "version": "1.0.0",
+  "about": "The consent core. Every dictionary file answers these ids. Keep ids stable; translate nothing here.",
+  "count": 53,
+  "terms": [
+    {
+      "id": "t.consent",
+      "en": "consent",
+      "pos": "noun",
+      "domain": "consent"
+    },
+    {
+      "id": "t.informed_consent",
+      "en": "informed consent",
+      "pos": "phrase",
+      "domain": "consent"
+    },
+    {
+      "id": "t.agree_take_part",
+      "en": "I agree to take part in this study",
+      "pos": "phrase",
+      "domain": "consent",
+      "max_chars": 60,
+      "context": "06.4, the legal core"
+    },
+    {
+      "id": "t.do_not_agree",
+      "en": "I do not agree",
+      "pos": "phrase",
+      "domain": "consent",
+      "max_chars": 40
+    },
+    {
+      "id": "t.yes",
+      "en": "Yes",
+      "pos": "other",
+      "domain": "consent",
+      "max_chars": 10,
+      "context": "Must not look weightier than No"
+    },
+    {
+      "id": "t.no",
+      "en": "No",
+      "pos": "other",
+      "domain": "consent",
+      "max_chars": 10
+    },
+    {
+      "id": "t.not_sure",
+      "en": "Not sure",
+      "pos": "other",
+      "domain": "consent",
+      "max_chars": 14,
+      "context": "10.5 child assent"
+    },
+    {
+      "id": "t.stop_any_time",
+      "en": "You can stop at any time",
+      "pos": "phrase",
+      "domain": "consent"
+    },
+    {
+      "id": "t.no_penalty",
+      "en": "Saying no will not change how you are treated",
+      "pos": "phrase",
+      "domain": "consent"
+    },
+    {
+      "id": "t.voluntary",
+      "en": "voluntary",
+      "pos": "adj",
+      "domain": "consent"
+    },
+    {
+      "id": "t.withdraw",
+      "en": "to withdraw",
+      "pos": "verb",
+      "domain": "consent"
+    },
+    {
+      "id": "t.your_choice",
+      "en": "It is your choice",
+      "pos": "phrase",
+      "domain": "consent"
+    },
+    {
+      "id": "t.do_you_understand",
+      "en": "Do you understand?",
+      "pos": "question",
+      "domain": "consent"
+    },
+    {
+      "id": "t.question",
+      "en": "question",
+      "pos": "noun",
+      "domain": "ui"
+    },
+    {
+      "id": "t.answer",
+      "en": "answer",
+      "pos": "noun",
+      "domain": "ui"
+    },
+    {
+      "id": "t.study",
+      "en": "study (research)",
+      "pos": "noun",
+      "domain": "consent"
+    },
+    {
+      "id": "t.researcher",
+      "en": "researcher",
+      "pos": "noun",
+      "domain": "person"
+    },
+    {
+      "id": "t.purpose",
+      "en": "purpose of the study",
+      "pos": "phrase",
+      "domain": "consent"
+    },
+    {
+      "id": "t.risk",
+      "en": "risk",
+      "pos": "noun",
+      "domain": "consent"
+    },
+    {
+      "id": "t.benefit",
+      "en": "benefit",
+      "pos": "noun",
+      "domain": "consent"
+    },
+    {
+      "id": "t.payment",
+      "en": "payment",
+      "pos": "noun",
+      "domain": "consent"
+    },
+    {
+      "id": "t.not_paid",
+      "en": "You will not be paid",
+      "pos": "phrase",
+      "domain": "consent"
+    },
+    {
+      "id": "t.confidential",
+      "en": "confidential",
+      "pos": "adj",
+      "domain": "consent"
+    },
+    {
+      "id": "t.who_sees_answers",
+      "en": "Who will see my answers?",
+      "pos": "question",
+      "domain": "consent"
+    },
+    {
+      "id": "t.name_question",
+      "en": "What is your name?",
+      "pos": "question",
+      "domain": "person"
+    },
+    {
+      "id": "t.age",
+      "en": "age",
+      "pos": "noun",
+      "domain": "person"
+    },
+    {
+      "id": "t.child",
+      "en": "child",
+      "pos": "noun",
+      "domain": "person"
+    },
+    {
+      "id": "t.parent_guardian",
+      "en": "parent or guardian",
+      "pos": "noun",
+      "domain": "person"
+    },
+    {
+      "id": "t.witness",
+      "en": "witness",
+      "pos": "noun",
+      "domain": "person",
+      "context": "06.5, required for thumbprint and verbal consent"
+    },
+    {
+      "id": "t.interpreter",
+      "en": "interpreter",
+      "pos": "noun",
+      "domain": "person"
+    },
+    {
+      "id": "t.signature",
+      "en": "signature",
+      "pos": "noun",
+      "domain": "consent"
+    },
+    {
+      "id": "t.sign_here",
+      "en": "Sign here with your finger",
+      "pos": "phrase",
+      "domain": "consent"
+    },
+    {
+      "id": "t.thumbprint",
+      "en": "thumbprint",
+      "pos": "noun",
+      "domain": "consent"
+    },
+    {
+      "id": "t.record_voice",
+      "en": "You may record my voice",
+      "pos": "phrase",
+      "domain": "consent",
+      "max_chars": 40
+    },
+    {
+      "id": "t.photo",
+      "en": "photograph",
+      "pos": "noun",
+      "domain": "consent"
+    },
+    {
+      "id": "t.read_aloud",
+      "en": "read aloud",
+      "pos": "verb",
+      "domain": "ui",
+      "max_chars": 20
+    },
+    {
+      "id": "t.listen",
+      "en": "listen",
+      "pos": "verb",
+      "domain": "ui"
+    },
+    {
+      "id": "t.language",
+      "en": "language",
+      "pos": "noun",
+      "domain": "ui"
+    },
+    {
+      "id": "t.complaint",
+      "en": "complaint",
+      "pos": "noun",
+      "domain": "consent"
+    },
+    {
+      "id": "t.ethics_committee",
+      "en": "ethics committee",
+      "pos": "noun",
+      "domain": "consent"
+    },
+    {
+      "id": "t.clinic",
+      "en": "clinic",
+      "pos": "noun",
+      "domain": "health"
+    },
+    {
+      "id": "t.sick",
+      "en": "I am sick",
+      "pos": "phrase",
+      "domain": "health"
+    },
+    {
+      "id": "t.where_hurt",
+      "en": "Where does it hurt?",
+      "pos": "question",
+      "domain": "health"
+    },
+    {
+      "id": "t.water",
+      "en": "water",
+      "pos": "noun",
+      "domain": "general"
+    },
+    {
+      "id": "t.person",
+      "en": "person / people",
+      "pos": "noun",
+      "domain": "person"
+    },
+    {
+      "id": "t.thank_you",
+      "en": "Thank you",
+      "pos": "phrase",
+      "domain": "general"
+    },
+    {
+      "id": "t.please",
+      "en": "please",
+      "pos": "other",
+      "domain": "general"
+    },
+    {
+      "id": "t.dont_know",
+      "en": "I don't know",
+      "pos": "phrase",
+      "domain": "general"
+    },
+    {
+      "id": "t.who",
+      "en": "who",
+      "pos": "question",
+      "domain": "ui"
+    },
+    {
+      "id": "t.what",
+      "en": "what",
+      "pos": "question",
+      "domain": "ui"
+    },
+    {
+      "id": "t.where",
+      "en": "where",
+      "pos": "question",
+      "domain": "ui"
+    },
+    {
+      "id": "t.when",
+      "en": "when",
+      "pos": "question",
+      "domain": "ui"
+    },
+    {
+      "id": "t.why",
+      "en": "why",
+      "pos": "question",
+      "domain": "ui"
+    }
+  ]
+}

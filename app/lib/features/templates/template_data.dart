@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../new_consent/consent_draft_data.dart';
+import 'template_store.dart';
 
 /// Sample templates appear only with TEMPLATES_PREVIEW=true or the existing
 /// preview flags. Template uploads use the P4 document service; the template
@@ -499,6 +500,15 @@ const detectedRules = [
 class TemplateLibrary extends StateNotifier<List<StudioTemplate>> {
   TemplateLibrary(super.state);
 
+  /// Live: your saved templates, then every change is saved on this phone.
+  TemplateLibrary.stored() : super(const []) {
+    loadTemplates().then((saved) {
+      if (!mounted) return;
+      if (state.isEmpty) state = saved;
+      addListener(saveTemplates, fireImmediately: false);
+    });
+  }
+
   StudioTemplate add(StudioTemplate t) {
     state = [t, ...state];
     return t;
@@ -570,9 +580,9 @@ class TemplateLibrary extends StateNotifier<List<StudioTemplate>> {
 
 final templateLibraryProvider =
     StateNotifierProvider<TemplateLibrary, List<StudioTemplate>>(
-      (ref) => TemplateLibrary(
-        ref.watch(templatesPreviewProvider) ? sampleStudioTemplates : const [],
-      ),
+      (ref) => ref.watch(templatesPreviewProvider)
+          ? TemplateLibrary(sampleStudioTemplates)
+          : TemplateLibrary.stored(),
     );
 
 final templateFilterProvider = StateProvider<TemplateFilter>(

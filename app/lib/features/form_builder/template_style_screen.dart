@@ -47,18 +47,37 @@ class _TemplateStyleScreenState extends ConsumerState<TemplateStyleScreen> {
     }
   }
 
-  void _save() {
+  Future<void> _save() async {
+    String? studyId;
     if (!ref.read(newConsentPreviewProvider)) {
-      showProjectNotice(
-        context,
-        'Save form',
-        'Saving forms will be connected with the project data source.',
-      );
-      return;
+      // Live: publish the approved sections as the participant form.
+      final draft = ref.read(consentDraftProvider);
+      if (draft.studyId == null || !draft.allApproved) {
+        showProjectNotice(
+          context,
+          'Save form',
+          'Approve every section of the consent form before saving it.',
+        );
+        return;
+      }
+      try {
+        studyId = await ref.read(consentDraftProvider.notifier).publish();
+      } catch (e) {
+        if (!mounted) return;
+        showProjectNotice(
+          context,
+          'Save form',
+          'The form could not be saved: $e',
+        );
+        return;
+      }
+      if (!mounted) return;
     }
     setState(() => _saved = true);
     _leave = Timer(const Duration(milliseconds: 2200), () {
-      if (mounted) context.go('/projects');
+      if (mounted) {
+        context.go(studyId == null ? '/projects' : '/projects/$studyId');
+      }
     });
   }
 

@@ -1,0 +1,386 @@
+{
+  "language": {
+    "name": "German",
+    "autonym": "Deutsch",
+    "iso639_3": "deu",
+    "bcp47": "de-NA"
+  },
+  "terms_version": "1.0.0",
+  "generated": "2026-10-15",
+  "status": "complete_draft",
+  "coverage": {
+    "filled": 53,
+    "total": 53,
+    "reviewed": 0
+  },
+  "release_rule": "No entry below 'reviewed' may be shown to a participant. Fill 'missing' with a first-language reviewer, then raise each status.",
+  "notes": [
+    "Namibian German (Südwesterdeutsch) is close to standard German; the source is a standard-German phrasebook, so the register is correct but a Namibian German speaker should still read the sentences.",
+    "All entries use the formal 'Sie'. The source explains the Sie/du split on p.4; a participant must never be addressed with 'du' in a consent document.",
+    "Gendered profession pairs follow the source's own convention."
+  ],
+  "entries": {
+    "t.consent": {
+      "en": "consent",
+      "target": "die Einwilligung",
+      "alternatives": [
+        "die Zustimmung"
+      ],
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "note": "'Einwilligung' is the legal term used in German research ethics."
+    },
+    "t.informed_consent": {
+      "en": "informed consent",
+      "target": "die informierte Einwilligung",
+      "alternatives": [
+        "die Aufklärung und Einwilligung"
+      ],
+      "status": "needs_review",
+      "source_id": "collins-de-3000"
+    },
+    "t.agree_take_part": {
+      "en": "I agree to take part in this study",
+      "target": "Ich willige ein, an dieser Studie teilzunehmen",
+      "status": "needs_review",
+      "source_id": "collins-de-3000",
+      "note": "Legal sentence; must be approved, not glossed."
+    },
+    "t.do_not_agree": {
+      "en": "I do not agree",
+      "target": "Ich willige nicht ein",
+      "status": "needs_review",
+      "source_id": "collins-de-3000"
+    },
+    "t.yes": {
+      "en": "Yes",
+      "target": "Ja",
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "source_page": "the basics, p.6"
+    },
+    "t.no": {
+      "en": "No",
+      "target": "Nein",
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "source_page": "the basics, p.6"
+    },
+    "t.not_sure": {
+      "en": "Not sure",
+      "target": "Ich bin mir nicht sicher",
+      "status": "needs_review",
+      "source_id": "collins-de-3000"
+    },
+    "t.stop_any_time": {
+      "en": "You can stop at any time",
+      "target": "Sie können jederzeit aufhören",
+      "status": "needs_review",
+      "source_id": "collins-de-3000"
+    },
+    "t.no_penalty": {
+      "en": "Saying no will not change how you are treated",
+      "target": "Wenn Sie nein sagen, ändert das nichts daran, wie Sie behandelt werden",
+      "status": "needs_review",
+      "source_id": "collins-de-3000",
+      "note": "'behandeln' = to treat, from the health section."
+    },
+    "t.voluntary": {
+      "en": "voluntary",
+      "target": "freiwillig",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.withdraw": {
+      "en": "to withdraw",
+      "target": "zurückziehen",
+      "alternatives": [
+        "widerrufen"
+      ],
+      "status": "needs_review",
+      "source_id": "collins-de-3000",
+      "note": "'widerrufen' is the legal term for withdrawing consent."
+    },
+    "t.your_choice": {
+      "en": "It is your choice",
+      "target": "Es ist Ihre Entscheidung",
+      "status": "needs_review",
+      "source_id": "collins-de-3000"
+    },
+    "t.do_you_understand": {
+      "en": "Do you understand?",
+      "target": "Verstehen Sie?",
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "note": "'Ich verstehe nicht' is in the source, p.6."
+    },
+    "t.question": {
+      "en": "question",
+      "target": "die Frage",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.answer": {
+      "en": "answer",
+      "target": "die Antwort",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.study": {
+      "en": "study (research)",
+      "target": "die Studie",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.researcher": {
+      "en": "researcher",
+      "target": "der Forscher / die Forscherin",
+      "status": "needs_review",
+      "source_id": "collins-de-3000",
+      "note": "Gendered pair, as the source does for all professions."
+    },
+    "t.purpose": {
+      "en": "purpose of the study",
+      "target": "der Zweck der Studie",
+      "status": "needs_review",
+      "source_id": "collins-de-3000"
+    },
+    "t.risk": {
+      "en": "risk",
+      "target": "das Risiko",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.benefit": {
+      "en": "benefit",
+      "target": "der Nutzen",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.payment": {
+      "en": "payment",
+      "target": "die Bezahlung",
+      "alternatives": [
+        "die Aufwandsentschädigung"
+      ],
+      "status": "needs_review",
+      "source_id": "collins-de-3000",
+      "note": "'Aufwandsentschädigung' is the right word for reimbursing costs."
+    },
+    "t.not_paid": {
+      "en": "You will not be paid",
+      "target": "Sie werden nicht bezahlt",
+      "status": "needs_review",
+      "source_id": "collins-de-3000"
+    },
+    "t.confidential": {
+      "en": "confidential",
+      "target": "vertraulich",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.who_sees_answers": {
+      "en": "Who will see my answers?",
+      "target": "Wer sieht meine Antworten?",
+      "status": "needs_review",
+      "source_id": "collins-de-3000"
+    },
+    "t.name_question": {
+      "en": "What is your name?",
+      "target": "Wie heißen Sie?",
+      "alternatives": [
+        "Wie ist Ihr Name?"
+      ],
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "source_page": "about you, p.7"
+    },
+    "t.age": {
+      "en": "age",
+      "target": "das Alter",
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "source_page": "'Wie alt sind Sie?' p.7"
+    },
+    "t.child": {
+      "en": "child",
+      "target": "das Kind",
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "source_page": "about you, p.7"
+    },
+    "t.parent_guardian": {
+      "en": "parent or guardian",
+      "target": "der Elternteil oder die Erziehungsberechtigte Person",
+      "status": "needs_review",
+      "source_id": "collins-de-3000",
+      "note": "'Erziehungsberechtigte' is the legal term for guardian."
+    },
+    "t.witness": {
+      "en": "witness",
+      "target": "der Zeuge / die Zeugin",
+      "status": "needs_review",
+      "source_id": "collins-de-3000"
+    },
+    "t.interpreter": {
+      "en": "interpreter",
+      "target": "der Dolmetscher / die Dolmetscherin",
+      "status": "needs_review",
+      "source_id": "collins-de-3000"
+    },
+    "t.signature": {
+      "en": "signature",
+      "target": "die Unterschrift",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.sign_here": {
+      "en": "Sign here with your finger",
+      "target": "Unterschreiben Sie hier mit dem Finger",
+      "status": "needs_review",
+      "source_id": "collins-de-3000"
+    },
+    "t.thumbprint": {
+      "en": "thumbprint",
+      "target": "der Daumenabdruck",
+      "status": "needs_review",
+      "source_id": "collins-de-3000"
+    },
+    "t.record_voice": {
+      "en": "You may record my voice",
+      "target": "Sie dürfen meine Stimme aufnehmen",
+      "status": "needs_review",
+      "source_id": "collins-de-3000"
+    },
+    "t.photo": {
+      "en": "photograph",
+      "target": "das Foto",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.read_aloud": {
+      "en": "read aloud",
+      "target": "vorlesen",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.listen": {
+      "en": "listen",
+      "target": "zuhören",
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "note": "'hören' = to hear, from the body/senses section."
+    },
+    "t.language": {
+      "en": "language",
+      "target": "die Sprache",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.complaint": {
+      "en": "complaint",
+      "target": "die Beschwerde",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.ethics_committee": {
+      "en": "ethics committee",
+      "target": "die Ethikkommission",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.clinic": {
+      "en": "clinic",
+      "target": "die Klinik",
+      "alternatives": [
+        "das Krankenhaus"
+      ],
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "source_page": "the hospital, p.102"
+    },
+    "t.sick": {
+      "en": "I am sick",
+      "target": "Ich bin krank",
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "note": "'die Krankheit' = illness, health section p.94."
+    },
+    "t.where_hurt": {
+      "en": "Where does it hurt?",
+      "target": "Wo tut es weh?",
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "note": "'der Schmerz' = pain, health section p.94."
+    },
+    "t.water": {
+      "en": "water",
+      "target": "das Wasser",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.person": {
+      "en": "person / people",
+      "target": "die Person / die Leute",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.thank_you": {
+      "en": "Thank you",
+      "target": "Vielen Dank",
+      "alternatives": [
+        "Danke"
+      ],
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "source_page": "the basics, p.6"
+    },
+    "t.please": {
+      "en": "please",
+      "target": "Bitte",
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "source_page": "the basics, p.6"
+    },
+    "t.dont_know": {
+      "en": "I don't know",
+      "target": "Ich weiß nicht",
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "source_page": "the basics, p.6"
+    },
+    "t.who": {
+      "en": "who",
+      "target": "wer",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.what": {
+      "en": "what",
+      "target": "was",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    },
+    "t.where": {
+      "en": "where",
+      "target": "wo",
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "source_page": "'Wo wohnen Sie?' p.7"
+    },
+    "t.when": {
+      "en": "when",
+      "target": "wann",
+      "status": "reviewed",
+      "source_id": "collins-de-3000",
+      "source_page": "'Wann haben Sie Geburtstag?' p.7"
+    },
+    "t.why": {
+      "en": "why",
+      "target": "warum",
+      "status": "reviewed",
+      "source_id": "collins-de-3000"
+    }
+  },
+  "missing": []
+}

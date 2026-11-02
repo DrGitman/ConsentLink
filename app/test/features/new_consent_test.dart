@@ -61,6 +61,8 @@ Future<ProviderContainer> pumpNewConsent(
     overrides: [
       newConsentPreviewProvider.overrideWithValue(preview),
       largerTouchTargetsProvider.overrideWith((ref) => large),
+      // The researcher cancels the phone's file picker.
+      proposalPickerProvider.overrideWithValue(() async => null),
     ],
   );
   addTearDown(container.dispose);
@@ -131,11 +133,10 @@ void main() {
       find.text('Start from your research paper or proposal'),
       findsOneWidget,
     );
+    // Live: the phone's file picker opens; cancelling it uploads nothing.
     await tester.tap(find.text('Tap to upload or take a photo'));
     await settle(tester);
-    expect(find.textContaining('Nothing has been uploaded'), findsOneWidget);
-    await tester.tap(find.text('OK'));
-    await settle(tester);
+    expect(find.textContaining('.pdf'), findsNothing);
     await tester.tap(find.text('Analyse with on-device AI'));
     await settle(tester);
     expect(find.text('Drafting your consent form'), findsNothing);

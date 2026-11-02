@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'live_projects.dart';
+
 /// Sample projects are shown only with PROJECTS_PREVIEW=true (or the
-/// existing DASHBOARD_PREVIEW=true). Normal mode has no data source yet.
+/// existing DASHBOARD_PREVIEW=true). Normal mode reads the studies on the phone.
 final projectsPreviewProvider = Provider<bool>(
   (ref) =>
       const bool.fromEnvironment('PROJECTS_PREVIEW') ||
@@ -138,8 +140,11 @@ const sampleProjects = [
   ),
 ];
 
+/// The sample projects in preview builds, otherwise the studies on this phone.
 final projectsProvider = Provider<List<Project>>(
-  (ref) => ref.watch(projectsPreviewProvider) ? sampleProjects : const [],
+  (ref) => ref.watch(projectsPreviewProvider)
+      ? sampleProjects
+      : ref.watch(liveProjectsProvider).valueOrNull ?? const [],
 );
 
 final projectFilterProvider = StateProvider<ProjectFilter>(

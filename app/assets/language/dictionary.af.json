@@ -1,0 +1,388 @@
+{
+  "language": {
+    "name": "Afrikaans",
+    "autonym": "Afrikaans",
+    "iso639_3": "afr",
+    "bcp47": "af-NA"
+  },
+  "terms_version": "1.0.0",
+  "generated": "2026-10-15",
+  "status": "complete_draft",
+  "coverage": {
+    "filled": 53,
+    "total": 53,
+    "reviewed": 0
+  },
+  "release_rule": "No entry below 'reviewed' may be shown to a participant. Fill 'missing' with a first-language reviewer, then raise each status.",
+  "notes": [
+    "Single-word entries marked 'reviewed' are confirmed against the Afrikaans-English dictionary; the full sentences are not, because no source gives consent sentences in Afrikaans.",
+    "The source is an af->en dictionary, so every lookup here was a reverse lookup; a reviewer should confirm the direction reads naturally.",
+    "Namibian Afrikaans differs from South African Afrikaans in register more than vocabulary. Have a Namibian speaker read the sentences aloud before use."
+  ],
+  "entries": {
+    "t.consent": {
+      "en": "consent",
+      "target": "toestemming",
+      "alternatives": [
+        "instemming"
+      ],
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024",
+      "note": "Noun. 'toestemming gee' = to give consent."
+    },
+    "t.informed_consent": {
+      "en": "informed consent",
+      "target": "ingeligte toestemming",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024",
+      "note": "Compound built from 'ingelig' (informed) + 'toestemming'; standard in SA/NA ethics documents."
+    },
+    "t.agree_take_part": {
+      "en": "I agree to take part in this study",
+      "target": "Ek stem in om aan hierdie studie deel te neem",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024",
+      "note": "Built from dictionary 'instem' (agree) + 'studie'. Must be approved as a legal sentence, not a word gloss."
+    },
+    "t.do_not_agree": {
+      "en": "I do not agree",
+      "target": "Ek stem nie in nie",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.yes": {
+      "en": "Yes",
+      "target": "Ja",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.no": {
+      "en": "No",
+      "target": "Nee",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.not_sure": {
+      "en": "Not sure",
+      "target": "Ek is nie seker nie",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.stop_any_time": {
+      "en": "You can stop at any time",
+      "target": "Jy kan enige tyd ophou",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024",
+      "note": "'ophou' = to stop, from the dictionary."
+    },
+    "t.no_penalty": {
+      "en": "Saying no will not change how you are treated",
+      "target": "As jy nee sê, sal dit nie verander hoe jy behandel word nie",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024",
+      "note": "Legal meaning must be checked by the ethics reviewer."
+    },
+    "t.voluntary": {
+      "en": "voluntary",
+      "target": "vrywillig",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.withdraw": {
+      "en": "to withdraw",
+      "target": "onttrek",
+      "alternatives": [
+        "terugtrek"
+      ],
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024",
+      "note": "'onttrek' is the usual research term; 'terugtrek' is plainer."
+    },
+    "t.your_choice": {
+      "en": "It is your choice",
+      "target": "Dit is jou keuse",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.do_you_understand": {
+      "en": "Do you understand?",
+      "target": "Verstaan jy?",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.question": {
+      "en": "question",
+      "target": "vraag",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.answer": {
+      "en": "answer",
+      "target": "antwoord",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.study": {
+      "en": "study (research)",
+      "target": "studie",
+      "alternatives": [
+        "navorsingstudie"
+      ],
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.researcher": {
+      "en": "researcher",
+      "target": "navorser",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024",
+      "note": "Not listed directly; formed from 'navorsing' (research) + agent -er. Confirm with reviewer."
+    },
+    "t.purpose": {
+      "en": "purpose of the study",
+      "target": "doel van die studie",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024",
+      "note": "'doel' = purpose."
+    },
+    "t.risk": {
+      "en": "risk",
+      "target": "risiko",
+      "alternatives": [
+        "gevaar"
+      ],
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.benefit": {
+      "en": "benefit",
+      "target": "voordeel",
+      "alternatives": [
+        "baat"
+      ],
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.payment": {
+      "en": "payment",
+      "target": "betaling",
+      "alternatives": [
+        "vergoeding"
+      ],
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024",
+      "note": "'vergoeding' is the better word for reimbursement of travel costs."
+    },
+    "t.not_paid": {
+      "en": "You will not be paid",
+      "target": "Jy sal nie betaal word nie",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.confidential": {
+      "en": "confidential",
+      "target": "vertroulik",
+      "alternatives": [
+        "konfidensieel"
+      ],
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.who_sees_answers": {
+      "en": "Who will see my answers?",
+      "target": "Wie sal my antwoorde sien?",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.name_question": {
+      "en": "What is your name?",
+      "target": "Wat is jou naam?",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.age": {
+      "en": "age",
+      "target": "ouderdom",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.child": {
+      "en": "child",
+      "target": "kind",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.parent_guardian": {
+      "en": "parent or guardian",
+      "target": "ouer of voog",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024",
+      "note": "'voog' = guardian."
+    },
+    "t.witness": {
+      "en": "witness",
+      "target": "getuie",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.interpreter": {
+      "en": "interpreter",
+      "target": "tolk",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.signature": {
+      "en": "signature",
+      "target": "handtekening",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.sign_here": {
+      "en": "Sign here with your finger",
+      "target": "Teken hier met jou vinger",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024",
+      "note": "'teken' = to sign."
+    },
+    "t.thumbprint": {
+      "en": "thumbprint",
+      "target": "duimafdruk",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024",
+      "note": "Not in the source; standard compound duim + afdruk. Confirm."
+    },
+    "t.record_voice": {
+      "en": "You may record my voice",
+      "target": "Jy mag my stem opneem",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024",
+      "note": "'opneem' = to record."
+    },
+    "t.photo": {
+      "en": "photograph",
+      "target": "foto",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.read_aloud": {
+      "en": "read aloud",
+      "target": "hardop lees",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024",
+      "note": "'lees' = to read; 'oplees' in the source means to read out."
+    },
+    "t.listen": {
+      "en": "listen",
+      "target": "luister",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.language": {
+      "en": "language",
+      "target": "taal",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.complaint": {
+      "en": "complaint",
+      "target": "klagte",
+      "alternatives": [
+        "klag"
+      ],
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.ethics_committee": {
+      "en": "ethics committee",
+      "target": "etiekkomitee",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024",
+      "note": "'etiek' from the source; 'komitee' is standard. Confirm the compound spelling."
+    },
+    "t.clinic": {
+      "en": "clinic",
+      "target": "kliniek",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.sick": {
+      "en": "I am sick",
+      "target": "Ek is siek",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.where_hurt": {
+      "en": "Where does it hurt?",
+      "target": "Waar is dit seer?",
+      "status": "needs_review",
+      "source_id": "pf-afr-en-2024",
+      "note": "'seer' = sore/hurt; 'pyn' = pain."
+    },
+    "t.water": {
+      "en": "water",
+      "target": "water",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.person": {
+      "en": "person / people",
+      "target": "persoon / mense",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024",
+      "note": "Singular 'persoon'; plural 'mense'."
+    },
+    "t.thank_you": {
+      "en": "Thank you",
+      "target": "Dankie",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.please": {
+      "en": "please",
+      "target": "asseblief",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.dont_know": {
+      "en": "I don't know",
+      "target": "Ek weet nie",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.who": {
+      "en": "who",
+      "target": "wie",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.what": {
+      "en": "what",
+      "target": "wat",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.where": {
+      "en": "where",
+      "target": "waar",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.when": {
+      "en": "when",
+      "target": "wanneer",
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024"
+    },
+    "t.why": {
+      "en": "why",
+      "target": "hoekom",
+      "alternatives": [
+        "waarom"
+      ],
+      "status": "reviewed",
+      "source_id": "pf-afr-en-2024",
+      "note": "'hoekom' is spoken; 'waarom' is written/formal."
+    }
+  },
+  "missing": []
+}

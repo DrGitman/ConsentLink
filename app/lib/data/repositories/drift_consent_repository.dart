@@ -221,12 +221,18 @@ class DriftParticipantRepository implements ParticipantRepository {
         _db.localFiles.id.equalsExp(_db.consentFiles.id),
       ),
     ])..where(_db.consentFiles.consentId.equals(consentId));
+    final fromLink = await (_db.select(
+      _db.linkSignatures,
+    )..where((s) => s.id.equals(consentId))).getSingleOrNull();
     return [
       for (final row in await query.get())
         (
           SignatureKind.values.byName(row.readTable(_db.consentFiles).kind),
           base64Decode(row.readTable(_db.localFiles).data),
         ),
+      // Signed on the participant's own phone through a share link.
+      if (fromLink != null)
+        (SignatureKind.signature, base64Decode(fromLink.pngBase64)),
     ];
   }
 }

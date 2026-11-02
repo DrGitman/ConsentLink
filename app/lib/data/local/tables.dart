@@ -120,6 +120,16 @@ class AuditLog extends Table with _Id {
 /// Phone-only (never synced): the bytes of a signature, thumbprint, witness
 /// mark or recording, kept in the encrypted database until (and after) sync
 /// uploads them to Storage at [storagePath]. Same id as its consent_files row.
+/// Download only. A signature drawn on the participant's own phone through a
+/// share link; id is the consent's id (20261102000001_consent_links.sql).
+class LinkSignatures extends Table with _Id {
+  TextColumn get studyId => text()();
+  TextColumn get institutionId => text().nullable()();
+  TextColumn get pngBase64 => text()();
+  TextColumn get sha256 => text()();
+  TextColumn get createdAt => text().nullable()();
+}
+
 class LocalFiles extends Table with _Id {
   TextColumn get storagePath => text()();
   TextColumn get contentType => text()();

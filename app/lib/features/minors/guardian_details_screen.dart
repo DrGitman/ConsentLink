@@ -89,7 +89,7 @@ class _GuardianDetailsScreenState extends ConsumerState<GuardianDetailsScreen> {
             style: dashboardText(13, color: AppColors.subtle),
           ),
           const SizedBox(height: 8),
-          for (final l in captureLanguages)
+          for (final l in ref.read(captureLanguagesProvider))
             Semantics(
               selected: l == _language(),
               inMutuallyExclusiveGroup: true,
