@@ -126,8 +126,9 @@ Future<void> showShareLinkSheet(
     try {
       link = await createConsentLink(client, project.id);
     } catch (e) {
-      if (context.mounted)
+      if (context.mounted) {
         await showProjectNotice(context, 'Share link / QR code', _problem(e));
+      }
       return;
     }
   }

@@ -20,8 +20,9 @@ import 'review_draft_screen.dart' show sheetMotion;
 /// from the team dictionaries, or reviewed pack text, that a fluent speaker
 /// checks. The preview shows Figma's Otjiherero.
 final draftLanguagesProvider = Provider<List<String>>((ref) {
-  if (ref.watch(newConsentPreviewProvider))
+  if (ref.watch(newConsentPreviewProvider)) {
     return const ['English', 'Otjiherero'];
+  }
   return [for (final l in consentLanguages) l.displayName];
 });
 

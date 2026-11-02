@@ -274,8 +274,9 @@ List<String> ruleTemplateItems(String request) {
   }
   if (text.contains('header')) items.add('Header: study title and institution');
   if (text.contains('logo')) items.add('Institution logo at the top');
-  if (text.contains('witness'))
+  if (text.contains('witness')) {
     items.add('Witness name, signature & date block');
+  }
   if (text.contains('thumb')) items.add('Thumbprint box next to the signature');
   final named = [
     for (final l in consentLanguages)
@@ -297,10 +298,12 @@ List<String> ruleTemplateItems(String request) {
       'Font: ${family[0].toUpperCase()}${family.substring(1)} ${font.group(2)} pt',
     );
   }
-  if (margin != null)
+  if (margin != null) {
     items.add('Margins: ${margin.group(1)!.replaceAll(',', '.')} cm');
-  if (font == null && margin == null)
+  }
+  if (font == null && margin == null) {
     items.add('Keeps Arial 11 pt and 2.5 cm margins');
+  }
   if (items.length == 1 && request.trim().isNotEmpty) {
     items.insert(0, 'Note: ${request.trim()}');
   }
