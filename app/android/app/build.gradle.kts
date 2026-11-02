@@ -25,7 +25,8 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         // 23 (Android 6): flutter_secure_storage keeps the database key in the Keystore.
-        minSdk = 23
+        // 26: the llama.cpp AAR (libs/llama-cpp-dart.aar) needs Android 8.0+.
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -42,4 +43,11 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // llama.cpp for the on-device LLM (app/lib/ai/llm), arm64-v8a only.
+    // From github.com/netdur/llama_cpp_dart release v0.9.0-dev.10 (MIT),
+    // sha256 51b5f4624e10296e362725a056ed0e3609c71f00ce4575ce28b28f8ec9aafcf7.
+    implementation(files("libs/llama-cpp-dart.aar"))
 }

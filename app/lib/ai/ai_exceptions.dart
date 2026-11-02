@@ -44,3 +44,13 @@ final class UnsupportedLanguageException extends ConsentAiException {
 final class ReadAloudException extends ConsentAiException {
   const ReadAloudException(super.message);
 }
+
+/// The model file is not on the device.
+final class ModelNotFoundException extends ConsentAiException {
+  const ModelNotFoundException(super.message);
+}
+
+/// The on-device model failed to load or to generate.
+final class LlmException extends ConsentAiException {
+  const LlmException(super.message);
+}
