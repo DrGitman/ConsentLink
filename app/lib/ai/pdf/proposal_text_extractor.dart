@@ -5,8 +5,9 @@ import 'proposal_page.dart';
 
 /// Reads the text of a proposal file page by page, on the device only.
 abstract interface class ProposalTextExtractor {
-  /// Throws an [EncryptedPdfException], a [ScannedPdfException] or a
-  /// [CorruptedPdfException].
+  /// Throws an [EncryptedPdfException], a [ScannedPdfException], a
+  /// [CorruptedPdfException], a [ProposalTooLargeException] or a
+  /// [TooManyPagesException].
   Future<List<ProposalPage>> extract(Uint8List bytes);
 }
 

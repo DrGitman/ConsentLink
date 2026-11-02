@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:consentlink/ai/ai_exceptions.dart';
 import 'package:consentlink/ai/pdf/pdfrx_text_extractor.dart';
+import 'package:consentlink/ai/pdf/proposal_file_guard.dart';
 import 'package:consentlink/ai/pdf/proposal_page.dart';
 import 'package:consentlink/ai/pdf/proposal_text_extractor.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -92,6 +93,13 @@ void main() {
         throwsA(isA<CorruptedPdfException>()),
       );
     });
+
+    test('a PDF above $maxProposalPages pages is refused', () async {
+      final bytes = await _pdf([
+        for (var i = 0; i <= maxProposalPages; i++) pw.Text(_pageTexts.first),
+      ]);
+      expect(extractor.extract(bytes), throwsA(isA<TooManyPagesException>()));
+    });
   });
 
   test('a password-protected PDF is reported as encrypted', () {
@@ -100,7 +108,7 @@ void main() {
       open: (_) => throw const PdfPasswordException('No password.'),
     );
     expect(
-      extractor.extract(Uint8List.fromList([1])),
+      extractor.extract(Uint8List.fromList(pdfHeader.codeUnits)),
       throwsA(isA<EncryptedPdfException>()),
     );
   });
