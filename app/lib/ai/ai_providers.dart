@@ -1,3 +1,4 @@
+import 'package:consentlink/contracts/consent_ai_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
@@ -10,6 +11,7 @@ import 'llm/llm_runtime.dart';
 import 'model/model_download_service.dart';
 import 'pdf/pdfrx_text_extractor.dart';
 import 'pdf/proposal_text_extractor.dart';
+import 'service/on_device_consent_ai_service.dart';
 import 'tts/flutter_tts_engine.dart';
 import 'tts/read_aloud_service.dart';
 
@@ -34,6 +36,14 @@ final llmRuntimeProvider = Provider<LlmRuntime>((ref) {
   ref.onDispose(runtime.dispose);
   return runtime;
 });
+
+/// [ConsentAiService] on the on-device model, for the app (P1 wires it in).
+final consentAiServiceProvider = Provider<ConsentAiService>(
+  (ref) => OnDeviceConsentAiService(
+    extractor: ref.watch(proposalTextExtractorProvider),
+    runtime: ref.watch(llmRuntimeProvider),
+  ),
+);
 
 /// Downloads the on-device model; the UI decides when (Wi-Fi, after sign-in).
 final modelDownloadServiceProvider = Provider<ModelDownloadService>((ref) {
