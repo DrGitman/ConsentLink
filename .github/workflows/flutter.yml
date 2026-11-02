@@ -1,0 +1,95 @@
+# Checks for the Flutter app (app/). Each check is its own job, so one red
+# check doesn't hide the others. The debug APK is attached to every run.
+name: Flutter
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: flutter-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Same version the app was made with (app/.metadata). Update it here when
+  # the team upgrades Flutter.
+  FLUTTER_VERSION: 3.32.4
+
+defaults:
+  run:
+    working-directory: app
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get
+      - name: Check formatting (fix locally with `dart format lib test`)
+        run: dart format --output=none --set-exit-if-changed lib test
+
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get
+      - name: Generate code (only if the app uses build_runner)
+        run: |
+          if grep -qE '^\s+build_runner:' pubspec.yaml; then
+            dart run build_runner build --delete-conflicting-outputs
+          fi
+      - run: flutter analyze
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get
+      - name: Generate code (only if the app uses build_runner)
+        run: |
+          if grep -qE '^\s+build_runner:' pubspec.yaml; then
+            dart run build_runner build --delete-conflicting-outputs
+          fi
+      - run: flutter test
+
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: flutter pub get
+      - name: Generate code (only if the app uses build_runner)
+        run: |
+          if grep -qE '^\s+build_runner:' pubspec.yaml; then
+            dart run build_runner build --delete-conflicting-outputs
+          fi
+      - run: flutter build apk --debug
+      - uses: actions/upload-artifact@v5
+        with:
+          name: consentlink-debug-apk
+          path: app/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 14
+          if-no-files-found: error
