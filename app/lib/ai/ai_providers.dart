@@ -1,3 +1,4 @@
+import 'package:consentlink/contracts/consent_ai_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'drafting/consent_drafting_service.dart';
@@ -7,6 +8,7 @@ import 'llm/llama_cpp_runtime.dart';
 import 'llm/llm_runtime.dart';
 import 'pdf/pdfrx_text_extractor.dart';
 import 'pdf/proposal_text_extractor.dart';
+import 'service/on_device_consent_ai_service.dart';
 import 'tts/flutter_tts_engine.dart';
 import 'tts/read_aloud_service.dart';
 
@@ -31,3 +33,11 @@ final llmRuntimeProvider = Provider<LlmRuntime>((ref) {
   ref.onDispose(runtime.dispose);
   return runtime;
 });
+
+/// [ConsentAiService] on the on-device model, for the app (P1 wires it in).
+final consentAiServiceProvider = Provider<ConsentAiService>(
+  (ref) => OnDeviceConsentAiService(
+    extractor: ref.watch(proposalTextExtractorProvider),
+    runtime: ref.watch(llmRuntimeProvider),
+  ),
+);
