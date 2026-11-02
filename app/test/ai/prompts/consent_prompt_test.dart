@@ -1,5 +1,6 @@
 import 'package:consentlink/ai/domain/consent_element.dart';
 import 'package:consentlink/ai/pdf/proposal_page.dart';
+import 'package:consentlink/ai/prompts/consent_output_parser.dart';
 import 'package:consentlink/ai/prompts/consent_prompt.dart';
 import 'package:consentlink/ai/prompts/element_guidance.dart';
 import 'package:consentlink/ai/prompts/section_grammar.dart';
@@ -35,6 +36,22 @@ void main() {
     expect(user, contains('[Page 2]\nParticipants answer a survey.'));
     expect(user, contains('[Page 5]\nEach visit lasts 30 minutes.'));
     expect(user.indexOf('[Page 2]'), lessThan(user.indexOf('[Page 5]')));
+  });
+
+  test('spells out both answers, citing a given page', () {
+    final user = buildSectionPrompt(ConsentElement.duration, pages).user;
+
+    expect(user, contains('"sections":[{"key":"duration",'));
+    expect(user, contains('"source_pages":[2]'));
+    expect(user, endsWith(missingAnswerFor(ConsentElement.duration)));
+  });
+
+  test('the "missing" answer is read as a clean missing element', () {
+    final parsed = parseConsentDraft(missingAnswerFor(ConsentElement.risks));
+
+    expect(parsed.issues, isEmpty);
+    expect(parsed.draft.sections, isEmpty);
+    expect(parsed.draft.missing, [ConsentElement.risks]);
   });
 
   test('keeps click letters unchanged (task K)', () {

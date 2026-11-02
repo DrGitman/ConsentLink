@@ -1,3 +1,4 @@
+import 'dart:developer' show log;
 import 'dart:io';
 
 import 'package:llama_cpp_dart/llama_cpp_dart.dart';
@@ -14,6 +15,13 @@ const _androidLibrary = 'libllama.so';
 const _temperature = 1.0;
 const _topP = 0.95;
 const _topK = 64;
+
+const _logName = 'ai.llm';
+
+// llama_cpp_dart 0.9.0-dev.10 feeds the prompt tokens to the whole sampler
+// chain (generator.dart `_prefill`), so a grammar sees <bos> and llama.cpp
+// aborts the app. Grammars stay off until the binding is fixed (D5.6).
+const _grammarSupported = false;
 
 /// [LlmRuntime] on llama.cpp (llama_cpp_dart), in a worker isolate.
 final class LlamaCppRuntime implements LlmRuntime {
@@ -44,6 +52,9 @@ final class LlamaCppRuntime implements LlmRuntime {
   Stream<String> generate(LlmPrompt prompt) async* {
     final engine = _engine;
     if (engine == null) throw const LlmException('Load the model first.');
+    if (prompt.grammar != null && !_grammarSupported) {
+      log('Grammar ignored: not supported by the binding', name: _logName);
+    }
     final session = await engine.createSession();
     try {
       final events = session.generate(
@@ -55,7 +66,9 @@ final class LlamaCppRuntime implements LlmRuntime {
           temperature: _temperature,
           topP: _topP,
           topK: _topK,
-          grammar: GrammarConfig(grammar: prompt.grammar),
+          grammar: _grammarSupported
+              ? GrammarConfig(grammar: prompt.grammar)
+              : GrammarConfig.disabled,
         ),
       );
       await for (final event in events) {

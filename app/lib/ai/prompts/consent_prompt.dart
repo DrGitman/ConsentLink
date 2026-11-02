@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../domain/consent_element.dart';
 import '../llm/llm_runtime.dart';
 import '../pdf/proposal_page.dart';
@@ -11,7 +13,8 @@ const draftLanguage = 'en';
 /// and JSON keys (benchmark, 2026-11-02).
 const sectionMaxTokens = 512;
 
-/// Rules shared by every section call (decision D5.3: zero-shot + grammar).
+/// Rules shared by every section call (decision D5.3: zero-shot, with the
+/// answer shape in the user message).
 const consentSystemPrompt = '''
 You write one section of an informed consent form from pages of a research proposal.
 The reader may have a Grade 6 reading level.
@@ -52,6 +55,45 @@ String _userMessage(ConsentElement element, List<ProposalPage> pages) {
     'Instruction: ${elementGuidance[element]!.instruction}',
     'Proposal pages:',
     ...pageBlocks,
-    'Answer with the JSON object only.',
+    _answerShapes(element, pages.first.pageNumber),
   ].join('\n\n');
 }
+
+// Placeholders of the answer shape; the system prompt says how to fill them.
+const _titlePlaceholder = '<heading>';
+const _textPlaceholder = '<section text>';
+const _quotePlaceholder = '<exact quote>';
+const _changePlaceholder = '<change>';
+const _confidencePlaceholder = '<low|medium|high>';
+
+/// The two allowed answers, spelled out because the grammar is off on the
+/// phone (D5.6b): the model must not guess the `/schemas` envelope.
+String _answerShapes(ConsentElement element, int examplePage) {
+  final found = jsonEncode({
+    'form_language': draftLanguage,
+    'reading_grade': null,
+    'sections': [
+      {
+        'key': element.jsonKey,
+        'title': _titlePlaceholder,
+        'text': _textPlaceholder,
+        'source_pages': [examplePage],
+        'source_quote': _quotePlaceholder,
+        'changes': [_changePlaceholder],
+        'confidence': _confidencePlaceholder,
+      },
+    ],
+    'missing': <String>[],
+  });
+  return 'Answer with one JSON object only, in this shape:\n$found\n\n'
+      'If the pages do not cover the element, answer exactly:\n'
+      '${missingAnswerFor(element)}';
+}
+
+/// The exact answer for an element the pages do not cover.
+String missingAnswerFor(ConsentElement element) => jsonEncode({
+  'form_language': draftLanguage,
+  'reading_grade': null,
+  'sections': <Object>[],
+  'missing': [element.jsonKey],
+});

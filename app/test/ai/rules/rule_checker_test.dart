@@ -66,6 +66,29 @@ void main() {
     );
   });
 
+  test('a failed element is uncertain, not missing, with a hint', () {
+    final report = checkRules(
+      _draft(const []),
+      StudyProfile.standard,
+      failed: const {ConsentElement.risks},
+    );
+    expect(
+      report.items.singleWhere((item) => item.element == ConsentElement.risks),
+      isA<RuleItem>()
+          .having((item) => item.status, 'status', RuleStatus.uncertain)
+          .having((item) => item.fixHint, 'fixHint', modelFailedHint),
+    );
+  });
+
+  test('a failed element with a section is checked as usual', () {
+    final report = checkRules(
+      _draft([_section(ConsentElement.purpose, 'Invented aim.')]),
+      StudyProfile.standard,
+      failed: const {ConsentElement.purpose},
+    );
+    expect(report.items.first, _isStatus(RuleStatus.ok));
+  });
+
   test('an element without content checks is ok once present', () {
     expect(
       _itemFor(ConsentElement.risks, 'You may feel tired.'),
