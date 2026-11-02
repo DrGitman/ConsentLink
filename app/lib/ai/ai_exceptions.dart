@@ -13,6 +13,13 @@ final class InvalidDraftingRequestException extends ConsentAiException {
   const InvalidDraftingRequestException(super.message);
 }
 
+/// The model's output can't be read as a consent draft.
+///
+/// [message] names the problem, never the form text.
+final class InvalidModelOutputException extends ConsentAiException {
+  const InvalidModelOutputException(super.message);
+}
+
 /// The proposal PDF is password-protected, so its text can't be read.
 final class EncryptedPdfException extends ConsentAiException {
   const EncryptedPdfException(super.message);
