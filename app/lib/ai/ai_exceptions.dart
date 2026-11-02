@@ -13,6 +13,28 @@ final class InvalidDraftingRequestException extends ConsentAiException {
   const InvalidDraftingRequestException(super.message);
 }
 
+/// The model's output can't be read as a consent draft.
+///
+/// [message] names the problem, never the form text.
+final class InvalidModelOutputException extends ConsentAiException {
+  const InvalidModelOutputException(super.message);
+}
+
+/// The proposal PDF is password-protected, so its text can't be read.
+final class EncryptedPdfException extends ConsentAiException {
+  const EncryptedPdfException(super.message);
+}
+
+/// The proposal PDF has no text layer, for example a scanned document.
+final class ScannedPdfException extends ConsentAiException {
+  const ScannedPdfException(super.message);
+}
+
+/// The proposal file is not a readable PDF.
+final class CorruptedPdfException extends ConsentAiException {
+  const CorruptedPdfException(super.message);
+}
+
 /// The language code is not one of `contracts/languages.dart`.
 final class UnsupportedLanguageException extends ConsentAiException {
   const UnsupportedLanguageException(super.message);
